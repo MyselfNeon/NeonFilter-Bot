@@ -454,8 +454,8 @@ The more members you have in your group, the higher your income will be.</blockq
 
 <blockquote>‣ How and what to do ⁉️</blockquote>
 
-Step 1: Make this Bot Admin in your Group
-Step 2: Add your website and API
+Step 1: Add your website and API
+Step 2: Make sure this Bot is Admin in your given Group
 
 Exp: /shortlink <code>xtz.in</code> 4b39dfbe58
 
@@ -463,7 +463,7 @@ Exp: /shortlink <code>xtz.in</code> 4b39dfbe58
 
 Exp: /set_tutorial video link
 
-Also your tutorial will be Added Your Group...</b></i>"""
+Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
     TELUGU_INFO = """
 హే <a href='tg://settings'>ᴍʏ ғʀɪᴇɴᴅ</a> 

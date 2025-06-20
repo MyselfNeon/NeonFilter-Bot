@@ -662,7 +662,7 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 ⏰ Duration: {duration}</blockquote></b></i>
 """
 
-    STREAM_TXT = """<b><i><blockwuote>‣ Get Stream And Download Link 📥</blockquote>
+    STREAM_TXT = """<b><i><blockquote>‣ Get Stream And Download Link 📥</blockquote>
 
 Get Streamable and Downloadable link of any file by using /stream</b></i>"""
 

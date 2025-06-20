@@ -98,8 +98,8 @@ This Bot support both URL and alert inline buttons.
 /font - Stylish and cool Font generator</i></b>"""
 
 
-    ADMIN_TXT = """<b><i><blockquote>‣ Admin Mods</blockquote>
-Only works for my Admins
+    ADMIN_TXT = """<b><i><blockquote>‣ Admin Mods 🛐</blockquote>
+These Commands are made just for Admins and will work Only for Admins 🥰
 \n<blockquote>Commands and Usage</blockquote>
 • /logs - To get recent errors
 • /stats - Get status of Files in DB
@@ -662,9 +662,9 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 ⏰ Duration: {duration}</blockquote></b></i>
 """
 
-    STREAM_TXT = """<b><u>HOW TO GET STREAM AND DOWNLOAD LINK :</u>
+    STREAM_TXT = """<b><i><blockwuote>‣ Get Stream And Download Link 📥</blockquote>
 
-/stream - ɢᴇᴛ sᴛʀᴇᴀᴍᴀʙʟᴇ ᴀɴᴅ ᴅᴏᴡɴʟᴏᴀᴅᴀʙʟᴇ ʟɪɴᴋ ᴏғ ᴀɴʏ ғɪʟᴇ</b>"""
+Get Streamable and Downloadable link of any file by using /stream</b></i>"""
 
 
 # Don't Remove Credit @VJ_Botz

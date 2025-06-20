@@ -659,26 +659,14 @@ Also your tutorial will be Added Your Group..."""
 
 এছাড়াও আপনার দল ভিডিও সংগ্রহের প্রশিক্ষণ দেবে..."""
 
-    RENAME_TXT = """
-🌌 <b><u>HOW TO SET THUMBNAIL</u></b>
-  
-•> /set_thumb - send any picture to automatically set thumbnail.
-•> /del_thumb use this command and delete your old thumbnail.
-•> /view_thumb use this command view your current thumbnail.
+    RENAME_TXT = """<b><i><blockquote>‣ HOW TO RENAME A FILE 📝</blockquote>\n• /rename - send any file and click rename option and type new file name and \nthen select [ document, video, audio ]
+<blockquote>‣ SET THUMBNAIL 🌄</blockquote>\n• /set_thumb - Send any picture to automatically set Thumbnail\n• /del_thumb Use this command and delete your old Thumbnail\n• /view_thumb Use this command view your current Thumbnail
 
-📑 <b><u>HOW TO SET CUSTOM CAPTION</u></b>
+<blockquote>‣ SET CUSTOM CAPTION ✏️</blockquote>\n• /set_caption - Set a custom caption\n• /see_caption - See custom caption\n• /del_caption - Delete custom caption
 
-•> /set_caption - set a custom caption
-•> /see_caption - see your custom caption
-•> /del_caption - delete custom caption
-
-Example:- /set_caption 📕 File Name: {filename}
+<blockquote>Example:- /set_caption 📕 File Name: {filename}
 💾 Size: {filesize}
-⏰ Duration: {duration}
-
-✏️ <b><u>HOW TO RENAME A FILE</u></b>
-
-•> /rename - send any file and click rename option and type new file name and \nthen select [ document, video, audio ]👈 choice this.
+⏰ Duration: {duration}</blockquote></b></i>
 """
 
     STREAM_TXT = """<b><u>HOW TO GET STREAM AND DOWNLOAD LINK :</u>

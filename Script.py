@@ -450,23 +450,20 @@ Requested by : {message.from_user.mention}</b></i>"""
 
 <blockquote expandable>Now you can earn money on Telegram too.\n\nYou must have 1 group to earn money by telegram.If you have a group, you can earn money by adding our bot to your group.
 
-The more members you have in your group, the higher your income will be.</blockquote></b></i>
+The more members you have in your group, the higher your income will be.</blockquote>
 
-How and what to do
+<blockquote>‣ How and what to do ⁉️</blockquote>
 
-Step 1: Administer this VJ-FILTER-BOT bot to your group
-
+Step 1: Make this Bot Admin in your Group
 Step 2: Add your website and API
 
-Exp: /shortlink xtz.in 4b392f8eb6ad711fbe58
+Exp: /shortlink <code>xtz.in</code> 4b39dfbe58
 
- Add a video
+<blockquote>‣ Add a video 📷</blockquote>
 
- 👇 How to add 👇
+Exp: /set_tutorial video link
 
- Exp: /set_tutorial video link
-
-Also your tutorial will be Added Your Group..."""
+Also your tutorial will be Added Your Group...</b></i>"""
 
     TELUGU_INFO = """
 హే <a href='tg://settings'>ᴍʏ ғʀɪᴇɴᴅ</a> 

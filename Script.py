@@ -664,7 +664,7 @@ Also your tutorial will be Added Your Group..."""
 
 <blockquote>‣ SET CUSTOM CAPTION ✏️</blockquote>\n• /set_caption - Set a custom caption\n• /see_caption - See custom caption\n• /del_caption - Delete custom caption
 
-<blockquote>Example:- /set_caption 📕 File Name: {filename}
+<blockquote>Example:- <code>/set_caption</code> \n📕 File Name: {filename}
 💾 Size: {filesize}
 ⏰ Duration: {duration}</blockquote></b></i>
 """

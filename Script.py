@@ -446,23 +446,19 @@ Requested by : {message.from_user.mention}</b></i>"""
 மேலும் உங்கள் குழுவில் பயிற்சி வீடியோ தொகுப்பு ஆகிடும்..."""
 
     ENGLISH_INFO = """
-Hey <a href='tg://settings'>ᴍʏ ғʀɪᴇɴᴅ</a> 
+<b><i><blockquote>‣ Hey <a href='tg://settings'>Dear User 🤌❤️</a></blockquote>
 
+<blockquote expandable>Now you can earn money on Telegram too.\n\nYou must have 1 group to earn money by telegram.If you have a group, you can earn money by adding our bot to your group.
 
- Now you can earn money on Telegram too.
+The more members you have in your group, the higher your income will be.</blockquote></b></i>
 
- You must have 1 group to earn money by telegram.
- If you have a group, you can earn money by adding our bot to your group.
+How and what to do
 
- The more members you have in your group, the higher your income will be.
+Step 1: Administer this VJ-FILTER-BOT bot to your group
 
- How and what to do
+Step 2: Add your website and API
 
- Step 1: Administer this VJ-FILTER-BOT bot to your group
-
- Step 2: Add your website and API
-
- Exp: /shortlink xtz.in 4b392f8eb6ad711fbe58
+Exp: /shortlink xtz.in 4b392f8eb6ad711fbe58
 
  Add a video
 

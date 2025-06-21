@@ -26,7 +26,7 @@ async def auto_approve(client, message: ChatJoinRequest):
         chat = message.chat 
         user = message.from_user  
         await client.approve_chat_join_request(chat_id=chat.id, user_id=user.id)
-        text = f"<b>ʜᴇʟʟᴏ {message.from_user.mention} 👋,\n\nʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ ᴛᴏ ᴊᴏɪɴ {message.chat.title} ɪs ᴀᴘᴘʀᴏᴠᴇᴅ.\n\nᴘᴏᴡᴇʀᴇᴅ ʙʏ - {CHNL_LNK}</b>"
+        text = f"<b>ʜᴇʟʟᴏ {message.from_user.mention} 👋,\n\nYᴏᴜʀ Rᴇǫᴜᴇsᴛ Tᴏ Jᴏɪɴ {message.chat.title} Is Aᴘᴘʀᴏᴠᴇᴅ ✅.\n\nPᴏᴡᴇʀᴇᴅ Bʏ - {CHNL_LNK}</b>"
         await client.send_message(chat_id=user.id, text=text)
          
     if REQUEST_TO_JOIN_MODE == False:
@@ -64,32 +64,32 @@ async def auto_approve(client, message: ChatJoinRequest):
         else:
             if PREMIUM_AND_REFERAL_MODE == True:
                 buttons = [[
-                    InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                    InlineKeyboardButton('⤬ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
                 ],[
-                    InlineKeyboardButton('ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
-                    InlineKeyboardButton('ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
+                    InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
+                    InlineKeyboardButton('Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
                 ],[
-                    InlineKeyboardButton('ʜᴇʟᴘ', callback_data='help'),
-                    InlineKeyboardButton('ᴀʙᴏᴜᴛ', callback_data='about')
+                    InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
+                    InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
                 ],[
-                    InlineKeyboardButton('ᴘʀᴇᴍɪᴜᴍ ᴀɴᴅ ʀᴇғᴇʀʀᴀʟ', callback_data='subscription')
+                    InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ & Rᴇғᴇʀʀᴀʟ, callback_data='subscription')
                 ],[
-                    InlineKeyboardButton('ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                    InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
                 ]]
             else:
                 buttons = [[
-                    InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                    InlineKeyboardButton('⤬ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
                 ],[
-                    InlineKeyboardButton('ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
-                    InlineKeyboardButton('ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
+                    InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
+                    InlineKeyboardButton('Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
                 ],[
-                    InlineKeyboardButton('ʜᴇʟᴘ', callback_data='help'),
-                    InlineKeyboardButton('ᴀʙᴏᴜᴛ', callback_data='about')
+                    InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
+                    InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
                 ],[
-                    InlineKeyboardButton('ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                    InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
                 ]]
             if CLONE_MODE == True:
-                buttons.append([InlineKeyboardButton('ᴄʀᴇᴀᴛᴇ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', callback_data='clone')])
+                buttons.append([InlineKeyboardButton('Cʀᴇᴀᴛᴇ Oᴡɴ Cʟᴏɴᴇ Bᴏᴛ', callback_data='clone')])
             reply_markup = InlineKeyboardMarkup(buttons)
             m=await message.reply_sticker("CAACAgUAAxkBAAEKVaxlCWGs1Ri6ti45xliLiUeweCnu4AACBAADwSQxMYnlHW4Ls8gQMAQ") 
             await asyncio.sleep(1)
@@ -109,7 +109,7 @@ async def auto_approve(client, message: ChatJoinRequest):
         pre = ""
         
     if data.split("-", 1)[0] == "BATCH":
-        sts = await message.reply("<b>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ...</b>")
+        sts = await message.reply("<b><i>Please wait...</i></b>")
         file_id = data.split("-", 1)[1]
         msgs = BATCH_FILES.get(file_id)
         if not msgs:
@@ -144,10 +144,10 @@ async def auto_approve(client, message: ChatJoinRequest):
 
                 if STREAM_MODE == True:
                     button = [[
-                        InlineKeyboardButton("• ᴅᴏᴡɴʟᴏᴀᴅ •", url=download),
-                        InlineKeyboardButton('• ᴡᴀᴛᴄʜ •', url=stream)
+                        InlineKeyboardButton("Dᴏᴡɴʟᴏᴀᴅ", url=download),
+                        InlineKeyboardButton('Wᴀᴛᴄʜ', url=stream)
                     ],[
-                        InlineKeyboardButton("• ᴡᴀᴛᴄʜ ɪɴ ᴡᴇʙ ᴀᴘᴘ •", web_app=WebAppInfo(url=stream))
+                        InlineKeyboardButton("Wᴀᴛᴄʜ Iɴ Wᴇʙ Aᴘᴘ", web_app=WebAppInfo(url=stream))
                     ]]
                     reply_markup = InlineKeyboardMarkup(button)
                 else:
@@ -180,11 +180,11 @@ async def auto_approve(client, message: ChatJoinRequest):
         await asyncio.sleep(600)
         for x in filesarr:
             await x.delete()
-        await k.edit_text("<b>✅ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ ɪs sᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ</b>")  
+        await k.edit_text("<b></i>Your message is successfully Deleted ✅</i></b>")  
         return
         
     elif data.split("-", 1)[0] == "DSTORE":
-        sts = await message.reply("<b>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ...</b>")
+        sts = await message.reply("<b><i>Please wait...</i></b>")
         b_string = data.split("-", 1)[1]
         decoded = (base64.urlsafe_b64decode(b_string + "=" * (-len(b_string) % 4))).decode("ascii")
         try:
@@ -448,9 +448,9 @@ async def auto_approve(client, message: ChatJoinRequest):
     if not await db.has_premium_access(message.from_user.id):
         if not await check_verification(client, message.from_user.id) and VERIFY == True:
             btn = [[
-                InlineKeyboardButton("ᴠᴇʀɪғʏ", url=await get_token(client, message.from_user.id, f"https://telegram.me/{temp.U_NAME}?start="))
+                InlineKeyboardButton("Vᴇʀɪғʏ", url=await get_token(client, message.from_user.id, f"https://telegram.me/{temp.U_NAME}?start="))
             ],[
-                InlineKeyboardButton("ʜᴏᴡ ᴛᴏ ᴠᴇʀɪғʏ", url=VERIFY_TUTORIAL)
+                InlineKeyboardButton("Hᴏᴡ Tᴏ Vᴇʀɪғʏ", url=VERIFY_TUTORIAL)
             ]]
             text = "<b>ʜᴇʏ {} 👋,\n\nʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴅᴀʏ, ᴘʟᴇᴀꜱᴇ ᴄʟɪᴄᴋ ᴏɴ ᴠᴇʀɪғʏ & ɢᴇᴛ ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇꜱꜱ ғᴏʀ ᴛᴏᴅᴀʏ</b>"
             if PREMIUM_AND_REFERAL_MODE == True:
@@ -462,7 +462,7 @@ async def auto_approve(client, message: ChatJoinRequest):
             )
             return
     if STREAM_MODE == True:
-        button = [[InlineKeyboardButton('sᴛʀᴇᴀᴍ ᴀɴᴅ ᴅᴏᴡɴʟᴏᴀᴅ', callback_data=f'generate_stream_link:{file_id}')]]
+        button = [[InlineKeyboardButton('Sᴛʀᴇᴀᴍ & Dᴏᴡɴʟᴏᴀᴅ', callback_data=f'generate_stream_link:{file_id}')]]
         reply_markup=InlineKeyboardMarkup(button)
     else:
         reply_markup = None
@@ -473,9 +473,9 @@ async def auto_approve(client, message: ChatJoinRequest):
         protect_content=True if pre == 'filep' else False,
         reply_markup=reply_markup
     )
-    btn = [[InlineKeyboardButton("✅ ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ ✅", callback_data=f'del#{file_id}')]]
-    k = await msg.reply(text=f"<blockquote><b><u>❗️❗️❗️IMPORTANT❗️️❗️❗️</u></b>\n\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ <b><u>10 mins</u> 🫥 <i></b>(ᴅᴜᴇ ᴛᴏ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs)</i>.\n\n<b><i>ᴘʟᴇᴀsᴇ ғᴏʀᴡᴀʀᴅ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ᴏʀ ᴀɴʏ ᴘʀɪᴠᴀᴛᴇ ᴄʜᴀᴛ.</i></b></blockquote>")
+    btn = [[InlineKeyboardButton("✅ Get Files Again ✅", callback_data=f'del#{file_id}')]]
+    k = await msg.reply(text=f"<blockquote><i><b><u>❗️❗️❗️IMPORTANT❗️️❗️❗️</blockquote></u>\n\nThis message will be deleted in <u>10 mins</u>\n(Due to copyright issues).\n\nPlease forward this message to your saved messages or any private chat.</i></b>")
     await asyncio.sleep(600)
     await msg.delete()
-    await k.edit_text("<b>✅ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ ɪs sᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ɪғ ʏᴏᴜ ᴡᴀɴᴛ ᴀɢᴀɪɴ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ</b>",reply_markup=InlineKeyboardMarkup(btn))
+    await k.edit_text("<b><i>Your message is successfully deleted ✅. If you want again then click on below button</i></b>",reply_markup=InlineKeyboardMarkup(btn))
     return   

@@ -493,7 +493,7 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
     HINDI_INFO = """
 <b><i><blockquote>‣ प्रिय <a href='tg://settings'>प्यारे उपयोगकर्ता</a></blockquote> 
 
-<blockquote expndable> अब आप टेलीग्राम पर भी पैसे कमा सकते हैं।
+<blockquote expandable> अब आप टेलीग्राम पर भी पैसे कमा सकते हैं।
 
  टेलीग्राम से पैसे कमाने के लिए आपके पास 1 ग्रुप होना चाहिए।
  यदि आपके पास एक समूह है, तो आप हमारे बॉट को अपने समूह में जोड़कर पैसा कमा सकते हैं।

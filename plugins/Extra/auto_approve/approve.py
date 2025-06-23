@@ -72,7 +72,7 @@ async def auto_approve(client, message: ChatJoinRequest):
                     InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
                     InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
                 ],[
-                    InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ & Rᴇғᴇʀʀᴀʟ, callback_data='subscription')
+                    InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ ᴀɴᴅ Rᴇғᴇʀʀᴀʟ, callback_data='subscription')
                 ],[
                     InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
                 ]]

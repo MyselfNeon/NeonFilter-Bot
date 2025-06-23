@@ -1,8 +1,3 @@
-# Don't Remove Credit @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
-# Clone Code Credit : YT - @Tech_VJ / TG - @VJ_Bots / GitHub - @VJBots
 
 import sys, glob, importlib, logging, logging.config, pytz, asyncio
 from pathlib import Path
@@ -24,9 +19,9 @@ from aiohttp import web
 from plugins import web_server
 from plugins.clone import restart_bots
 
-from TechVJ.bot import TechVJBot
-from TechVJ.util.keepalive import ping_server
-from TechVJ.bot.clients import initialize_clients
+from Neon.bot import TechVJBot
+from Neon.util.keepalive import ping_server
+from Neon.bot.clients import initialize_clients
 
 ppath = "plugins/*.py"
 files = glob.glob(ppath)

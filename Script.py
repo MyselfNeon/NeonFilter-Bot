@@ -209,14 +209,14 @@ If you do not see the Requested Movie/Series file, look at the next page...</b><
 
 <blockquote>‣ IMDb Data</blockquote>
 
-🏷 Title: <a href={url}>{title}</a>
+<blockquote expandable>🏷 Title: <a href={url}>{title}</a>
 🎭 Genres: {genres}
 📆 Year: <a href={url}/releaseinfo>{year}</a>
 🌟 Rating: <a href={url}/ratings>{rating}</a> / 10 (based on {votes} user ratings.)
 ☀️ Languages : <code>{languages}</code>
 📀 RunTime: {runtime} Minutes
 📆 Release Info : {release_date}
-🎛 Countries : <code>{countries}</code>
+🎛 Countries : <code>{countries}</code></blockquote>\n💢 Remember that sometimes IMDb data can be wrong !! 💢
 
 
 ⏰Result Shown in: {remaining_seconds} <i>seconds</i> 🔥

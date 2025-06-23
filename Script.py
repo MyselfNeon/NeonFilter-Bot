@@ -35,8 +35,8 @@ class script(object):
 
 👨‍💻 Command : /clone</i></b>"""
 
-    SUBSCRIPTION_TXT = """<blockquote><b>⚡ REFERAL PLANS ⚡</blockquote>
-<blockquote expandable><i>Refer your link to your Friends, Family, Channel and Groups to get free Premium for {}
+    SUBSCRIPTION_TXT = """<blockquote><b>‣ Referal Plans ⚡</blockquote>
+<blockquote><i>Refer your link to your Friends, Family, Channel and Groups to get free Premium for {}
 
 Referal Link - https://telegram.me/{}?start=VJ-{}
 
@@ -350,7 +350,7 @@ Requested by : {message.from_user.mention}</b></i>"""
   
     JSON_TXT = """<b><i><blockquote>‣ Json 📝</blockquote>\nBot returns json file for all replied messages with /json
   
-<blockquote>‣ Features</blockquote>\nMessage editing json\nPM support\nGroup support 
+<blockquote>‣ Features</blockquote>\n• Message editing json\n• PM support\n• Group support 
   
 <blockquote>‣ Note</blockquote>\nAnyone can use this command, if spamming happens Bot will automatically Ban you from the Group</i></b>""" 
   

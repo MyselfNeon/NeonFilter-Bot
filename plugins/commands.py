@@ -1191,24 +1191,24 @@ async def settutorial(bot, message):
     else:
         pass
     if len(message.command) == 1:
-        return await message.reply("<b>Give me a tutorial link along with this command\n\nCommand Usage: /set_tutorial your tutorial link</b>")
+        return await message.reply("<b>__Give me a tutorial link along with this command\n\nCommand Usage: /set_tutorial your tutorial link__</b>")
     elif len(message.command) == 2:
-        reply = await message.reply_text("<b>Please Wait...</b>")
+        reply = await message.reply_text("<b>__Please Wait...__</b>")
         tutorial = message.command[1]
         await save_group_settings(grpid, 'tutorial', tutorial)
         await save_group_settings(grpid, 'is_tutorial', True)
-        await reply.edit_text(f"<b>Successfully Added Tutorial\n\nHere is your tutorial link for your group {title} - <code>{tutorial}</code></b>")
+        await reply.edit_text(f"<b>__Successfully Added Tutorial\n\nHere is your tutorial link for your group {title} - <code>{tutorial}</code>__</b>")
     else:
-        return await message.reply("<b>You entered Incorrect Format\n\nFormat: /set_tutorial your tutorial link</b>")
+        return await message.reply("<b>__You entered Incorrect Format\n\nFormat: /set_tutorial your tutorial link__</b>")
 
 @Client.on_message(filters.command("remove_tutorial"))
 async def removetutorial(bot, message):
     userid = message.from_user.id if message.from_user else None
     if not userid:
-        return await message.reply(f"You are anonymous admin. Turn off anonymous admin and try again this command")
+        return await message.reply(f"__You are anonymous admin. Turn off anonymous admin and try again this command__")
     chat_type = message.chat.type
     if chat_type == enums.ChatType.PRIVATE:
-        return await message.reply_text("This Command Work Only in group\n\nTry it in your own group")
+        return await message.reply_text("__This Command Work Only in group\n\nTry it in your own group__")
     elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         grpid = message.chat.id
         title = message.chat.title
@@ -1220,26 +1220,26 @@ async def removetutorial(bot, message):
         return
     else:
         pass
-    reply = await message.reply_text("<b>Please Wait...</b>")
+    reply = await message.reply_text("<b>__Please Wait...__</b>")
     await save_group_settings(grpid, 'tutorial', "")
     await save_group_settings(grpid, 'is_tutorial', False)
-    await reply.edit_text(f"<b>Successfully Removed Your Tutorial Link!!!</b>")
+    await reply.edit_text(f"<b>__Successfully Removed Your Tutorial Link!!!__</b>")
 
 @Client.on_message(filters.command("restart") & filters.user(ADMINS))
 async def stop_button(bot, message):
-    msg = await bot.send_message(text="**🔄 𝙿𝚁𝙾𝙲𝙴𝚂𝚂𝙴𝚂 𝚂𝚃𝙾𝙿𝙴𝙳. 𝙱𝙾𝚃 𝙸𝚂 𝚁𝙴𝚂𝚃𝙰𝚁𝚃𝙸𝙽𝙶...**", chat_id=message.chat.id)       
+    msg = await bot.send_message(text="**__Process Stopped 💢 \nBot is Restarting ♻️ ...__**", chat_id=message.chat.id)       
     await asyncio.sleep(3)
-    await msg.edit("**✅️ 𝙱𝙾𝚃 𝙸𝚂 𝚁𝙴𝚂𝚃𝙰𝚁𝚃𝙴𝙳. 𝙽𝙾𝚆 𝚈𝙾𝚄 𝙲𝙰𝙽 𝚄𝚂𝙴 𝙼𝙴**")
+    await msg.edit("**__♻️ Bot is Restarted. \nNow you can use me 😅__**")
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 @Client.on_message(filters.command("nofsub"))
 async def nofsub(client, message):
     userid = message.from_user.id if message.from_user else None
     if not userid:
-        return await message.reply(f"<b>You are anonymous admin. Turn off anonymous admin and try again this command</b>")
+        return await message.reply(f"<b>__You are anonymous admin. Turn off anonymous admin and try again this command__</b>")
     chat_type = message.chat.type
     if chat_type == enums.ChatType.PRIVATE:
-        return await message.reply_text("<b>This Command Work Only in group\n\nTry it in your own group</b>")
+        return await message.reply_text("<b>__This Command Work Only in group\n\nTry it in your own group__</b>")
     elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         grpid = message.chat.id
         title = message.chat.title
@@ -1252,16 +1252,16 @@ async def nofsub(client, message):
     else:
         pass
     await save_group_settings(grpid, 'fsub', None)
-    await message.reply_text(f"<b>Successfully removed force subscribe from {title}.</b>")
+    await message.reply_text(f"<b>__Successfully removed force subscribe from {title}.__</b>")
 
 @Client.on_message(filters.command('fsub'))
 async def fsub(client, message):
     userid = message.from_user.id if message.from_user else None
     if not userid:
-        return await message.reply(f"<b>You are anonymous admin. Turn off anonymous admin and try again this command</b>")
+        return await message.reply(f"<b>__You are anonymous Admin. Turn off anonymous admin and try again this command__</b>")
     chat_type = message.chat.type
     if chat_type == enums.ChatType.PRIVATE:
-        return await message.reply_text("<b>This Command Work Only in group\n\nTry it in your own group</b>")
+        return await message.reply_text("<b>__This Command Work Only in group\n\nTry it in your own group__</b>")
     elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         grpid = message.chat.id
         title = message.chat.title
@@ -1277,20 +1277,20 @@ async def fsub(client, message):
         ids = message.text.split(" ", 1)[1]
         fsub_ids = [int(id) for id in ids.split()]
     except IndexError:
-        return await message.reply_text("<b>Command Incomplete!\n\nAdd Multiple Channel By Seperate Space. Like: /fsub id1 id2 id3</b>")
+        return await message.reply_text("<b>__Command Incomplete!\n\nAdd Multiple Channel By Seperate Space. Like: /fsub id1 id2 id3__</b>")
     except ValueError:
-        return await message.reply_text('<b>Make Sure Ids are Integer.</b>')        
+        return await message.reply_text('<b>__Make Sure Ids are Integer.__</b>')        
     channels = "Channels:\n"
     for id in fsub_ids:
         try:
             chat = await client.get_chat(id)
         except Exception as e:
-            return await message.reply_text(f"<b>{id} is invalid!\nMake sure this bot admin in that channel.\n\nError - {e}</b>")
+            return await message.reply_text(f"<b><i>{id} is invalid!\nMake sure this bot admin in that channel.\n\nError - {e}</i></b>")
         if chat.type != enums.ChatType.CHANNEL:
-            return await message.reply_text(f"<b>{id} is not channel.</b>")
+            return await message.reply_text(f"<b><i>{id} is not channel.</i></b>")
         channels += f'{chat.title}\n'
     await save_group_settings(grpid, 'fsub', fsub_ids)
-    await message.reply_text(f"<b>Successfully set force channels for {title} to\n\n{channels}\n\nYou can remove it by /nofsub.</b>")
+    await message.reply_text(f"<b><i>Successfully set force channels for {title} to\n\n{channels}\n\nYou can remove it by /nofsub.</i></b>")
         
 
 @Client.on_message(filters.command("add_premium"))
@@ -1309,15 +1309,15 @@ async def give_premium_cmd_handler(client, message):
             expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
             user_data = {"id": user_id, "expiry_time": expiry_time} 
             await db.update_user(user_data)  # Use the update_user method to update or insert user data
-            await message.reply_text("Premium access added to the user.")            
+            await message.reply_text("**__Premium access added to the user.__**")            
             await client.send_message(
                 chat_id=user_id,
-                text=f"<b>ᴘʀᴇᴍɪᴜᴍ ᴀᴅᴅᴇᴅ ᴛᴏ ʏᴏᴜʀ ᴀᴄᴄᴏᴜɴᴛ ꜰᴏʀ {time} ᴇɴᴊᴏʏ 😀\n</b>",                
+                text=f"<b><i>Premium added to your account for {time} enjoy 🤩\n</b>",                
             )
         else:
-            await message.reply_text("Invalid time format. Please use '1day for days', '1hour for hours', or '1min for minutes', or '1month for months' or '1year for year'")
+            await message.reply_text("__Invalid time format. Please use '1day for days', '1hour for hours', or '1min for minutes', or '1month for months' or '1year for year'__")
     else:
-        await message.reply_text("<b>Usage: /add_premium user_id time \n\nExample /add_premium 1252789 10day \n\n(e.g. for time units '1day for days', '1hour for hours', or '1min for minutes', or '1month for months' or '1year for year')</b>")
+        await message.reply_text("<b><i><blockquote>Usage:</blockquote>\n/add_premium user_id time \n\n<blockquote>Example /add_premium 125289 6day \n\n(For time units '1day for days', '1hour for hours', or '1min for minutes', or '1month for months' or '1year for year')</blockquote></i></b>")
         
 @Client.on_message(filters.command("remove_premium"))
 async def remove_premium_cmd_handler(client, message):
@@ -1339,7 +1339,7 @@ async def remove_premium_cmd_handler(client, message):
             await message.reply_text("Premium access removed to the user.")
             await client.send_message(
                 chat_id=user_id,
-                text="<b>premium removed by admins \n\n Contact Admin if this is mistake \n\n 👮 Admin : {} \n</b>".format(OWNER_LNK),                
+                text="<b><i>Premium removed by Admins \n\n Contact Admin if this is mistake \n\n 👮 Admin : {} \n</i></b>".format(OWNER_LNK),                
             )
         else:
             await message.reply_text("Invalid time format.'")
@@ -1351,8 +1351,8 @@ async def plans_cmd_handler(client, message):
     if PREMIUM_AND_REFERAL_MODE == False:
         return 
     btn = [            
-        [InlineKeyboardButton("ꜱᴇɴᴅ ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ 🧾", url=OWNER_LNK)],
-        [InlineKeyboardButton("⚠️ ᴄʟᴏsᴇ / ᴅᴇʟᴇᴛᴇ ⚠️", callback_data="close_data")]
+        [InlineKeyboardButton("Sᴇɴᴅ Pᴀʏᴍᴇɴᴛ Rᴇᴄᴇɪᴘᴛ 📝", url=OWNER_LNK)],
+        [InlineKeyboardButton("❌ Cʟᴏsᴇ / Dᴇʟᴇᴛᴇ ❌", callback_data="close_data")]
     ]
     reply_markup = InlineKeyboardMarkup(btn)
     await message.reply_photo(
@@ -1369,16 +1369,16 @@ async def check_plans_cmd(client, message):
     if await db.has_premium_access(user_id):         
         remaining_time = await db.check_remaining_uasge(user_id)             
         expiry_time = remaining_time + datetime.datetime.now()
-        await message.reply_text(f"**Your plans details are :\n\nRemaining Time : {remaining_time}\n\nExpirytime : {expiry_time}**")
+        await message.reply_text(f"**__Your plans details are :\n\nRemaining Time : {remaining_time}\n\nExpirytime : {expiry_time}__**")
     else:
         btn = [ 
-            [InlineKeyboardButton("ɢᴇᴛ ғʀᴇᴇ ᴛʀᴀɪʟ ғᴏʀ 𝟻 ᴍɪɴᴜᴛᴇꜱ ☺️", callback_data="get_trail")],
-            [InlineKeyboardButton("ʙᴜʏ sᴜʙsᴄʀɪᴘᴛɪᴏɴ : ʀᴇᴍᴏᴠᴇ ᴀᴅs", callback_data="buy_premium")],
-            [InlineKeyboardButton("⚠️ ᴄʟᴏsᴇ / ᴅᴇʟᴇᴛᴇ ⚠️", callback_data="close_data")]
+            [InlineKeyboardButton("Fʀᴇᴇ Tʀᴀɪʟ Fᴏʀ 𝟻 Mɪɴᴜᴛᴇꜱ 😜", callback_data="get_trail")],
+            [InlineKeyboardButton("Bᴜʏ Sᴜʙsᴄʀɪᴘᴛɪᴏɴ : Rᴇᴍᴏᴠᴇ ADs", callback_data="buy_premium")],
+            [InlineKeyboardButton("❌ Cʟᴏsᴇ / Dᴇʟᴇᴛᴇ ❌", callback_data="close_data")]
         ]
         reply_markup = InlineKeyboardMarkup(btn)
         m=await message.reply_sticker("CAACAgIAAxkBAAIBTGVjQbHuhOiboQsDm35brLGyLQ28AAJ-GgACglXYSXgCrotQHjibHgQ")         
-        await message.reply_text(f"**😢 You Don't Have Any Premium Subscription.\n\n Check Out Our Premium /plan**",reply_markup=reply_markup)
+        await message.reply_text(f"**__😢 You Don't Have Any Premium Subscription.\n\n Check Out Our Premium /plan__**",reply_markup=reply_markup)
         await asyncio.sleep(2)
         await m.delete()
 

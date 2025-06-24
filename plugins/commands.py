@@ -1312,7 +1312,7 @@ async def give_premium_cmd_handler(client, message):
             await message.reply_text("**__Premium access added to the user.__**")            
             await client.send_message(
                 chat_id=user_id,
-                text=f"<b><i>Premium added to your account for {time} enjoy 🤩\n</b>",                
+                text=f"<b>Premium Benefits added to your account for {time} enjoy 🤩__</b>",                
             )
         else:
             await message.reply_text("__Invalid time format. Please use '1day for days', '1hour for hours', or '1min for minutes', or '1month for months' or '1year for year'__")

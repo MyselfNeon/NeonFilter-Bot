@@ -1336,10 +1336,10 @@ async def remove_premium_cmd_handler(client, message):
             expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
             user_data = {"id": user_id, "expiry_time": expiry_time}  # Using "id" instead of "user_id"
             await db.update_user(user_data)  # Use the update_user method to update or insert user data
-            await message.reply_text("Premium access removed to the user.")
+            await message.reply_text("**__Premium access removed to the user.__**")
             await client.send_message(
                 chat_id=user_id,
-                text="<b><i>Premium removed by Admins \n\n Contact Admin if this is mistake \n\n 👮 Admin : {} \n</i></b>".format(OWNER_LNK),                
+                text="<b><i>Premium removed by Admins \n\nContact Admin if this is mistake \n\n 👮 Admin : {} \n</i></b>".format(OWNER_LNK),                
             )
         else:
             await message.reply_text("Invalid time format.'")

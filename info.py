@@ -73,8 +73,8 @@ PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True)) #
 # If PREMIUM_AND_REFERAL_MODE is True Then Fill Below Variable, If Flase Then No Need To Fill.
 REFERAL_COUNT = int(environ.get('REFERAL_COUNT', '5')) # number of referal count
 REFERAL_PREMEIUM_TIME = environ.get('REFERAL_PREMEIUM_TIME', '1month') # time in week, day, month.
-PAYMENT_QR = environ.get('PAYMENT_QR', 'https://graph.org/file/ce1723991756e48c35aa1.jpg') # payment code picture url.
-PAYMENT_TEXT = environ.get('PAYMENT_TEXT', '<b><i><blockquote>‣ Available Plans 💸</blockquote>\n\n• 30Rs - 01 Week\n• 50Rs - 01 Month\n• 120Rs - 03 Months\n• 220Rs - 06 Months\n\n<blockquote>🎁 Premium Features 🎁</blockquote>\n\n• No need to verify\n• No need to open links\n• Direct Files\n• Ad-free experience\n• High speed download\n• Multiplayer Streaming links\n• Unlimited Movies, Animes & Series\n• 24×7 Admin support\n• Requests will be completed within 01 Hour of submission if available\n\n✨ Upi ID - <code>demo@okxyz</code>\n\nClick /plan to check your plan\n\n💢 Send screenshots after Payment 💲\n\n‼️ After sending screenshot please give us some time to add you in the Premium</i></b>')
+PAYMENT_QR = environ.get('PAYMENT_QR', 'https://telegra.ph/file/a5b4baeeb15236bd37305-31cacf719a14a78183.jpg') # payment code picture url.
+PAYMENT_TEXT = environ.get('PAYMENT_TEXT', '<b><i><blockquote>‣ Available Plans 💸</blockquote>\n\n• 30Rs - 01 Week\n• 50Rs - 01 Month\n• 120Rs - 03 Months\n• 220Rs - 06 Months\n\n<blockquote>🎁 Premium Features 🎁</blockquote>\n• No need to verify\n• No need to open links\n• Direct Files\n• Ad-free experience\n• High speed download\n• Multiplayer Streaming links\n• Unlimited Movies, Animes & Series\n• 24×7 Admin support\n• Requests will be completed within 01 Hour of submission if available\n\n✨ Upi ID - <code>demo@okxyz</code>\n\n💡Click /plan to check your plan\n\n💢 Send screenshots after Payment\n\n‼️ After sending screenshot give us some time to add you in Premium</i></b>')
 
 
 # Clone Information : If Clone Mode Is True Then Bot Clone Other Bots.

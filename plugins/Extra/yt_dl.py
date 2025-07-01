@@ -1,3 +1,8 @@
+# Don't Remove Credit @VJ_Botz
+# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
+# Ask Doubt on telegram @KingVJ01
+
+
 from __future__ import unicode_literals
 
 import os, requests, asyncio, math, time, wget
@@ -19,19 +24,7 @@ async def song(client, message):
         query += ' ' + str(i)
     print(query)
     m = await message.reply(f"**ѕєαrchíng чσur ѕσng...!\n {query}**")
-
-    # ✅ yt-dlp cookies added here
-    # Netscape HTTP Cookie File
-.youtube.com	TRUE	/	TRUE	1750778125	GPS	1
-.youtube.com	TRUE	/	TRUE	1766328439	VISITOR_INFO1_LIVE	RTonvqs758o
-.youtube.com	TRUE	/	TRUE	1766328439	VISITOR_PRIVACY_METADATA	CgJJThIEGgAgJw%3D%3D
-.youtube.com	TRUE	/	TRUE	0	YSC	j6dn_XeQKGI
-    
-    ydl_opts = {
-        "format": "bestaudio[ext=m4a]",
-        "cookies": "cookies.txt"  # Ensure this file exists in the working directory
-    }
-
+    ydl_opts = {"format": "bestaudio[ext=m4a]"}
     try:
         results = YoutubeSearch(query, max_results=1).to_dict()
         link = f"https://youtube.com{results[0]['url_suffix']}"
@@ -108,14 +101,6 @@ async def vsong(client, message: Message):
     await asyncio.sleep(0.6)
     url = mo
     sedlyf = wget.download(kekme)
-
-    # ✅ yt-dlp cookies added here
-    # Netscape HTTP Cookie File
-.youtube.com	TRUE	/	TRUE	1750778125	GPS	1
-.youtube.com	TRUE	/	TRUE	1766328439	VISITOR_INFO1_LIVE	RTonvqs758o
-.youtube.com	TRUE	/	TRUE	1766328439	VISITOR_PRIVACY_METADATA	CgJJThIEGgAgJw%3D%3D
-.youtube.com	TRUE	/	TRUE	0	YSC	j6dn_XeQKGI
-    
     opts = {
         "format": "best",
         "addmetadata": True,
@@ -123,13 +108,11 @@ async def vsong(client, message: Message):
         "prefer_ffmpeg": True,
         "geo_bypass": True,
         "nocheckcertificate": True,
-        "cookies": "cookies.txt",  # Ensure this file exists in the working directory
         "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
         "outtmpl": "%(id)s.mp4",
         "logtostderr": False,
         "quiet": True,
     }
-
     try:
         with YoutubeDL(opts) as ytdl:
             ytdl_data = ytdl.extract_info(url, download=True)

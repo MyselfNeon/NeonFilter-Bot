@@ -20,7 +20,10 @@ async def song(client, message):
         query += ' ' + str(i)
     print(query)
     m = await message.reply(f"**ѕєαrchíng чσur ѕσng...!\n {query}**")
-    ydl_opts = {"format": "bestaudio[ext=m4a]"}
+    ydl_opts = {
+    "format": "bestaudio[ext=m4a]",
+    "cookies": "cookies.txt"
+    }
     try:
         results = YoutubeSearch(query, max_results=1).to_dict()
         link = f"https://youtube.com{results[0]['url_suffix']}"
@@ -98,16 +101,17 @@ async def vsong(client, message: Message):
     url = mo
     sedlyf = wget.download(kekme)
     opts = {
-        "format": "best",
-        "addmetadata": True,
-        "key": "FFmpegMetadata",
-        "prefer_ffmpeg": True,
-        "geo_bypass": True,
-        "nocheckcertificate": True,
-        "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
-        "outtmpl": "%(id)s.mp4",
-        "logtostderr": False,
-        "quiet": True,
+    "format": "best",
+    "addmetadata": True,
+    "key": "FFmpegMetadata",
+    "prefer_ffmpeg": True,
+    "geo_bypass": True,
+    "nocheckcertificate": True,
+    "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
+    "outtmpl": "%(id)s.mp4",
+    "logtostderr": False,
+    "quiet": True,
+    "cookies": "cookies.txt"
     }
     try:
         with YoutubeDL(opts) as ytdl:

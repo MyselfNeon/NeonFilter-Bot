@@ -13,7 +13,7 @@ _**Watch on Telegram as [ZeroFilter-Bot](https://t.me/zerofilterbot)**_
 <a href="https://github.com/Myselfneon/NeonFilter-Bot"> <img src="https://img.shields.io/github/repo-size/myselfneon/NeonFilter-bot?color=skyblue&logo=github&logoColor=blue&style=for-the-badge" /></a>
 <a href="https://github.com/MyselfNeon/NeonFilter-Bot"> <img src="https://img.shields.io/github/last-commit/MyselfNeon/NeonFilter-Bot?color=black&logo=github&logoColor=black&style=for-the-badge" /></a>
 
-### _Main Features_
+### _Main Features_  🌟
 <b><i>
 - [x] Custom Stream
 - [x] Ai Spell Check 
@@ -43,7 +43,7 @@ Note :
 • Just Use Which Features You Want By Turning It On.  
 </i></b>
 
-### _Config Variables_
+### _Config Variables_  ⚙️
 
 <details><summary><b>Variables</summary></b></summary>
 
@@ -57,7 +57,7 @@ Note :
 * [`CHANNELS`] - _**This Is File Channel, Username or ID of channel or group.`Separate multiple IDs by space`**_
 </details>
 
-### _How To Deploy_
+### _How To Deploy_  🚀
 
 <details><summary><b><i>Deploy on Multiple Servers</i></summary></b></summary>
 
@@ -104,7 +104,7 @@ python3 bot.py
 
 </details>
 
-### _Commands_
+### _Commands_  💬
 ```
 start - 𝐿𝑒𝑡𝑠 𝑆𝑡𝑎𝑟𝑡 𝑡ℎ𝑒 𝐵𝑜𝑡 !!
 index - 𝐼𝑛𝑑𝑒𝑥 𝐹𝑖𝑙𝑒 𝑓𝑟𝑜𝑚 𝐶ℎ𝑎𝑛𝑛𝑒𝑙
@@ -156,7 +156,7 @@ restart  - 𝑅𝑒𝑠𝑡𝑎𝑟𝑡 𝐵𝑜𝑡 𝑆𝑒𝑟𝑣𝑒𝑟
 ```
 <b><i>⪼ Copy all Commands and paste it in <a href='https://t.me/botfather'>BotFather</a> to apply commands.
 
-<h3>Contact Developer</h3>
+<h3>Contact Developer 👨‍💻</h3>
 
 [![Contact Developer](https://img.shields.io/badge/Contact-Developer-blue?logo=telegram)](https://t.me/MyselfNeon)  
 
@@ -164,23 +164,23 @@ restart  - 𝑅𝑒𝑠𝑡𝑎𝑟𝑡 𝐵𝑜𝑡 𝑆𝑒𝑟𝑣𝑒𝑟
 
 Join My <a href='https://t.me/neonfiles'>Update Channel</a> For More Update Regarding Repo.
 
-<h3>Page Visits Counter</h3>
+<h3>Page Visits Counter 📈</h3>
 <a href="https://github.com/MyselfNeon/NeonFilter-Bot"><img alt="Cute Count" src="https://count.getloli.com/get/@NeonFilter-Bot?theme=rule34" /></a>
 
 <b>This is total number of visitors who have watched this Repo.
 
-### _Thanks to_ 
+### _Special Thanks_  🙏
  - <b>Thanks To [Pyrogram Library](https://github.com/pyrogram/pyrogram) & [Pyrofork Library](https://github.com/Mayuri-Chan/pyrofork)
  - Thanks To [NeonAn](https://t.me/myselfneon) To Modify.
  - Thanks To [Eva Marie](https://t.me/TeamEvamaria) For Base
  - Thanks To Everyone who have contributed In This Awesome Journey</b>
 
-### _Note_ 🏷️
+### _Note_ 📝
  
 [![Contact Developer](https://img.shields.io/badge/Telegram-Contact%20Developer-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://telegram.me/MyselfNeon)   
 <b>Fork The Repo And Edit As Per Your Needs. Repo is fully Customizable </b>
 
-### _Licensing & Restrictions_  ⚖️
+### _Licensing & Restrictions_  📜
 [![GNU Affero General Public License 2.0](https://www.gnu.org/graphics/agplv3-155x51.png)](https://www.gnu.org/licenses/agpl-3.0.en.html#header)    
 <b>Licensed under [GNU AGPL 2.0.](https://github.com/MyselfNeon/NeonFilter-Bot/blob/main/LICENSE)  
 Selling The Codes To Other People For Money Is *Strictly Prohibited*.</b>

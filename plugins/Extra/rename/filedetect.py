@@ -29,7 +29,7 @@ async def refunc(client, message, new_name, msg):
             else:
                 markup = InlineKeyboardMarkup(
                     [[InlineKeyboardButton("📁 Document", callback_data="upload_document")]])
-            await message.reply_text(f"**--𝐒𝐄𝐋𝐄𝐂𝐓 𝐎𝐔𝐓𝐏𝐔𝐓 𝐅𝐈𝐋𝐄 𝐓𝐘𝐏𝐄--  🌐**\n\n𝙉𝙚𝙬 𝙉𝙖𝙢𝙚 📝 : \n```{out_filename}```", reply_to_message_id=msg.id, reply_markup=markup)
+            await message.reply_text(f"**Select the output file type**\n**🎞New Name** :- ```{out_filename}```", reply_to_message_id=msg.id, reply_markup=markup)
 
         except:
             try:
@@ -37,17 +37,17 @@ async def refunc(client, message, new_name, msg):
                 out_name = out[-1]
                 out_filename = new_name + "." + out_name
             except:
-                await message.reply_text("**<u>💢 __ERROR__ 💢</u>** :\n**__No  Extension in File, Not Supporting__**")
+                await message.reply_text("**Error** :  No  Extension in File, Not Supporting")
                 return
             if mime == "video":
                 markup = InlineKeyboardMarkup([[InlineKeyboardButton(
                     "📁 Document", callback_data="upload_document"), InlineKeyboardButton("🎥 Video", callback_data="upload_video")]])
             elif mime == "audio":
                 markup = InlineKeyboardMarkup([[InlineKeyboardButton(
-                    "📁 Document", callback_data="upload_document"), InlineKeyboardButton("🎵 Audio", callback_data="upload_audio")]])
+                    "📁 Document", callback_data="upload_document"), InlineKeyboardButton("🎵 audio", callback_data="upload_audio")]])
             else:
                 markup = InlineKeyboardMarkup(
                     [[InlineKeyboardButton("📁 Document", callback_data="upload_document")]])
-            await message.reply_text(f"**--𝐒𝐄𝐋𝐄𝐂𝐓 𝐎𝐔𝐓𝐏𝐔𝐓 𝐅𝐈𝐋𝐄 𝐓𝐘𝐏𝐄--  🌐**\n\n𝙉𝙚𝙬 𝙉𝙖𝙢𝙚 📝 : \n{out_filename}", reply_to_message_id=msg.id, reply_markup=markup)
+            await message.reply_text(f"**Select the output file type**\n**🎞New Name ->** :- {out_filename}", reply_to_message_id=msg.id, reply_markup=markup)
     except Exception as e:
         print(f"error: {e}")

@@ -29,13 +29,13 @@ async def doc(bot, update):
         new_filename = new_name.split(":-")[1]
         file = update.message.reply_to_message
         file_path = f"downloads/{new_filename}"
-        ms = await update.message.edit("__**Please Wait ... 😇😍**__\n\n__**Downloading File to my Servers**__  📥")
+        ms = await update.message.edit("__**Please Wait...__ 😇😍**\n\n__**Downloading File to my Servers__  📥**")
         c_time = time.time()
         try:
             path = await bot.download_media(
                     message=file,
                     progress=progress_for_pyrogram,
-                    progress_args=("**⚠️ Please wait VJ Hack is in processing**", ms, c_time))
+                    progress_args=("**__Please Wait VJ Hack is in Processing__**", ms, c_time))
         except Exception as e:
             await ms.edit(e)
             return 
@@ -60,7 +60,7 @@ async def doc(bot, update):
              try:
                  caption = c_caption.format(filename=new_filename, filesize=humanize.naturalsize(media.file_size), duration=convert(duration))
              except Exception as e:
-                 await ms.edit(text=f"Your caption Error unexpected keyword ●> ({e})")
+                 await ms.edit(text=f"**__Your caption Error unexpected keyword ●> ({e})__**")
                  return 
         else:
             caption = f"**{new_filename}**"
@@ -73,7 +73,7 @@ async def doc(bot, update):
             img = Image.open(ph_path)
             img.resize((320, 320))
             img.save(ph_path, "JPEG")
-        await ms.edit("__**Please Wait...**__\n\n**__Processing File Upload  📤 ....__**")
+        await ms.edit("__**Please Wait...__ 😇😍**\n\n**__Processing File Upload__  📤**")
         c_time = time.time() 
         try:
            if type == "document":
@@ -83,7 +83,7 @@ async def doc(bot, update):
                     thumb=ph_path, 
                     caption=caption, 
                     progress=progress_for_pyrogram,
-                    progress_args=( "⚠️__**Please wait...**__\n__Processing file upload....__",  ms, c_time)) 
+                    progress_args=( "__**Please Wait...__ 😇😍**\n\n__**Processing File Upload...__  📤**",  ms, c_time)) 
            elif type == "video": 
                await bot.send_video(
 	            update.message.chat.id,
@@ -92,7 +92,7 @@ async def doc(bot, update):
 	            thumb=ph_path,
 	            duration=duration,
 	            progress=progress_for_pyrogram,
-	            progress_args=( "⚠️__**Please wait...**__\n__Processing file upload....__",  ms, c_time)) 
+	            progress_args=( "__**Please Wait...__ 😇😍**\n\n__**Processing File Upload...__  📤**",  ms, c_time)) 
            elif type == "audio": 
                await bot.send_audio(
 	            update.message.chat.id,
@@ -101,7 +101,7 @@ async def doc(bot, update):
 	            thumb=ph_path,
 	            duration=duration,
 	            progress=progress_for_pyrogram,
-	            progress_args=( "⚠️__**Please wait...**__\n__Processing file upload....__",  ms, c_time)) 
+	            progress_args=( "__**Please Wait...__ 😇😍**\n\n__**Processing File Upload...__  📤**",  ms, c_time)) 
         except Exception as e: 
             await ms.edit(f" Erro {e}") 
             os.remove(file_path)

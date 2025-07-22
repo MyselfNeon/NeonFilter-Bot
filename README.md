@@ -1,5 +1,5 @@
 <h2 align="center">
-    <i>ZeroFilter-Bot</i>
+    <i>NeonFilter-Bot</i>
 </h2>
 
 <img src="https://envs.sh/7gW.jpg" alt="logo" target="/blank">

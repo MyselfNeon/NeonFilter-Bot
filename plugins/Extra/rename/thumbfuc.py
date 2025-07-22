@@ -11,7 +11,7 @@ async def viewthumb(client, message):
     if thumb:
         await client.send_photo(chat_id=message.chat.id, photo=thumb)
     else:
-        await message.reply_text("🥹 **__Sorry! No Thumbnail found...__** 🥹") 
+        await message.reply_text("🥹 **__Sorry! No Thumbnail Found...__** 🥹") 
 
 @Client.on_message(filters.private & filters.command(['del_thumb']))
 async def removethumb(client, message):
@@ -24,7 +24,7 @@ async def removethumb(client, message):
 async def addthumbs(client, message):
     if RENAME_MODE == False:
         return 
-    thumb = await client.ask(message.chat.id, "**Send me your thumbnail**")
+    thumb = await client.ask(message.chat.id, "**__Send me your Thumbnail__ 🌄😇**")
     if thumb.media and thumb.media == enums.MessageMediaType.PHOTO:
         await db.set_thumbnail(message.from_user.id, file_id=thumb.photo.file_id)
         await message.reply("**__Thumbnail Saved Successfully__ ✅️**")

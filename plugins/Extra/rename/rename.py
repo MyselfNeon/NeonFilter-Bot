@@ -11,15 +11,15 @@ import random
 async def rename_start(client, message):
     if RENAME_MODE == False:
         return 
-    msg = await client.ask(message.chat.id, "**Now send me your file/video/audio to rename.**")
+    msg = await client.ask(message.chat.id, "**__Now send me your File/Video/Audio you want to Rename.__ 📝**")
     if not msg.media:
-        return await message.reply("**Please send me supported media.**")
+        return await message.reply("**__Please send me supported media.__**")
     if msg.media in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.DOCUMENT, enums.MessageMediaType.AUDIO]:
         file = getattr(msg, msg.media.value)
         filename = file.file_name
         filesize = humanize.naturalsize(file.file_size) 
         fileid = file.file_id
-        text = f"""**__𝙿𝚕𝚎𝚊𝚜𝚎 𝙴𝚗𝚝𝚎𝚛 𝙽𝚎𝚠 𝙵𝚒𝚕𝚎𝙽𝚊𝚖𝚎...__**\n\n**Original File Name** :- `{filename}`\n\n**Original File Size** :- `{filesize}`"""
+        text = f"""<blockquote>**__‣ Please enter new File name ...__**</blockquote>\n\n**__‣ Original File Name__** :-\n `{filename}`\n\n**__‣ Original File Size__** :- `{filesize}`"""
         await message.reply_text(text)
         kk = await client.listen(message.from_user.id)
         await refunc(client, message, kk.text, msg)

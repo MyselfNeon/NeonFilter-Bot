@@ -164,7 +164,7 @@ restart  - 𝑅𝑒𝑠𝑡𝑎𝑟𝑡 𝐵𝑜𝑡 𝑆𝑒𝑟𝑣𝑒𝑟
 
 Join My <a href='https://t.me/neonfiles'>Update Channel</a> For More Update Regarding Repo.
 
-<h3>Visitors Counts</h3>
+<h3>Page Visits Counter</h3>
 <a href="https://github.com/MyselfNeon/NeonFilter-Bot"><img alt="Cute Count" src="https://count.getloli.com/get/@NeonFilter-Bot?theme=rule34" /></a>
 
 <b>This is total number of visitors who have watched this Repo.
@@ -180,7 +180,7 @@ Join My <a href='https://t.me/neonfiles'>Update Channel</a> For More Update Rega
 [![Contact Developer](https://img.shields.io/badge/Telegram-Contact%20Developer-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://telegram.me/MyselfNeon)   
 <b>Fork The Repo And Edit As Per Your Needs. Repo is fully Customizable </b>
 
-### _Disclaimer_
+### _Licensing & Restrictions_  ⚖️
 [![GNU Affero General Public License 2.0](https://www.gnu.org/graphics/agplv3-155x51.png)](https://www.gnu.org/licenses/agpl-3.0.en.html#header)    
 <b>Licensed under [GNU AGPL 2.0.](https://github.com/MyselfNeon/NeonFilter-Bot/blob/main/LICENSE)  
 Selling The Codes To Other People For Money Is *Strictly Prohibited*.</b>

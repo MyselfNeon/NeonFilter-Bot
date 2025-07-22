@@ -19,7 +19,7 @@ async def rename_start(client, message):
         filename = file.file_name
         filesize = humanize.naturalsize(file.file_size) 
         fileid = file.file_id
-        text = f"""<blockquote>**‣ 𝗡𝗼𝘄 𝗘𝗻𝘁𝗲𝗿 𝗡𝗲𝘄 𝗙𝗶𝗹𝗲 𝗡𝗮𝗺𝗲 ....**</blockquote>\n\n<blockquote>**__‣ Original File Name__** :</blockquote>\n`{filename}`\n\n**__Original File Size__** : `{filesize}`"""
+        text = f"""<blockquote>**‣ ℕ𝕠𝕨 𝔼𝕟𝕥𝕖𝕣 ℕ𝕖𝕨 𝔽𝕚𝕝𝕖 𝕟𝕒𝕞𝕖 ....**</blockquote>\n\n<blockquote>**__‣ 𝕆𝕣𝕚𝕘𝕚𝕟𝕒𝕝 𝔽𝕚𝕝𝕖 ℕ𝕒𝕞𝕖__**</blockquote>\n`{filename}`\n\n**__Original File Size__** : `{filesize}`"""
         await message.reply_text(text)
         kk = await client.listen(message.from_user.id)
         await refunc(client, message, kk.text, msg)

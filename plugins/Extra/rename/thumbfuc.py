@@ -11,7 +11,7 @@ async def viewthumb(client, message):
     if thumb:
         await client.send_photo(chat_id=message.chat.id, photo=thumb)
     else:
-        await message.reply_text("🥹 **__Sorry! No Thumbnail Found...__** 🥹") 
+        await message.reply_text("🥲 **__Sorry !! No Thumbnail Found...__** 🥹") 
 
 @Client.on_message(filters.private & filters.command(['del_thumb']))
 async def removethumb(client, message):

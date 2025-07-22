@@ -7,7 +7,7 @@ from info import RENAME_MODE
 async def add_caption(client, message):
     if RENAME_MODE == False:
         return 
-    caption = await client.ask(message.chat.id, "**__Give me a Caption to Set__ 😇**\n\n**__Available Filling__** :-\n<blockquote>**📂 __File Name__**: `{filename}`\n\n**💾 __Size__**: `{filesize}`\n\n**⏰ __Duration__**: `{duration}`</blockquote>**")
+    caption = await client.ask(message.chat.id, "**__Give me a Caption to Set__ 😇**\n\n**__Available Filling__** :-\n**📂 __File Name__**: `{filename}`\n\n**💾 __Size__**: `{filesize}`\n\n**⏰ __Duration__**: `{duration}`**")
     await db.set_caption(message.from_user.id, caption=caption.text)
     await message.reply_text("__**Your Caption is Successfully Saved ✅**__")
 

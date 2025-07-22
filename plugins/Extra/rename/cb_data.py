@@ -29,7 +29,7 @@ async def doc(bot, update):
         new_filename = new_name.split(":-")[1]
         file = update.message.reply_to_message
         file_path = f"downloads/{new_filename}"
-        ms = await update.message.edit("⚠️__**Please wait...**__\n\n__Downloading file to my server...__")
+        ms = await update.message.edit("__**Please Wait ... 😇😍**__\n\n__**Downloading File to my Servers**__  📥")
         c_time = time.time()
         try:
             path = await bot.download_media(
@@ -73,7 +73,7 @@ async def doc(bot, update):
             img = Image.open(ph_path)
             img.resize((320, 320))
             img.save(ph_path, "JPEG")
-        await ms.edit("⚠️__**Please wait...**__\n\n__Processing file upload....__")
+        await ms.edit("__**Please Wait...**__\n\n**__Processing File Upload  📤 ....__**")
         c_time = time.time() 
         try:
            if type == "document":

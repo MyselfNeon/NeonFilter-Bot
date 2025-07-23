@@ -74,7 +74,7 @@ PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True)) #
 REFERAL_COUNT = int(environ.get('REFERAL_COUNT', '5')) # number of referal count
 REFERAL_PREMEIUM_TIME = environ.get('REFERAL_PREMEIUM_TIME', '1month') # time in week, day, month.
 PAYMENT_QR = environ.get('PAYMENT_QR', 'https://telegra.ph/file/a5b4baeeb15236bd37305-31cacf719a14a78183.jpg') # payment code picture url.
-PAYMENT_TEXT = environ.get('PAYMENT_TEXT', '<b><blockquote>‣ Available Plans 💸</blockquote>\n<i><blockquote>• 30Rs - 01 Week\n• 50Rs - 01 Month\n• 120Rs - 03 Months\n• 220Rs - 06 Months</i></blockquote>\n\n<blockquote>‣ Features 🎁</blockquote>\n<i><blockquote expandable>• No need to verify\n• No need to open links\n• Direct Files\n• Ad-free experience\n• High speed download\n• Multiplayer Streaming links\n• Unlimited Movies, Animes & Series\n• 24×7 Admin support\n• Requests will be completed within 01 Hour of submission if available</i></blockquote>\n\n<blockquote>✨ Upi ID</blockquote> - <code>demo@okxyz</code>\n\n<i>💡Click /plan to check your plan\n\n💢 Send screenshots after Payment\n\n‼️ After sending screenshot give us some time to add you in Premium</i></b>')
+PAYMENT_TEXT = environ.get('PAYMENT_TEXT', '<b><blockquote>‣ 𝐏𝐑𝐄𝐌𝐈𝐔𝐌 𝐏𝐋𝐀𝐍𝐒 📝</blockquote>\n<i>• 30Rs - 01 Week\n• 50Rs - 01 Month\n• 120Rs - 03 Months\n• 220Rs - 06 Months</i>\n\n<blockquote>‣ 𝐏𝐋𝐀𝐍𝐒 𝐁𝐄𝐍𝐄𝐅𝐈𝐓𝐒 🎊</blockquote>\n<i>• No need to verify\n• No need to open links\n• Direct Files\n• Ad-free experience\n• High speed download\n• Multiplayer Streaming links\n• Unlimited Movies, Animes & Series\n• 24×7 Admin support\n• Requests will be completed within 01 Hour of submission if available</i>\n\n<blockquote>‣ 𝐔𝐏𝐈 𝐈𝐃 🆔</blockquote> - <code>demo@okxyz</code>\n\n<i>📌 Click /plan to check your plan\n\n📌 Send screenshots after Payment\n\n📌 After sending screenshot give us some time to add you in Premium</i></b>')
 
 
 # Clone Information : If Clone Mode Is True Then Bot Clone Other Bots.
@@ -131,7 +131,7 @@ TUTORIAL = environ.get('TUTORIAL', '') # How Open Shortner Link Video Link , Cha
 CACHE_TIME = int(environ.get('CACHE_TIME', 1800))
 MAX_B_TN = environ.get("MAX_B_TN", "5")
 PORT = environ.get("PORT", "8080")
-MSG_ALRT = environ.get('MSG_ALRT', 'Hello My Dear Friends ❤️')
+MSG_ALRT = environ.get('MSG_ALRT', 'Powered by @NeonFiles ❤️✨')
 CUSTOM_FILE_CAPTION = environ.get("CUSTOM_FILE_CAPTION", f"{script.CAPTION}")
 BATCH_FILE_CAPTION = environ.get("BATCH_FILE_CAPTION", CUSTOM_FILE_CAPTION)
 IMDB_TEMPLATE = environ.get("IMDB_TEMPLATE", f"{script.IMDB_TEMPLATE_TXT}")

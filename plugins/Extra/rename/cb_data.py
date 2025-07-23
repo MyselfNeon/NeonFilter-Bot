@@ -35,7 +35,7 @@ async def doc(bot, update):
             path = await bot.download_media(
                     message=file,
                     progress=progress_for_pyrogram,
-                    progress_args=("**__Please Wait... 😇😍 \n\nServers are Renaming the Files you've provided. | @NeonFiles__ 🔥✨**", ms, c_time))
+                    progress_args=("**__Please Wait... 😇😍 \n\nServers are Renaming the Files you've provided | by @NeonFiles__ 🔥✨**", ms, c_time))
         except Exception as e:
             await ms.edit(e)
             return 

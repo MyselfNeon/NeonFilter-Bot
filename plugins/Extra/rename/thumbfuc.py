@@ -24,7 +24,7 @@ async def removethumb(client, message):
 async def addthumbs(client, message):
     if RENAME_MODE == False:
         return 
-    thumb = await client.ask(message.chat.id, "**__Send me your Thumbnail__ 🌄😇**")
+    thumb = await client.ask(message.chat.id, "**__Send me your Thumbnail__ 😇🫣**")
     if thumb.media and thumb.media == enums.MessageMediaType.PHOTO:
         await db.set_thumbnail(message.from_user.id, file_id=thumb.photo.file_id)
         await message.reply("**__Thumbnail Saved Successfully__ ✅️**")

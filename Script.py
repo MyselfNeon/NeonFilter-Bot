@@ -55,7 +55,7 @@ If {} unique user start the Bot with your referal link then you will Automatical
 
     BUTTON_TXT = """<blockquote><b>‣ 𝐁𝐔𝐓𝐓𝐎𝐍𝐒</blockquote><i>
 This Bot support both URL and alert inline buttons.</i>
-\n<blockquote>‣ Note</blockquote><i>
+\n<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote><i>
 1. Telegram will not allows you to send Buttons without any content so content is mandatory.
 2. This Bot supports buttons with any telegram media type
 3. Buttons should be properly parsed as Markdown format
@@ -85,9 +85,9 @@ This Bot support both URL and alert inline buttons.</i>
 • /disconnect  - Disconnect from chat
 • /connections - List of all connections</b></i>"""
 
-    EXTRAMOD_TXT = """<blockquote><i><b>‣ Extra Modules</b></i></blockquote>
-<blockquote> <b>⪼ Maintained by : <a href={}>Owner</a></b> 
- <b>⪼ Join here : <a href={}>Update Channel</a></b> </blockquote>
+    EXTRAMOD_TXT = """<blockquote><b>‣ 𝐄𝐗𝐓𝐑𝐀 𝐌𝐎𝐃𝐔𝐋𝐄𝐒</b><i></blockquote>
+<blockquote><b>‣ Maintained by : <a href={}>Owner</a></b> 
+<b>‣ Join here : <a href={}>Update Channel</a></b></i></blockquote>
   
 <b><i>/id - Get ID of specified User 
 /info  - Get information about a user
@@ -157,7 +157,7 @@ Nᴀᴍᴇ - {}"""
 
     ALRT_TXT = """<b><i>Hello {}\n\nThis is not your Movie/Series request.\nRequest yours...😏</i></b>"""
 
-    OLD_ALRT_TXT = """<i><b>Hey {}\n\nYou are using one of my old messages.\nPlease send the request again...</i></b>"""
+    OLD_ALRT_TXT = """<i><b>Hey {}\n\nYou are using one of my old messages.\nPlease send the Request again...</i></b>"""
 
     CUDNT_FND = """<i><b>I couldn't find anything related to {}\nDid you mean any of these?</i></b>"""
 
@@ -205,9 +205,9 @@ If you do not see the Requested Movie/Series file, look at the next page...</b><
     CAPTION = """""" 
 
     IMDB_TEMPLATE_TXT = """
-<b><i>Query: {qurey}
+<b><i>Query: {qurey}</i>
 
-<blockquote>‣ IMDb Data</blockquote>
+<blockquote>‣ 𝐈𝐌𝐃𝐛 𝐃𝐀𝐓𝐀</blockquote><i>
 
 🏷 Title: <a href={url}>{title}</a>
 🎭 Genres: {genres}
@@ -224,21 +224,21 @@ If you do not see the Requested Movie/Series file, look at the next page...</b><
 Requested by : {message.from_user.mention}</b></i>"""
     
     ALL_FILTERS = """
-<blockquote><b><i>Hey {} \nHere are my three types of Filters.</i></b></blockquote>"""
+<blockquote><b><i>Hey {} </blockquote>\nHere are my three types of Filter</i></b>"""
     
     GFILTER_TXT = """
-<b><i><blockquote>‣ Global Filters 🌐</blockquote>\nGlobal filters are set by Bot Admins which will work on all Groups.
+<b><blockquote>‣ 𝐆𝐋𝐎𝐁𝐀𝐋 𝐅𝐈𝐋𝐓𝐄𝐑𝐒 🌐</blockquote><i>\nGlobal filters are set by Bot Admins which will work on all Groups.
     
-<blockquote>‣ Available Commands</blockquote>
+</i><blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒</blockquote><i>
 • /gfilter - Create a global filter
 • /gfilters - View all global filters
 • /delg - Delete a global filter
 • /delallg - Delete all global filters</b></i>"""
     
     FILE_STORE_TXT = """
-<b><i><blockquote>‣ File Store 📚</blockquote>\nFile Store is a feature which will create a Shareable link of a Single or Multiple Files.
+<b><blockquote>‣ 𝐅𝐈𝐋𝐄 𝐒𝐓𝐎𝐑𝐄 📚</blockquote><i>\nFile Store is a feature which will create a Shareable link of a Single or Multiple Files.
 
-<blockquote>‣ Available Commands</blockquote>
+</i><blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒</blockquote><i>
 • /batch - Link for multiple files
 • /link - Link for single file
 • /plink - Just like <code>/link </code>but the files will be send with forward restrictions

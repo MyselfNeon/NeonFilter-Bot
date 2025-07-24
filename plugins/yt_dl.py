@@ -37,7 +37,7 @@ async def song(client, message):
         print(str(e))
         return await m.edit("**__Example: /song Apna bna le__ 🎙️**")
                 
-    await m.edit("**__Downloading your Song... !! 📥__**")
+    await m.edit("**__Downloading your Song... !!__ 📥**")
     try:
         with YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(link, download=False)
@@ -83,7 +83,7 @@ def get_text(message: Message) -> [None,str]:
 @Client.on_message(filters.command(["video", "mp4"]))
 async def vsong(client, message: Message):
     urlissed = get_text(message)
-    pablo = await client.send_message(message.chat.id, f"**__Finding Your Video__** `{urlissed}`")
+    pablo = await client.send_message(message.chat.id, f"**__Finding Your Video__ 😇** `{urlissed}`")
     if not urlissed:
         return await pablo.edit("**__Example: /video Your video Link__ 🖇️**")     
     search = SearchVideos(f"{urlissed}", offset=1, mode="dict", max_results=1)

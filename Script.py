@@ -98,19 +98,19 @@ This Bot support both URL and alert inline buttons.
 /font - Stylish and cool Font generator</i></b>"""
 
 
-    ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐒 🛐</blockquote><i>
+    ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐒  🛐</blockquote><i>
 These Commands are made just for Admins and will work Only for them</i> 🥰
 \n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 🍿</blockquote><i>
 • /logs - To get recent errors
 • /stats - Get status of Files in DB
 • /delete - Delete a files from DB
-• /users - To get list of Users and IDs
-• /chats - To get list of my chats and IDs
+• /users - Get list of Users and IDs
+• /chats - Get list of my chats and IDs
 • /leave  - To leave from a chat
 • /disable  - To disable a chat
 • /ban  - Ban a User
 • /unban  - Unban a User
-• /channel - List of Total Connected channels
+• /channel - Total Connected Channels
 • /broadcast - Broadcast a msg to all users of Bot
 • /grp_broadcast - Broadcast a msg to all connected Groups
 • /gfilter - Add a global filters

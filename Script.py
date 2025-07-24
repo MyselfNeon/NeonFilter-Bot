@@ -98,9 +98,9 @@ This Bot support both URL and alert inline buttons.
 /font - Stylish and cool Font generator</i></b>"""
 
 
-    ADMIN_TXT = """<b><i><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐒 🛐</blockquote>
-These Commands are made just for Admins and will work Only for them 🥰
-\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 & 𝐔𝐒𝐀𝐆𝐄</blockquote>
+    ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐒 🛐</blockquote><i>
+These Commands are made just for Admins and will work Only for them</i> 🥰
+\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 🍿</blockquote><i>
 • /logs - To get recent errors
 • /stats - Get status of Files in DB
 • /delete - Delete a files from DB

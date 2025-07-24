@@ -1196,10 +1196,10 @@ async def cb_handler(client: Client, query: CallbackQuery):
         user_id = query.from_user.id
 
         if act == "":
-            stat = "CONNECT"
+            stat = "🌐 Connect"
             cb = "connectcb"
         else:
-            stat = "DISCONNECT"
+            stat = "❌ Disconnect"
             cb = "disconnect"
 
         keyboard = InlineKeyboardMarkup([

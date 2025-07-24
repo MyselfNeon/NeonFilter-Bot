@@ -6,7 +6,7 @@ class script(object):
     
     HELP_TXT = """<b><i>Hello {} \nHere are all my useful features.</i></b>"""
 
-    ABOUT_TXT = """<b><blockquote>‣ 📝 𝐌𝐘 𝐃𝐄𝐓𝐀𝐈𝐋𝐒</blockquote><i>
+    ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>
     
 ⪼ My Name : <a href=https://t.me/{}>{}</a>
 ⪼ My Best Friend : <a href='tg://settings'>This Sweetie 🤌❤️</a> 
@@ -17,7 +17,7 @@ class script(object):
 ⪼ Bot Server : <a href='https://heroku.com'>Heroku</a> 
 ⪼ Build Status : ᴠ2.7.1 [Stable]</i></b>"""
 
-    CLONE_ABOUT_TXT = """<b><blockquote>‣ 📝 𝐌𝐘 𝐃𝐄𝐓𝐀𝐈𝐋𝐒</blockquote><i>
+    CLONE_ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>
     
 ⪼ My Name : {}
 ⪼ My Best Friend : <a href='tg://settings'>This Sweetie 🤌❤️</a> 
@@ -27,7 +27,7 @@ class script(object):
 ⪼ Data Base : <a href='https://www.mongodb.com/'>Mongo DB</a> 
 ⪼ Build Status : ᴠ2.7.1 [Stable]></i></b>"""
 
-    CLONE_TXT = """<blockquote><b>‣ 👥 𝐂𝐋𝐎𝐍𝐄 𝐌𝐎𝐃𝐄</blockquote><i>
+    CLONE_TXT = """<blockquote><b><i>‣ 👥 CLONE MODE</blockquote>
 
 - You can create your own clone Bot by /clone Command
 - You can Broadcast in your clone Bots
@@ -35,27 +35,27 @@ class script(object):
 
 👨‍💻 Command : /clone</i></b>"""
 
-    SUBSCRIPTION_TXT = """<blockquote><b>‣ 𝐑𝐄𝐅𝐄𝐑𝐀𝐋 𝐏𝐋𝐀𝐍𝐒 ⚡</blockquote>
+    SUBSCRIPTION_TXT = """<blockquote><b>‣ Referal Plans ⚡</blockquote>
 <blockquote><i>Refer your link to your Friends, Family, Channel and Groups to get free Premium for {}
 
 Referal Link - https://telegram.me/{}?start=VJ-{}
 
 If {} unique user start the Bot with your referal link then you will Automatically added in Premium List.\n\nBuy paid plan by - /plan\n\n@NeonFiles</b></i></blockquote>"""
 
-    MANUELFILTER_TXT = """<blockquote><b>‣ 𝐅𝐈𝐋𝐓𝐄𝐑𝐒</blockquote>\n<i>Filter is a feature where users can set Automated replies for a perticular keyword and i will respond whenever a keyword is found in Message.</i>
-\n<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote><i>
+    MANUELFILTER_TXT = """<blockquote><b><i>‣ Filters</blockquote>\nFilter is a feature where users can set Automated replies for a perticular keyword and i will respond whenever a keyword is found in Message.
+\n<blockquote>‣ Note</blockquote>
 1. Bot should have Admin privilege
 2. Only Admins can add filters in a chat
-3. Alert buttons have a limit of 64 characters </i>
-\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒</blockquote><i>
+3. Alert buttons have a limit of 64 characters
+\n<blockquote>‣ Commands And Usage</blockquote>
 • /filter - Add a Filter in a chat
 • /filters - List of all filters
 • /del - Delete a specific filter
 • /delall - Delete all available filters (Admin Only)</b></i>"""
 
-    BUTTON_TXT = """<blockquote><b>‣ 𝐁𝐔𝐓𝐓𝐎𝐍𝐒</blockquote><i>
-This Bot support both URL and alert inline buttons.</i>
-\n<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote><i>
+    BUTTON_TXT = """<blockquote><b><i>‣ Buttons</blockquote>
+This Bot support both URL and alert inline buttons.
+\n<blockquote>‣ Note</blockquote>
 1. Telegram will not allows you to send Buttons without any content so content is mandatory.
 2. This Bot supports buttons with any telegram media type
 3. Buttons should be properly parsed as Markdown format
@@ -64,30 +64,30 @@ This Bot support both URL and alert inline buttons.</i>
 ‣ Alert Buttons
 [Button Text](buttonalert:This is an Alert Message)</blockquote></b></i>"""
 
-    AUTOFILTER_TXT = """<b><blockquote>‣ 𝐅𝐈𝐋𝐄 𝐈𝐍𝐃𝐄𝐗</blockquote><i>
+    AUTOFILTER_TXT = """<b><i><blockquote>‣ File Index</blockquote>
 1. Make me Admin of your Channel if it's Private
 2. Make sure that your channel does not contains crimps, p@rns and fake Files
-3. Forward the last message to me with Quotes. I'll add all the files in that channel to my database </i>
+3. Forward the last message to me with Quotes. I'll add all the files in that channel to my database
 
-<blockquote>‣ 𝐀𝐔𝐓𝐎 𝐅𝐈𝐋𝐓𝐄𝐑</blockquote><i>
+<blockquote>‣ Auto Filter</blockquote>
 1. Add Bot as Admin on your Group
 2. Use /connect and connect your Group to the Bot
 3. Use /settings on Bot's PM and turn AutoFilter on the settings menu</b></i>"""
 
-    CONNECTION_TXT = """<b><blockquote>‣ 𝐂𝐎𝐍𝐍𝐄𝐂𝐓𝐈𝐎𝐍𝐒</blockquote><i>
+    CONNECTION_TXT = """<b><i><blockquote>Connections</blockquote>
 • Connect Bot to PM
-• It helps to avoid spamming in Groups</i>
-\n<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote><i>
+• It helps to avoid spamming in Groups
+\n<blockquote>Note</blockquote>
 1. Only Admins can add connections
-2. Send <code>/connect</code> for connecting me to PM</i>
-\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒</blockquote><i>
+2. Send <code>/connect</code> for connecting me to PM
+\n<blockquote>Commands and Usage</blockquote>
 • /connect  - Connect any chat to PM
 • /disconnect  - Disconnect from chat
 • /connections - List of all connections</b></i>"""
 
-    EXTRAMOD_TXT = """<blockquote><b>‣ 𝐄𝐗𝐓𝐑𝐀 𝐌𝐎𝐃𝐔𝐋𝐄𝐒</b><i></blockquote>
-<blockquote><b>‣ Maintained by : <a href={}>Owner</a></b> 
-<b>‣ Join here : <a href={}>Update Channel</a></b></i></blockquote>
+    EXTRAMOD_TXT = """<blockquote><i><b>‣ Extra Modules</b></i></blockquote>
+<blockquote> <b>⪼ Maintained by : <a href={}>Owner</a></b> 
+ <b>⪼ Join here : <a href={}>Update Channel</a></b> </blockquote>
   
 <b><i>/id - Get ID of specified User 
 /info  - Get information about a user
@@ -98,19 +98,19 @@ This Bot support both URL and alert inline buttons.</i>
 /font - Stylish and cool Font generator</i></b>"""
 
 
-    ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐒  🛐</blockquote><i>
-These Commands are made just for Admins and will work Only for them</i> 🥰
-\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 🍿</blockquote><i>
+    ADMIN_TXT = """<b><i><blockquote>‣ Admin Mods 🛐</blockquote>
+These Commands are made just for Admins and will work Only for Admins 🥰
+\n<blockquote>Commands and Usage</blockquote>
 • /logs - To get recent errors
 • /stats - Get status of Files in DB
 • /delete - Delete a files from DB
-• /users - Get list of Users and IDs
-• /chats - Get list of my chats and IDs
+• /users - To get list of Users and IDs
+• /chats - To get list of my chats and IDs
 • /leave  - To leave from a chat
 • /disable  - To disable a chat
 • /ban  - Ban a User
 • /unban  - Unban a User
-• /channel - Total Connected Channels
+• /channel - List of Total Connected channels
 • /broadcast - Broadcast a msg to all users of Bot
 • /grp_broadcast - Broadcast a msg to all connected Groups
 • /gfilter - Add a global filters
@@ -157,7 +157,7 @@ Nᴀᴍᴇ - {}"""
 
     ALRT_TXT = """<b><i>Hello {}\n\nThis is not your Movie/Series request.\nRequest yours...😏</i></b>"""
 
-    OLD_ALRT_TXT = """<i><b>Hey {}\n\nYou are using one of my old messages.\nPlease send the Request again...</i></b>"""
+    OLD_ALRT_TXT = """<i><b>Hey {}\n\nYou are using one of my old messages.\nPlease send the request again...</i></b>"""
 
     CUDNT_FND = """<i><b>I couldn't find anything related to {}\nDid you mean any of these?</i></b>"""
 
@@ -205,9 +205,9 @@ If you do not see the Requested Movie/Series file, look at the next page...</b><
     CAPTION = """""" 
 
     IMDB_TEMPLATE_TXT = """
-<b><i>Query: {qurey}</i>
+<b><i>Query: {qurey}
 
-<blockquote>‣ 𝐈𝐌𝐃𝐛 𝐃𝐀𝐓𝐀</blockquote><i>
+<blockquote>‣ IMDb Data</blockquote>
 
 🏷 Title: <a href={url}>{title}</a>
 🎭 Genres: {genres}
@@ -224,38 +224,38 @@ If you do not see the Requested Movie/Series file, look at the next page...</b><
 Requested by : {message.from_user.mention}</b></i>"""
     
     ALL_FILTERS = """
-<blockquote><b><i>Hey {} </blockquote>\nHere are my three types of Filter</i></b>"""
+<blockquote><b><i>Hey {} \nHere are my three types of Filters.</i></b></blockquote>"""
     
     GFILTER_TXT = """
-<b><blockquote>‣ 𝐆𝐋𝐎𝐁𝐀𝐋 𝐅𝐈𝐋𝐓𝐄𝐑𝐒 🌐</blockquote><i>\nGlobal filters are set by Bot Admins which will work on all Groups.
+<b><i><blockquote>‣ Global Filters 🌐</blockquote>\nGlobal filters are set by Bot Admins which will work on all Groups.
     
-</i><blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒</blockquote><i>
+<blockquote>‣ Available Commands</blockquote>
 • /gfilter - Create a global filter
 • /gfilters - View all global filters
 • /delg - Delete a global filter
 • /delallg - Delete all global filters</b></i>"""
     
     FILE_STORE_TXT = """
-<b><blockquote>‣ 𝐅𝐈𝐋𝐄 𝐒𝐓𝐎𝐑𝐄 📚</blockquote><i>\nFile Store is a feature which will create a Shareable link of a Single or Multiple Files.
+<b><i><blockquote>‣ File Store 📚</blockquote>\nFile Store is a feature which will create a Shareable link of a Single or Multiple Files.
 
-</i><blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒</blockquote><i>
+<blockquote>‣ Available Commands</blockquote>
 • /batch - Link for multiple files
 • /link - Link for single file
 • /plink - Just like <code>/link </code>but the files will be send with forward restrictions
 • /pbatch - Just like <code>/batch </code>but the files will be send with forward restrictions</b></i>"""
 
-    SONG_TXT = """<b><blockquote>‣ 𝐒𝐎𝐍𝐆 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐌𝐎𝐃𝐔𝐋𝐄 🥁</blockquote>
+    SONG_TXT = """<b><i><blockquote>‣ Song Download Module 🥁</blockquote>
       
-<blockquote><i>For those who love music.\nYou can use this feature to download any song with super fast speed. Works Bot and Groups only...</blockquote>
+<blockquote>For those who love music.\nYou can use this feature to download any song with super fast speed. Works Bot and Groups only...</blockquote>
   
  Commands : /song Song name.</i></b>""" 
   
-    YTDL_TXT = """<b><blockquote>‣ 𝐘𝐓 𝐕𝐈𝐃𝐄𝐎 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑 📽️</blockquote>\n\n<i>Usage : You can download any video from Youtube
+    YTDL_TXT = """<b><i><blockquote>‣ Youtube Video Downloader 📽️</blockquote>\n\nUsage : You can download any video from Youtube
   
  How to use : Type - /video or /mp4 
  <blockquote>Example :<code>/mp4 https://youtu.be/example...</code></i></b></blockquote>""" 
   
-    TTS_TXT = """<b>‣ 𝐓𝐓𝐒 𝐌𝐎𝐃𝐔𝐋𝐄 🎤 : \n<i>Translate text to Speech 
+    TTS_TXT = """<b><i>TTS module 🎤 : Translate text to Speech 
   
  Commands and Usage : /tts</b></i>""" 
   
@@ -272,11 +272,11 @@ Requested by : {message.from_user.mention}</b></i>"""
  • ᴍʟ = ᴍᴀʟᴀyᴀʟᴀᴍ 
  • ʜɪ = ʜɪɴᴅɪ</b>""" 
   
-    TELE_TXT = """<b><blockquote>‣ 𝐓𝐄𝐋𝐄𝐆𝐑𝐀𝐏𝐇 𝐌𝐎𝐃𝐔𝐋𝐄 🌁</blockquote>\n<i>This is just a Telegraph module based on telegra.ph, use as your wish !!</i>
+    TELE_TXT = """<b><i><blockquote>‣ Telegraph Module 🌁</blockquote>\nThis is just a Telegraph module based on telegra.ph, use as your wish !!
   
-<blockquote>‣ 𝐔𝐒𝐀𝐆𝐄 📄</blockquote>\n<i>Use /telegraph and send any image or video under 5MB ⏳</i>
+<blockquote>‣ Usage 📄</blockquote>\nUse /telegraph and send any image or video under 5MB ⏳
   
-<blockquote>‣ 𝐍𝐎𝐓𝐄 👀</blockquote><i>
+<blockquote>‣ Note 👀</blockquote>
 • Available in Groups and PM
 • Can be used by everyone</i></b>""" 
   
@@ -293,19 +293,19 @@ Requested by : {message.from_user.mention}</b></i>"""
   
  </b>""" 
 
-    PROGRESS_BAR = """\n<b>
+    PROGRESS_BAR = """\n
 ╭━━━━❰ File Is Renaming... ❱━➣
 ┣⪼ 🗂️ : {1} | {2}
 ┣⪼ ⏳️ : {0}%
 ┣⪼ 🚀 : {3}/s
 ┣⪼ ⏱️ : {4}
-╰━━━━━━━━━━━━━━━➣ </b>"""
+╰━━━━━━━━━━━━━━━➣ """
   
     ABOOK_TXT = """<b>ʜᴇʟᴩ : ᴀᴜᴅɪᴏʙᴏᴏᴋ 
   
  yᴏᴜ ᴄᴀɴ ᴄᴏɴᴠᴇʀᴛ ᴀ ᴩᴅꜰ ꜰɪʟᴇ ᴛᴏ ᴀ ᴀᴜᴅɪᴏ ꜰɪʟᴇ ᴡɪᴛʜ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ✯ 
   
- ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴn ᴜꜱᴀɢᴇ: 
+ ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ: 
  /audiobook: ʀᴇᴩʟy ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴛᴏ ᴀɴy ᴩᴅꜰ ᴛᴏ ɢᴇɴᴇʀᴀᴛᴇ ᴛʜᴇ ᴀᴜᴅɪᴏ 
 </b>""" 
   
@@ -323,7 +323,7 @@ Requested by : {message.from_user.mention}</b></i>"""
  • ꜱʜᴀʀᴇ ᴜꜱ ꜰᴏʀ ᴍᴏʀᴇ ꜰᴇᴀᴛᴜʀᴇꜱ 
   </b>""" 
   
-    STICKER_TXT = """<b><blockquote>‣ 𝐒𝐓𝐈𝐂𝐊𝐄𝐑 𝐈𝐃 𝐌𝐎𝐃𝐔𝐋𝐄 🌺</blockquote>\n<i>You can use this module to find and stickerid. \nTap /stickerid to know how to use me.</i></b>""" 
+    STICKER_TXT = """<b><i><blockquote>‣ Sticker ID Module</blockquote>\nYou can use this module to find and stickerid. \nTap /stickerid to know how to use me.</i></b>""" 
   
     FONT_TXT= """<b>ᴜꜱᴀɢᴇ 
   
@@ -348,11 +348,11 @@ Requested by : {message.from_user.mention}</b></i>"""
  /whois :- ɢɪᴠᴇ ᴀ ᴜꜱᴇʀ ꜰᴜʟʟ ᴅᴇᴛᴀɪʟꜱ 📑 
  </b>""" 
   
-    JSON_TXT = """<b><blockquote>‣ 𝐉𝐒𝐎𝐍 📝</blockquote>\n<i>Bot returns json file for all replied messages with /json</i>
+    JSON_TXT = """<b><i><blockquote>‣ Json 📝</blockquote>\nBot returns json file for all replied messages with /json
   
-<blockquote>‣ 𝐅𝐄𝐀𝐓𝐔𝐑𝐄𝐒</blockquote>\n<i>• Message editing json\n• PM support\n• Group support </i>
+<blockquote>‣ Features</blockquote>\n• Message editing json\n• PM support\n• Group support 
   
-<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote>\n<i>Anyone can use this command, if spamming happens Bot will automatically Ban you from the Group</i></b>""" 
+<blockquote>‣ Note</blockquote>\nAnyone can use this command, if spamming happens Bot will automatically Ban you from the Group</i></b>""" 
   
     URLSHORT_TXT = """<b>ʜᴇʟᴩ: ᴜʀʟ ꜱʜᴏʀᴛɴᴇʀ 
   
@@ -385,7 +385,7 @@ Requested by : {message.from_user.mention}</b></i>"""
  • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴡᴏʀᴋꜱ ᴏɴ ʙᴏᴛʜ ᴘᴍ ᴀɴᴅ ɢʀᴏᴜᴘ. 
  • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ʙʏ ᴀɴʏ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀ.</b>""" 
   
-    SHARE_TXT = """<b><blockquote>‣ 𝐓𝐄𝐗𝐓 𝐒𝐇𝐀𝐑𝐄 𝐔𝐑𝐋 🖇️</blockquote>\n<i>Get your text share url. 
+    SHARE_TXT = """<b><i><blockquote>‣ Text Share URL</blockquote>\nGet your text share url. 
   
  - Example :- /share
   
@@ -411,12 +411,12 @@ Requested by : {message.from_user.mention}</b></i>"""
 🛠️ Bᴜɪʟᴅ Sᴛᴀᴛᴜs: <code>v2.7.1 [ Sᴛᴀʙʟᴇ ]</code></b>"""
 
     LOGO = """
-███╗   ██╗███████╗ ██████╗ ███╗   ██╗
-████╗  ██║██╔════╝██╔═══██╗████╗  ██║
-██╔██╗ ██║█████╗  ██║   ██║██╔██╗ ██║
-██║╚██╗██║██╔══╝  ██║   ██║██║╚██╗██║
-██║ ╚████║███████╗╚██████╔╝██║ ╚████║
-╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝"""
+████████╗███████╗███████╗██╗  ██╗    ╔██        ██╗       ██╗
+╚═ ██╔══╝██╔════╝██╔════╝██║  ██║     ║██      ██║        ██║
+   ██║    █████╗  ██║      ███████║      ║██    ██║         ██║
+   ██║    ██╔══╝  ██║      ██╔══██║       ║██  ██║  ╔██     ██║
+   ██║    ███████╗███████╗██║  ██║        ║████║   ║████████║
+   ╚═╝    ╚══════╝╚══════╝╚═╝  ╚═╝        ╚════╝   ╚════════╝"""
  
     TAMIL_INFO = """
 <b><i><blockquote>ஏய் <a href='tg://settings'>Dear User 🤌❤️</a></blockquote> 
@@ -646,16 +646,24 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
 এছাড়াও আপনার দল ভিডিও সংগ্রহের প্রশিক্ষণ দেবে...</blockquote></i></b>"""
 
-    RENAME_TXT = """<b><blockquote>‣ 𝐇𝐎𝐖 𝐓𝐎 𝐑𝐄𝐍𝐀𝐌𝐄 𝐀 𝐅𝐈𝐋𝐄 📝</blockquote>\n<i>• /rename - send any file and click rename option and type new file name and then select \n[ document, video, audio ]</i>
-\n<blockquote>‣ 𝐂𝐔𝐒𝐓𝐎𝐌 𝐓𝐇𝐔𝐌𝐁𝐍𝐀𝐈𝐋 🌄</blockquote>\n<i>• /set_thumb - Send any picture to automatically set Thumbnail\n• /del_thumb Use this command and delete your old Thumbnail\n• /view_thumb Use this command view your current Thumbnail</i>
+    RENAME_TXT = """<b><i><blockquote>‣ HOW TO RENAME A FILE 📝</blockquote>\n• /rename - send any file and click rename option and type new file name and then select \n[ document, video, audio ]
+\n<blockquote>‣ SET THUMBNAIL 🌄</blockquote>\n• /set_thumb - Send any picture to automatically set Thumbnail\n• /del_thumb Use this command and delete your old Thumbnail\n• /view_thumb Use this command view your current Thumbnail
 
-<blockquote>‣ 𝐂𝐔𝐒𝐓𝐎𝐌 𝐂𝐀𝐏𝐓𝐈𝐎𝐍 ✏️</blockquote>\n<i>• /set_caption - Set a custom caption\n• /see_caption - See custom caption\n• /del_caption - Delete custom caption
+<blockquote>‣ SET CUSTOM CAPTION ✏️</blockquote>\n• /set_caption - Set a custom caption\n• /see_caption - See custom caption\n• /del_caption - Delete custom caption
 
 <blockquote>Example:- <code>/set_caption</code> \n📕 File Name: {filename}
 💾 Size: {filesize}
 ⏰ Duration: {duration}</blockquote></b></i>
 """
 
-    STREAM_TXT = """<b><blockquote>‣ 𝐒𝐓𝐑𝐄𝐀𝐌 & 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐋𝐈𝐍𝐊 📥</blockquote>
+    STREAM_TXT = """<b><i><blockquote>‣ Get Stream And Download Link 📥</blockquote>
 
-<i>Get Streamable and Downloadable link of any file by using /stream</b></i>"""
+Get Streamable and Downloadable link of any file by using /stream</b></i>"""
+
+
+# Don't Remove Credit @VJ_Botz
+# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
+# Ask Doubt on telegram @KingVJ01
+
+
+    

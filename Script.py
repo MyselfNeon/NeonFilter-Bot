@@ -74,7 +74,7 @@ This Bot support both URL and alert inline buttons.</i>
 2. Use /connect and connect your Group to the Bot
 3. Use /settings on Bot's PM and turn AutoFilter on the settings menu</b></i>"""
 
-    CONNECTION_TXT = """<b><i><blockquote>‣ 𝐂𝐎𝐍𝐍𝐄𝐂𝐓𝐈𝐎𝐍𝐒</blockquote>
+    CONNECTION_TXT = """<b><blockquote>‣ 𝐂𝐎𝐍𝐍𝐄𝐂𝐓𝐈𝐎𝐍𝐒</blockquote><i>
 • Connect Bot to PM
 • It helps to avoid spamming in Groups</i>
 \n<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote><i>
@@ -250,7 +250,7 @@ Requested by : {message.from_user.mention}</b></i>"""
   
  Commands : /song Song name.</i></b>""" 
   
-    YTDL_TXT = """<b><blockquote>‣ 𝐘𝐎𝐔𝐓𝐔𝐁𝐄 𝐕𝐈𝐃𝐄𝐎 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑 📽️</blockquote>\n\n<i>Usage : You can download any video from Youtube
+    YTDL_TXT = """<b><blockquote>‣ 𝐘𝐓 𝐕𝐈𝐃𝐄𝐎 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑 📽️</blockquote>\n\n<i>Usage : You can download any video from Youtube
   
  How to use : Type - /video or /mp4 
  <blockquote>Example :<code>/mp4 https://youtu.be/example...</code></i></b></blockquote>""" 
@@ -656,6 +656,6 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 ⏰ Duration: {duration}</blockquote></b></i>
 """
 
-    STREAM_TXT = """<b><blockquote>‣ 𝐆𝐄𝐓 𝐒𝐓𝐑𝐄𝐀𝐌 & 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐋𝐈𝐍𝐊 📥</blockquote>
+    STREAM_TXT = """<b><blockquote>‣ 𝐒𝐓𝐑𝐄𝐀𝐌 & 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐋𝐈𝐍𝐊 📥</blockquote>
 
 <i>Get Streamable and Downloadable link of any file by using /stream</b></i>"""

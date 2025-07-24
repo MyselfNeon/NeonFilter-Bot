@@ -244,18 +244,18 @@ Requested by : {message.from_user.mention}</b></i>"""
 • /plink - Just like <code>/link </code>but the files will be send with forward restrictions
 • /pbatch - Just like <code>/batch </code>but the files will be send with forward restrictions</b></i>"""
 
-    SONG_TXT = """<b><i><blockquote>‣ Song Download Module 🥁</blockquote>
+    SONG_TXT = """<b><blockquote>‣ 𝐒𝐎𝐍𝐆 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐌𝐎𝐃𝐔𝐋𝐄 🥁</blockquote>
       
-<blockquote>For those who love music.\nYou can use this feature to download any song with super fast speed. Works Bot and Groups only...</blockquote>
+<blockquote><i>For those who love music.\nYou can use this feature to download any song with super fast speed. Works Bot and Groups only...</blockquote>
   
  Commands : /song Song name.</i></b>""" 
   
-    YTDL_TXT = """<b><i><blockquote>‣ Youtube Video Downloader 📽️</blockquote>\n\nUsage : You can download any video from Youtube
+    YTDL_TXT = """<b><blockquote>‣ 𝐘𝐎𝐔𝐓𝐔𝐁𝐄 𝐕𝐈𝐃𝐄𝐎 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑 📽️</blockquote>\n\n<i>Usage : You can download any video from Youtube
   
  How to use : Type - /video or /mp4 
  <blockquote>Example :<code>/mp4 https://youtu.be/example...</code></i></b></blockquote>""" 
   
-    TTS_TXT = """<b><i>TTS module 🎤 : Translate text to Speech 
+    TTS_TXT = """<b>‣ 𝐓𝐓𝐒 𝐌𝐎𝐃𝐔𝐋𝐄 🎤 : \n<i>Translate text to Speech 
   
  Commands and Usage : /tts</b></i>""" 
   
@@ -272,11 +272,11 @@ Requested by : {message.from_user.mention}</b></i>"""
  • ᴍʟ = ᴍᴀʟᴀyᴀʟᴀᴍ 
  • ʜɪ = ʜɪɴᴅɪ</b>""" 
   
-    TELE_TXT = """<b><i><blockquote>‣ Telegraph Module 🌁</blockquote>\nThis is just a Telegraph module based on telegra.ph, use as your wish !!
+    TELE_TXT = """<b><blockquote>‣ 𝐓𝐄𝐋𝐄𝐆𝐑𝐀𝐏𝐇 𝐌𝐎𝐃𝐔𝐋𝐄 🌁</blockquote>\n<i>This is just a Telegraph module based on telegra.ph, use as your wish !!</i>
   
-<blockquote>‣ Usage 📄</blockquote>\nUse /telegraph and send any image or video under 5MB ⏳
+<blockquote>‣ 𝐔𝐒𝐀𝐆𝐄 📄</blockquote>\n<i>Use /telegraph and send any image or video under 5MB ⏳</i>
   
-<blockquote>‣ Note 👀</blockquote>
+<blockquote>‣ 𝐍𝐎𝐓𝐄 👀</blockquote><i>
 • Available in Groups and PM
 • Can be used by everyone</i></b>""" 
   
@@ -293,19 +293,19 @@ Requested by : {message.from_user.mention}</b></i>"""
   
  </b>""" 
 
-    PROGRESS_BAR = """\n
+    PROGRESS_BAR = """\n<b>
 ╭━━━━❰ File Is Renaming... ❱━➣
 ┣⪼ 🗂️ : {1} | {2}
 ┣⪼ ⏳️ : {0}%
 ┣⪼ 🚀 : {3}/s
 ┣⪼ ⏱️ : {4}
-╰━━━━━━━━━━━━━━━➣ """
+╰━━━━━━━━━━━━━━━➣ </b>"""
   
     ABOOK_TXT = """<b>ʜᴇʟᴩ : ᴀᴜᴅɪᴏʙᴏᴏᴋ 
   
  yᴏᴜ ᴄᴀɴ ᴄᴏɴᴠᴇʀᴛ ᴀ ᴩᴅꜰ ꜰɪʟᴇ ᴛᴏ ᴀ ᴀᴜᴅɪᴏ ꜰɪʟᴇ ᴡɪᴛʜ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ✯ 
   
- ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ: 
+ ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴn ᴜꜱᴀɢᴇ: 
  /audiobook: ʀᴇᴩʟy ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴛᴏ ᴀɴy ᴩᴅꜰ ᴛᴏ ɢᴇɴᴇʀᴀᴛᴇ ᴛʜᴇ ᴀᴜᴅɪᴏ 
 </b>""" 
   
@@ -323,7 +323,7 @@ Requested by : {message.from_user.mention}</b></i>"""
  • ꜱʜᴀʀᴇ ᴜꜱ ꜰᴏʀ ᴍᴏʀᴇ ꜰᴇᴀᴛᴜʀᴇꜱ 
   </b>""" 
   
-    STICKER_TXT = """<b><i><blockquote>‣ Sticker ID Module</blockquote>\nYou can use this module to find and stickerid. \nTap /stickerid to know how to use me.</i></b>""" 
+    STICKER_TXT = """<b><blockquote>‣ 𝐒𝐓𝐈𝐂𝐊𝐄𝐑 𝐈𝐃 𝐌𝐎𝐃𝐔𝐋𝐄 🌺</blockquote>\n<i>You can use this module to find and stickerid. \nTap /stickerid to know how to use me.</i></b>""" 
   
     FONT_TXT= """<b>ᴜꜱᴀɢᴇ 
   
@@ -348,11 +348,11 @@ Requested by : {message.from_user.mention}</b></i>"""
  /whois :- ɢɪᴠᴇ ᴀ ᴜꜱᴇʀ ꜰᴜʟʟ ᴅᴇᴛᴀɪʟꜱ 📑 
  </b>""" 
   
-    JSON_TXT = """<b><i><blockquote>‣ Json 📝</blockquote>\nBot returns json file for all replied messages with /json
+    JSON_TXT = """<b><blockquote>‣ 𝐉𝐒𝐎𝐍 📝</blockquote>\n<i>Bot returns json file for all replied messages with /json</i>
   
-<blockquote>‣ Features</blockquote>\n• Message editing json\n• PM support\n• Group support 
+<blockquote>‣ 𝐅𝐄𝐀𝐓𝐔𝐑𝐄𝐒</blockquote>\n<i>• Message editing json\n• PM support\n• Group support </i>
   
-<blockquote>‣ Note</blockquote>\nAnyone can use this command, if spamming happens Bot will automatically Ban you from the Group</i></b>""" 
+<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote>\n<i>Anyone can use this command, if spamming happens Bot will automatically Ban you from the Group</i></b>""" 
   
     URLSHORT_TXT = """<b>ʜᴇʟᴩ: ᴜʀʟ ꜱʜᴏʀᴛɴᴇʀ 
   
@@ -385,7 +385,7 @@ Requested by : {message.from_user.mention}</b></i>"""
  • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴡᴏʀᴋꜱ ᴏɴ ʙᴏᴛʜ ᴘᴍ ᴀɴᴅ ɢʀᴏᴜᴘ. 
  • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ʙʏ ᴀɴʏ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀ.</b>""" 
   
-    SHARE_TXT = """<b><i><blockquote>‣ Text Share URL</blockquote>\nGet your text share url. 
+    SHARE_TXT = """<b><blockquote>‣ 𝐓𝐄𝐗𝐓 𝐒𝐇𝐀𝐑𝐄 𝐔𝐑𝐋 🖇️</blockquote>\n<i>Get your text share url. 
   
  - Example :- /share
   
@@ -646,24 +646,16 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
 এছাড়াও আপনার দল ভিডিও সংগ্রহের প্রশিক্ষণ দেবে...</blockquote></i></b>"""
 
-    RENAME_TXT = """<b><i><blockquote>‣ HOW TO RENAME A FILE 📝</blockquote>\n• /rename - send any file and click rename option and type new file name and then select \n[ document, video, audio ]
-\n<blockquote>‣ SET THUMBNAIL 🌄</blockquote>\n• /set_thumb - Send any picture to automatically set Thumbnail\n• /del_thumb Use this command and delete your old Thumbnail\n• /view_thumb Use this command view your current Thumbnail
+    RENAME_TXT = """<b><blockquote>‣ 𝐇𝐎𝐖 𝐓𝐎 𝐑𝐄𝐍𝐀𝐌𝐄 𝐀 𝐅𝐈𝐋𝐄 📝</blockquote>\n<i>• /rename - send any file and click rename option and type new file name and then select \n[ document, video, audio ]</i>
+\n<blockquote>‣ 𝐂𝐔𝐒𝐓𝐎𝐌 𝐓𝐇𝐔𝐌𝐁𝐍𝐀𝐈𝐋 🌄</blockquote>\n<i>• /set_thumb - Send any picture to automatically set Thumbnail\n• /del_thumb Use this command and delete your old Thumbnail\n• /view_thumb Use this command view your current Thumbnail</i>
 
-<blockquote>‣ SET CUSTOM CAPTION ✏️</blockquote>\n• /set_caption - Set a custom caption\n• /see_caption - See custom caption\n• /del_caption - Delete custom caption
+<blockquote>‣ 𝐂𝐔𝐒𝐓𝐎𝐌 𝐂𝐀𝐏𝐓𝐈𝐎𝐍 ✏️</blockquote>\n<i>• /set_caption - Set a custom caption\n• /see_caption - See custom caption\n• /del_caption - Delete custom caption
 
 <blockquote>Example:- <code>/set_caption</code> \n📕 File Name: {filename}
 💾 Size: {filesize}
 ⏰ Duration: {duration}</blockquote></b></i>
 """
 
-    STREAM_TXT = """<b><i><blockquote>‣ Get Stream And Download Link 📥</blockquote>
+    STREAM_TXT = """<b><blockquote>‣ 𝐆𝐄𝐓 𝐒𝐓𝐑𝐄𝐀𝐌 & 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐋𝐈𝐍𝐊 📥</blockquote>
 
-Get Streamable and Downloadable link of any file by using /stream</b></i>"""
-
-
-# Don't Remove Credit @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
-
-    
+<i>Get Streamable and Downloadable link of any file by using /stream</b></i>"""

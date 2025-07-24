@@ -19,7 +19,7 @@ async def song(client, message):
     for i in message.command[1:]:
         query += ' ' + str(i)
     print(query)
-    m = await message.reply(f"**__Searching your Song... !!\n {query}__**")
+    m = await message.reply(f"**__Searching your Song... !! 😇\n {query}__**")
     ydl_opts = {"format": "bestaudio[ext=m4a]"}
     try:
         results = YoutubeSearch(query, max_results=1).to_dict()
@@ -35,9 +35,9 @@ async def song(client, message):
         views = results[0]["views"]
     except Exception as e:
         print(str(e))
-        return await m.edit("**__Example: /song Apna bna le__**")
+        return await m.edit("**__Example: /song Apna bna le__ 🎙️**")
                 
-    await m.edit("**__Downloading your Song... !!__**")
+    await m.edit("**__Downloading your Song... !!__ 📥**")
     try:
         with YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(link, download=False)
@@ -83,9 +83,9 @@ def get_text(message: Message) -> [None,str]:
 @Client.on_message(filters.command(["video", "mp4"]))
 async def vsong(client, message: Message):
     urlissed = get_text(message)
-    pablo = await client.send_message(message.chat.id, f"**__Finding Your Video__** `{urlissed}`")
+    pablo = await client.send_message(message.chat.id, f"**__Finding Your Video__ 😇** `{urlissed}`")
     if not urlissed:
-        return await pablo.edit("**__Example: /video Your video Link__**")     
+        return await pablo.edit("**__Example: /video Your video Link__ 🖇️**")     
     search = SearchVideos(f"{urlissed}", offset=1, mode="dict", max_results=1)
     mi = search.result()
     mio = mi["search_result"]
@@ -113,10 +113,10 @@ async def vsong(client, message: Message):
         with YoutubeDL(opts) as ytdl:
             ytdl_data = ytdl.extract_info(url, download=True)
     except Exception as e:
-        return await pablo.edit_text(f"**__Download Failed Please Try Again__** \n**__ERROR:** `{str(e)}`__")       
+        return await pablo.edit_text(f"**__Download Failed Please Try Again__ ❌** \n**__ERROR:** `{str(e)}`__")       
     
     file_stark = f"{ytdl_data['id']}.mp4"
-    capy = f"""**__TITLE :__** [{thum}]({mo})\n**__Requested By : {message.from_user.mention}__**"""
+    capy = f"""**__TITLE :__** [{thum}]({mo})\n**__Requested By : {message.from_user.mention}__ ✨**"""
 
     await client.send_video(
         message.chat.id,

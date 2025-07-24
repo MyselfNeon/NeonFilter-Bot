@@ -6,7 +6,7 @@ class script(object):
     
     HELP_TXT = """<b><i>Hello {} \nHere are all my useful features.</i></b>"""
 
-    ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>
+    ABOUT_TXT = """<b><blockquote>‣ 📝 𝐌𝐘 𝐃𝐄𝐓𝐀𝐈𝐋𝐒</blockquote><i>
     
 ⪼ My Name : <a href=https://t.me/{}>{}</a>
 ⪼ My Best Friend : <a href='tg://settings'>This Sweetie 🤌❤️</a> 
@@ -17,7 +17,7 @@ class script(object):
 ⪼ Bot Server : <a href='https://heroku.com'>Heroku</a> 
 ⪼ Build Status : ᴠ2.7.1 [Stable]</i></b>"""
 
-    CLONE_ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>
+    CLONE_ABOUT_TXT = """<b><blockquote>‣ 📝 𝐌𝐘 𝐃𝐄𝐓𝐀𝐈𝐋𝐒</blockquote><i>
     
 ⪼ My Name : {}
 ⪼ My Best Friend : <a href='tg://settings'>This Sweetie 🤌❤️</a> 
@@ -27,7 +27,7 @@ class script(object):
 ⪼ Data Base : <a href='https://www.mongodb.com/'>Mongo DB</a> 
 ⪼ Build Status : ᴠ2.7.1 [Stable]></i></b>"""
 
-    CLONE_TXT = """<blockquote><b><i>‣ 👥 CLONE MODE</blockquote>
+    CLONE_TXT = """<blockquote><b>‣ 👥 𝐂𝐋𝐎𝐍𝐄 𝐌𝐎𝐃𝐄</blockquote><i>
 
 - You can create your own clone Bot by /clone Command
 - You can Broadcast in your clone Bots
@@ -35,27 +35,27 @@ class script(object):
 
 👨‍💻 Command : /clone</i></b>"""
 
-    SUBSCRIPTION_TXT = """<blockquote><b>‣ Referal Plans ⚡</blockquote>
+    SUBSCRIPTION_TXT = """<blockquote><b>‣ 𝐑𝐄𝐅𝐄𝐑𝐀𝐋 𝐏𝐋𝐀𝐍𝐒 ⚡</blockquote>
 <blockquote><i>Refer your link to your Friends, Family, Channel and Groups to get free Premium for {}
 
 Referal Link - https://telegram.me/{}?start=VJ-{}
 
 If {} unique user start the Bot with your referal link then you will Automatically added in Premium List.\n\nBuy paid plan by - /plan\n\n@NeonFiles</b></i></blockquote>"""
 
-    MANUELFILTER_TXT = """<blockquote><b><i>‣ Filters</blockquote>\nFilter is a feature where users can set Automated replies for a perticular keyword and i will respond whenever a keyword is found in Message.
-\n<blockquote>‣ Note</blockquote>
+    MANUELFILTER_TXT = """<blockquote><b>‣ 𝐅𝐈𝐋𝐓𝐄𝐑𝐒</blockquote>\n<i>Filter is a feature where users can set Automated replies for a perticular keyword and i will respond whenever a keyword is found in Message.</i>
+\n<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote><i>
 1. Bot should have Admin privilege
 2. Only Admins can add filters in a chat
-3. Alert buttons have a limit of 64 characters
-\n<blockquote>‣ Commands And Usage</blockquote>
+3. Alert buttons have a limit of 64 characters </i>
+\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒</blockquote><i>
 • /filter - Add a Filter in a chat
 • /filters - List of all filters
 • /del - Delete a specific filter
 • /delall - Delete all available filters (Admin Only)</b></i>"""
 
-    BUTTON_TXT = """<blockquote><b><i>‣ Buttons</blockquote>
-This Bot support both URL and alert inline buttons.
-\n<blockquote>‣ Note</blockquote>
+    BUTTON_TXT = """<blockquote><b>‣ 𝐁𝐔𝐓𝐓𝐎𝐍𝐒</blockquote><i>
+This Bot support both URL and alert inline buttons.</i>
+\n<blockquote>‣ Note</blockquote><i>
 1. Telegram will not allows you to send Buttons without any content so content is mandatory.
 2. This Bot supports buttons with any telegram media type
 3. Buttons should be properly parsed as Markdown format
@@ -64,23 +64,23 @@ This Bot support both URL and alert inline buttons.
 ‣ Alert Buttons
 [Button Text](buttonalert:This is an Alert Message)</blockquote></b></i>"""
 
-    AUTOFILTER_TXT = """<b><i><blockquote>‣ File Index</blockquote>
+    AUTOFILTER_TXT = """<b><blockquote>‣ 𝐅𝐈𝐋𝐄 𝐈𝐍𝐃𝐄𝐗</blockquote><i>
 1. Make me Admin of your Channel if it's Private
 2. Make sure that your channel does not contains crimps, p@rns and fake Files
-3. Forward the last message to me with Quotes. I'll add all the files in that channel to my database
+3. Forward the last message to me with Quotes. I'll add all the files in that channel to my database </i>
 
-<blockquote>‣ Auto Filter</blockquote>
+<blockquote>‣ 𝐀𝐔𝐓𝐎 𝐅𝐈𝐋𝐓𝐄𝐑</blockquote><i>
 1. Add Bot as Admin on your Group
 2. Use /connect and connect your Group to the Bot
 3. Use /settings on Bot's PM and turn AutoFilter on the settings menu</b></i>"""
 
-    CONNECTION_TXT = """<b><i><blockquote>Connections</blockquote>
+    CONNECTION_TXT = """<b><i><blockquote>‣ 𝐂𝐎𝐍𝐍𝐄𝐂𝐓𝐈𝐎𝐍𝐒</blockquote>
 • Connect Bot to PM
-• It helps to avoid spamming in Groups
-\n<blockquote>Note</blockquote>
+• It helps to avoid spamming in Groups</i>
+\n<blockquote>‣ 𝐍𝐎𝐓𝐄</blockquote><i>
 1. Only Admins can add connections
-2. Send <code>/connect</code> for connecting me to PM
-\n<blockquote>Commands and Usage</blockquote>
+2. Send <code>/connect</code> for connecting me to PM</i>
+\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒</blockquote><i>
 • /connect  - Connect any chat to PM
 • /disconnect  - Disconnect from chat
 • /connections - List of all connections</b></i>"""

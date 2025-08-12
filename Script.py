@@ -38,7 +38,7 @@ class script(object):
     SUBSCRIPTION_TXT = """<blockquote><b>‣ Referal Plans ⚡</blockquote>
 <blockquote><i>Refer your link to your Friends, Family, Channel and Groups to get free Premium for {}
 
-Referal Link - https://telegram.me/{}?start=VJ-{}
+Referal Link - https://telegram.me/{}?start=Neon-{}
 
 If {} unique user start the Bot with your referal link then you will Automatically added in Premium List.\n\nBuy paid plan by - /plan\n\n@NeonFiles</b></i></blockquote>"""
 
@@ -667,3 +667,4 @@ Get Streamable and Downloadable link of any file by using /stream</b></i>"""
 
 
     
+

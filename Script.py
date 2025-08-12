@@ -1,8 +1,8 @@
 
 class script(object):
-    START_TXT = """<b><blockquote><i>‣ Hello {}</blockquote>\n<blockquote>I am Latest Advanced Filter Bot.\nCoded & Developed by <a href='https://t.me/MyselfNeon'>NeonAnurag</a>.\nI can Filter and Send Movies/Animes files added to my Database !!</blockquote></i></b>"""
+    START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</blockquote>\n<blockquote>I ᴀᴍ Lᴀᴛᴇsᴛ Aᴅᴠᴀɴᴄᴇᴅ Fɪʟᴛᴇʀ Bᴏᴛ.\nCᴏᴅᴇᴅ & Dᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ <a href='https://t.me/MyselfNeon'>NᴇᴏɴAɴᴜʀᴀɢ</a>.\nI ᴄᴀɴ Fɪʟᴛᴇʀ & Sᴇɴᴅ Mᴏᴠɪᴇs / Aɴɪᴍᴇs Fɪʟᴇs Aᴅᴅᴇᴅ ᴛᴏ ᴍʏ Dᴀᴛᴀʙᴀsᴇ !!</blockquote></i></b>"""
 
-    CLONE_START_TXT = """<b><blockquote><i>‣ Hello {}</blockquote>\n<blockquote>I am Latest Advanced Filter Bot.\nCoded & Developed by <a href='https://t.me/MyselfNeon'>NeonAnurag</a>.\nYou can create you own Clone Bot and use it in your own channel. It will Filter and Send Movies/Animes files added to its Database !!</blockquote></i></b>"""
+    CLONE_START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</blockquote>\n<blockquote>I am Latest Advanced Filter Bot.\nCoded & Developed by <a href='https://t.me/MyselfNeon'>NeonAnurag</a>.\nYou can create you own Clone Bot and use it in your own channel. It will Filter and Send Movies/Animes files added to its Database !!</blockquote></i></b>"""
     
     HELP_TXT = """<b><i>Hello {} \nHere are all my useful features.</i></b>"""
 
@@ -667,6 +667,7 @@ Get Streamable and Downloadable link of any file by using /stream</b></i>"""
 
 
     
+
 
 
 

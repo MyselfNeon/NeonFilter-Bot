@@ -13,7 +13,7 @@ BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
 
 # This Pictures Is For Start Message Picture, You Can Add Multiple By Giving One Space Between Each.
-PICS = (environ.get('PICS', 'https://envs.sh/hSI.jpg https://envs.sh/hSz.jpg https://envs.sh/hSK.jpg https://envs.sh/hSs.jpg https://envs.sh/hSN.jpg')).split()
+PICS = (environ.get('PICS', 'https://files.catbox.moe/ybg6gw.jpg https://files.catbox.moe/b5a3dz.jpg https://files.catbox.moe/n0xw7h.jpg https://files.catbox.moe/fhexii.jpg https://files.catbox.moe/v7w8co.jpg https://files.catbox.moe/r946bu.jpg')).split()
 
 
 # Admins & Users
@@ -184,4 +184,5 @@ else:
     OTHER_DB_URI = O_DB_URI       # This Db Is For Other Data Store
     FILE_DB_URI = F_DB_URI        # This Db Is For File Data Store
     SEC_FILE_DB_URI = S_DB_URI    # This Db is for File Data Store When First Db Is Going To Be Full.
+
 

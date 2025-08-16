@@ -62,7 +62,7 @@ async def send_for_index(bot, message):
         regex = re.compile("(https://)?(t\.me/|telegram\.me/|telegram\.dog/)(c/)?(\d+|[a-zA-Z_0-9]+)/(\d+)$")
         match = regex.match(vj.text)
         if not match:
-            return await vj.reply('**__Invalid Link\n\nTry Again By__ /index')
+            return await vj.reply('**__Invalid Link\n\nTry Again By__ /index**')
         chat_id = match.group(4)
         last_msg_id = int(match.group(5))
         if chat_id.isnumeric():
@@ -186,3 +186,4 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
             await k.reply_text("**__If You Get Message Not Modified Error Then Skip Your Saved File Then Index Again__**")
         else:
             await msg.edit(f'**__Succesfully Saved__ <code>{total_files}</code> __To DataBase!\nDuplicate Files Skipped:__ <code>{duplicate}</code>\n__Deleted Messages Skipped:__ <code>{deleted}</code>\n__Non-Media messages skipped:__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Errors Occurred__: <code>{errors}</code>**')
+

@@ -13,7 +13,7 @@ API = "https://apis.xditya.me/lyrics?song="
 async def sng(bot, message):
     vj = await bot.ask(chat_id=message.from_user.id, text="**__Now Send me Song Name__ 🎙️**")
     if vj.text:
-        mee = await vj.reply_text("**__`Searching 🔎`__**")
+        mee = await vj.reply_text("`Searching 🔎`")
         song = vj.text
         chat_id = message.from_user.id
         rpl = lyrics(song)
@@ -34,9 +34,9 @@ def search(song):
        
 def lyrics(song):
     fin = search(song)
-    text = f'**🎶 __Sᴜᴄᴄᴇꜱꜰᴜʟʟy Exᴛʀᴀᴄᴛᴇᴅ Lyɪʀɪᴄꜱ Oꜰ {song}__**\n\n'
+    text = f'<blockquote>**🎶 __Sᴜᴄᴄᴇꜱsꜰᴜʟʟy Exᴛʀᴀᴄᴛᴇᴅ Lyʀɪᴄꜱ Oꜰ {song}__**</blockquote>\n\n'
     text += f'`{fin["lyrics"]}`'
-    text += '\n\n\n**__Made By Team @NeonFiles ✨__**'
+    text += '\n\n\n<blockquote>**__Join @NeonFiles ✨__**</blockquote>'
     return text
 
 

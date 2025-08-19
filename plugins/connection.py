@@ -68,7 +68,7 @@ async def addconnection(client, message):
                     )
             else:
                 await message.reply_text(
-                    "**__You're already Connected to this Chat__ 🤣 !!**",
+                    "**__You're already Connected__ 🤣 !!**",
                     quote=True
                 )
         else:
@@ -143,5 +143,6 @@ async def connections(client, message):
             "**__There are no Active Connections !! Connect to some Groups First__ 😅**",
             quote=True
         )
+
 
 

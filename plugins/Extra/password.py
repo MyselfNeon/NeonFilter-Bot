@@ -16,6 +16,6 @@ async def password(bot, update):
         qw = random.choice(ST)
     limit = int(qw)
     random_value = "".join(random.sample(password, limit))
-    txt = f"<b>🖐️ __Limit:__</b> {str(limit)} \n<b>🤫 __Password:__ \n<code>{random_value}</code>"
+    txt = f"<b><i>🖐️ Limit:</i></b> {str(limit)} \n<b><i>🤫 Password:</i></b> \n<code>{random_value}</code>"
     btn = InlineKeyboardMarkup([[InlineKeyboardButton('Uᴘᴅᴀᴛᴇs Cʜᴀɴɴᴇʟ 🌐', url=CHNL_LNK)]])
     await message.edit_text(text=txt, reply_markup=btn, parse_mode=enums.ParseMode.HTML)

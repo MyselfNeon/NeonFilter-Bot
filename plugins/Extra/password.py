@@ -7,7 +7,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 @Client.on_message(filters.command(["genpassword", 'genpw']))
 async def password(bot, update):
-    message = await update.reply_text(text="`Processing... 🫡`")
+    message = await update.reply_text(text="`<b>Processing... 🫡</b>`")
     password = "abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()_+".lower()
     if len(update.command) > 1:
         qw = update.text.split(" ", 1)[1]

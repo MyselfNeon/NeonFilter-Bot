@@ -36,14 +36,14 @@ async def style_buttons(c, m, cb=False):
         InlineKeyboardButton('H̆̈ă̈p̆̈p̆̈y̆̈', callback_data='style+happy'),
         InlineKeyboardButton('S̑̈ȃ̈d̑̈', callback_data='style+sad'),
         ],[
-        InlineKeyboardButton('Next ➡️', callback_data="nxt")
+        InlineKeyboardButton('Nᴇxᴛ ➡️', callback_data="nxt")
     ]]
     if not cb:
         if ' ' in m.text:
             title = m.text.split(" ", 1)[1]
             await m.reply_text(title, reply_markup=InlineKeyboardMarkup(buttons), reply_to_message_id=m.id)                     
         else:
-            await m.reply_text(text="Ente Any Text Eg:- `/font [text]`")    
+            await m.reply_text(text="**__Enter Any Text\nEg:-__** `/font` **__[text]__**")    
     else:
         await m.answer()
         await m.message.edit_reply_markup(InlineKeyboardMarkup(buttons))
@@ -77,7 +77,7 @@ async def nxt(c, m):
             InlineKeyboardButton('S̶t̶r̶i̶k̶e̶', callback_data='style+strike'),
             InlineKeyboardButton('F༙r༙o༙z༙e༙n༙', callback_data='style+frozen')
             ],[
-            InlineKeyboardButton('⬅️ Back', callback_data='nxt+0')
+            InlineKeyboardButton('Bᴀᴄᴋ', callback_data='nxt+0')
         ]]
         await m.answer()
         await m.message.edit_reply_markup(InlineKeyboardMarkup(buttons))
@@ -172,7 +172,7 @@ async def style(c, m):
     r, oldtxt = m.message.reply_to_message.text.split(None, 1) 
     new_text = cls(oldtxt)            
     try:
-        await m.message.edit_text(f"`{new_text}`\n\n👆 Click To Copy", reply_markup=m.message.reply_markup)
+        await m.message.edit_text(f"`{new_text}`\n\n**👆 __Click To Copy__**", reply_markup=m.message.reply_markup)
     except Exception as e:
         print(e)
 

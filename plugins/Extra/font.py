@@ -43,7 +43,7 @@ async def style_buttons(c, m, cb=False):
             title = m.text.split(" ", 1)[1]
             await m.reply_text(title, reply_markup=InlineKeyboardMarkup(buttons), reply_to_message_id=m.id)                     
         else:
-            await m.reply_text(text="**__Enter Any Text in this Format and get your Desired Fonts__ -\n💡 __Eg:-__** `/font Hello World`")    
+            await m.reply_text(text="**__Enter Any Text in this Format and get your Desired Fonts__ -\n\n💡 __Eg:-__** `/font Hello World`")    
     else:
         await m.answer()
         await m.message.edit_reply_markup(InlineKeyboardMarkup(buttons))

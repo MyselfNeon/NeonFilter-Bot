@@ -185,4 +185,14 @@ else:
     FILE_DB_URI = F_DB_URI        # This Db Is For File Data Store
     SEC_FILE_DB_URI = S_DB_URI    # This Db is for File Data Store When First Db Is Going To Be Full.
 
+# info.py
+
+# Your other configs...
+
+YOUTUBE_COOKIES = """# Netscape HTTP Cookie File
+.youtube.com	TRUE	/	TRUE	1750778125	GPS	1
+.youtube.com	TRUE	/	TRUE	1766328439	VISITOR_INFO1_LIVE	RTonvqs758o
+.youtube.com	TRUE	/	TRUE	1766328439	VISITOR_PRIVACY_METADATA	CgJJThIEGgAgJw%3D%3D
+.youtube.com	TRUE	/	TRUE	0	YSC	j6dn_XeQKGI
+"""
 

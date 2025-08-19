@@ -22,7 +22,7 @@ async def addconnection(client, message):
             await message.reply_text(
                 "<b>__Enter in correct format!__ ✅</b>\n\n"
                 "<b><i>/connect Groupid</b></i>\n\n"
-                "<i>**Get your Group ID by Adding this Bot to your Group and use <code>/id</code></i>",
+                "<i>**Get your Group ID by Adding this Bot to your Group and use** <code>/id</code></i> 🆔",
                 quote=True
             )
             return
@@ -143,4 +143,5 @@ async def connections(client, message):
             "**__There are no Active Connections !! Connect to some Groups First__ 😅**",
             quote=True
         )
+
 

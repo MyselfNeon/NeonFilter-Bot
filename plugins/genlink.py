@@ -1,4 +1,3 @@
-
 import re, os, json, base64, logging
 from utils import temp
 from pyrogram import filters, Client, enums
@@ -9,27 +8,36 @@ from database.ia_filterdb import unpack_new_file_id
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-async def allowed(_, __, message):
-    if PUBLIC_FILE_STORE:
-        return True
-    if message.from_user and message.from_user.id in ADMINS:
-        return True
-    return False
+# --- Fixed synchronous filter ---
+def allowed(_, __, message):
+    return PUBLIC_FILE_STORE or (message.from_user and message.from_user.id in ADMINS)
 
+# --- Fixed /link and /plink ---
 @Client.on_message(filters.command(['link', 'plink']) & filters.create(allowed))
 async def gen_link_s(bot, message):
-    vj = await bot.ask(chat_id = message.from_user.id, text = "Now Send Me Your Message Which You Want To Store.")
+    try:
+        # Ask user for file, wait up to 60 seconds
+        vj = await bot.ask(message.from_user.id, "Send me the file you want to store.", timeout=60)
+    except Exception:
+        return await message.reply("No response received or request timed out!")
+
+    # Only accept video, audio, or document
+    if not vj.media or vj.media not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.AUDIO, enums.MessageMediaType.DOCUMENT]:
+        return await vj.reply("Send me only video, audio, or document.")
+
+    # Extract file object
     file_type = vj.media
-    if file_type not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.AUDIO, enums.MessageMediaType.DOCUMENT]:
-        return await vj.reply("Send me only video,audio,file or document.")
-    if message.has_protected_content and message.chat.id not in ADMINS:
-        return await message.reply("okDa")
-    file_id, ref = unpack_new_file_id((getattr(vj, file_type.value)).file_id)
-    string = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
-    string += file_id
-    outstr = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
-    await message.reply(f"Here is your Link:\nhttps://t.me/{temp.U_NAME}?start={outstr}")    
-    
+    file = getattr(vj, file_type.value)
+
+    # Generate file ID and encode it
+    file_id, _ = unpack_new_file_id(file.file_id)
+    prefix = 'filep_' if message.text.lower().strip() == '/plink' else 'file_'
+    outstr = base64.urlsafe_b64encode(f"{prefix}{file_id}".encode("ascii")).decode().strip("=")
+
+    # Send link
+    await message.reply(f"Here is your link:\nhttps://t.me/{temp.U_NAME}?start={outstr}")
+
+# --- Original /batch and /pbatch (unchanged) ---
 @Client.on_message(filters.command(['batch', 'pbatch']) & filters.create(allowed))
 async def gen_link_batch(bot, message):
     if " " not in message.text:

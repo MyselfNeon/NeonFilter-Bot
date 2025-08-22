@@ -6,7 +6,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
 
 def upload_image_requests(image_path):
-    upload_url = "https://envs.sh"
+    upload_url = "https://files.catbox.moe"
 
     try:
         with open(image_path, 'rb') as file:

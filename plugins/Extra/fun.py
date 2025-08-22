@@ -1,76 +1,152 @@
-import os
-import httpx
-import asyncio
+
 from pyrogram import Client, filters
 
-# Hugging Face Real-ESRGAN API
-HF_API_URL = "https://api-inference.huggingface.co/models/nateraw/real-esrgan"
-HF_TOKEN = os.getenv("HF_TOKEN")
-HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
+# AESTHETIC------------ https://telegram.me/Josprojects ------------ #
+
+def aesthetify(string):
+    PRINTABLE_ASCII = range(0x21, 0x7f)
+    for c in string:
+        c = ord(c)
+        if c in PRINTABLE_ASCII:
+            c += 0xFF00 - 0x20
+        elif c == ord(" "):
+            c = 0x3000
+        yield chr(c)
 
 
-async def fake_progress(msg, steps=5, delay=3):
-    """Simulate a progress bar by editing the message"""
-    for i in range(1, steps + 1):
-        percent = int((i / steps) * 100)
-        try:
-            await msg.edit_text(f"✨ Enhancing your image...\nProgress: {percent}%")
-        except:
-            pass
-        await asyncio.sleep(delay)
+@Client.on_message(
+    filters.command(["ae"]))
+async def aesthetic(client, message):
+    status_message = await message.reply_text("...")
+    text = "".join(str(e) for e in message.command[1:])
+    text = "".join(aesthetify(text))
+    await status_message.edit(text)
+
+# EMOJI CONSTANTS
+DART_E_MOJI = "🎯"
+# EMOJI CONSTANTS
 
 
-@Client.on_message(filters.command("enhance") & filters.reply)
-async def enhance_image(client, message):
-    """Enhance any replied image (photo/doc/webp) using Hugging Face Real-ESRGAN"""
-    if not HF_TOKEN:
-        return await message.reply("⚠️ HuggingFace token not set. Please configure HF_TOKEN.")
+@Client.on_message(
+    filters.command(["throw", "dart"])
+)
+async def throw_dart(client, message):
+    """ /throw an @AnimatedDart """
+    rep_mesg_id = message.message_id
+    if message.reply_to_message:
+        rep_mesg_id = message.reply_to_message.message_id
+    await client.send_dice(
+        chat_id=message.chat.id,
+        emoji=DART_E_MOJI,
+        disable_notification=True,
+        reply_to_message_id=rep_mesg_id
+    )
 
-    replied = message.reply_to_message
+# EMOJI CONSTANTS
+DICE_E_MOJI = "🎲"
+# EMOJI CONSTANTS
 
-    # Identify image source
-    file_id = None
-    if replied.photo:
-        file_id = replied.photo.file_id
-    elif replied.document and replied.document.mime_type.startswith("image/"):
-        file_id = replied.document.file_id
-    elif replied.sticker and not replied.sticker.is_animated:
-        file_id = replied.sticker.file_id
 
-    if not file_id:
-        return await message.reply("⚠️ Please reply to a photo, image document, or static sticker.")
+@Client.on_message(
+    filters.command(["roll", "dice"])
+)
+async def roll_dice(client, message):
+    """ @RollADie """
+    rep_mesg_id = message.message_id
+    if message.reply_to_message:
+        rep_mesg_id = message.reply_to_message.message_id
+    await client.send_dice(
+        chat_id=message.chat.id,
+        emoji=DICE_E_MOJI,
+        disable_notification=True,
+        reply_to_message_id=rep_mesg_id
+    )
 
-    msg = await message.reply("✨ Enhancing your image...")
+# EMOJI CONSTANTS
+TRY_YOUR_LUCK = "🎰"
+# EMOJI CONSTANTS
 
-    # Start progress simulation in background
-    asyncio.create_task(fake_progress(msg))
+@Client.on_message(
+    filters.command(["luck", "cownd"])
+)
+async def luck_cownd(client, message):
+    """ /luck an @animatedluck """
+    rep_mesg_id = message.message_id
+    if message.reply_to_message:
+        rep_mesg_id = message.reply_to_message.message_id
+    await client.send_dice(
+        chat_id=message.chat.id,
+        emoji=TRY_YOUR_LUCK,
+        disable_notification=True,
+        reply_to_message_id=rep_mesg_id
+    )
 
-    # Download file
-    input_path = await client.download_media(file_id)
 
-    try:
-        # Send to Hugging Face
-        with open(input_path, "rb") as f:
-            async with httpx.AsyncClient(timeout=300) as http:
-                resp = await http.post(HF_API_URL, headers=HEADERS, data=f)
+# EMOJI CONSTANTS
+GOAL_E_MOJI = "⚽"
+# EMOJI CONSTANTS
 
-        if resp.status_code != 200:
-            return await msg.edit_text(f"❌ Enhancement failed: {resp.text}")
+@Client.on_message(
+    filters.command(["goal", "shoot"])
+)
+async def roll_dice(client, message):
+    """ @Goal """
+    rep_mesg_id = message.message_id
+    if message.reply_to_message:
+        rep_mesg_id = message.reply_to_message.message_id
+    await client.send_dice(
+        chat_id=message.chat.id,
+        emoji=GOAL_E_MOJI,
+        disable_notification=True,
+        reply_to_message_id=rep_mesg_id
+    )
 
-        # Save enhanced image
-        output_path = "enhanced_" + os.path.basename(input_path)
-        with open(output_path, "wb") as out:
-            out.write(resp.content)
 
-        # Send result back
-        await message.reply_photo(output_path, caption="✅ Enhanced by AI (Real-ESRGAN)")
-        await msg.delete()
+import random
 
-    except Exception as e:
-        await msg.edit_text(f"⚠️ Error: {e}")
+RUN_STRINGS = (
+    "A broken of a demeanly filled with darkness \
+    Why have you come to remind it ",
+    "We have become the lives to be the underwater to the underwater that we do not know.",
+    "You want the bad call ... but you need good thunder ....",
+    "Oh Bloody Grama Virtues!",
+    "Sea MUGGie I Am Going to Pay The Bill.",
+    "Want with me!",
+    "You are not a male chaff !!",
+    "I locked it, and the good beach is done by the good beach.",
+    "Kindi ... Kindi ...!",
+    "Giving the stems and then showing one and show the ISI Mark",
+    "Dayveyeese, Kingfisher ... Childe ...!.",
+    "You have made your father for half of the midnight?",
+    "This is the King of our work.",
+    "I'm fetts to feed ...."
+    "Mumak is every Bearby Kachyo ...",
+    "Oh it moves it .... When we moves it ...",
+    "The self of carpenter is the virtue of a carpenter.",
+    "Why not to feel this intelligence in Da Vijaya ...!",
+    "Where was this time ...."
+    "Save me only ...."
+    "I know his father's name is Bhavaniami ....",
+    "Da Dasa ...",
+    "Uppukam's English Salt Mongo Tree .....",
+    "Children ..",
+    "Your father to Paul ....",
+    "Car Engine Out Completely .....",
+    "This is the eye or magnety ...",
+    "Before falling in the 4th pegging, I will arrive there.",
+    "The drunk rains and wast ...."
+    "To tell me I love Yo ...."
+    "No, the Meenaka of Verbapur is not ....",
+)
 
-    finally:
-        # Cleanup
-        for file in (input_path, locals().get("output_path", None)):
-            if file and os.path.exists(file):
-                os.remove(file)
+
+@Client.on_message(
+    filters.command("runs")
+)
+async def runs(_, message):
+    """ /runs strings """
+    effective_string = random.choice(RUN_STRINGS)
+    if message.reply_to_message:
+        await message.reply_to_message.reply_text(effective_string)
+    else:
+        await message.reply_text(effective_string)

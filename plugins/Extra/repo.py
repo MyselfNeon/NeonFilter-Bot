@@ -7,31 +7,31 @@ from pyrogram import Client, filters
 
 @Client.on_message(filters.command('repo'))
 async def git(bot, message):
-    pablo = await message.reply_text("`Processing...`")
+    pablo = await message.reply_text("**__Processing...__ ✨**")
     args = message.text.split(None, 1)[1]
     if len(message.command) == 1:
-        await pablo.edit("No input found")
+        await pablo.edit("**__No Input Found__**")
         return
     r = requests.get("https://api.github.com/search/repositories", params={"q": args})
     lool = r.json()
     if lool.get("total_count") == 0:
-        await pablo.edit("File not found")
+        await pablo.edit("**__File Not Found__ 🥲**")
         return
     else:
         lol = lool.get("items")
         qw = lol[0]
         txt = f"""
-<b>Name :</b> <i>{qw.get("name")}</i>
+<b><i>Name : {qw.get("name")}</b></i>
 
-<b>Full Name :</b> <i>{qw.get("full_name")}</i>
+<b><i>Full Name : {qw.get("full_name")}</b></i>
 
-<b>Link :</b> {qw.get("html_url")}
+<b><i>Link : <a href="{qw.get("html_url")}">Click Here</a></i></b>
 
-<b>Fork Count :</b> <i>{qw.get("forks_count")}</i>
+<b><i>Fork Count : {qw.get("forks_count")}</i></b>
 
-<b>Open Issues :</b> <i>{qw.get("open_issues")}</i>
+<b><i>Open Issues : {qw.get("open_issues")}</i></b>
 
-<b>Powered by : {CHNL_LNK}</b>
+<b><i>Powered by : {CHNL_LNK}</i></b>
 
 """
         if qw.get("description"):

@@ -62,8 +62,8 @@ async def password(bot, update):
     # Buttons: Telegram account left, Refresh right
     btn = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("🌐 Owner", url=f"tg://user?id=841851780"),
-            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{user_id}")
+            InlineKeyboardButton("🛐 Dᴇᴠᴇʟᴏᴘᴇʀ", url="https://t.me/MyselfNeon"),
+            InlineKeyboardButton("🔄 Rᴇғʀᴇsʜ", callback_data=f"refresh_{user_id}")
         ]]
     )
 
@@ -88,8 +88,8 @@ async def refresh_password(bot, query: CallbackQuery):
     # Keep buttons same
     btn = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("🌐 Owner", url=f"tg://user?id=841851780"),
-            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{user_id}")
+            InlineKeyboardButton("🛐 Dᴇᴠᴇʟᴏᴘᴇʀ", url="https://t.me/MyselfNeon"),
+            InlineKeyboardButton("🔄 Rᴇғʀᴇsʜ", callback_data=f"refresh_{user_id}")
         ]]
     )
 

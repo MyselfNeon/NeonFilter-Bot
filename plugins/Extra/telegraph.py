@@ -1,102 +1,47 @@
 import os
 import requests
+import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
 
-# --- Upload to envs.sh (old style) ---
-def upload_envs(file_path):
+def upload_image_requests(image_path):
+    upload_url = "https://envs.sh"
+
     try:
-        with open(file_path, 'rb') as f:
-            response = requests.post("https://envs.sh", files={'file': f})
-        return response.text.strip()  # returns the URL directly
+        with open(image_path, 'rb') as file:
+            files = {'file': file} 
+            response = requests.post(upload_url, files=files)
+
+            if response.status_code == 200:
+                return response.text.strip() 
+            else:
+                return print(f"Upload failed with status code {response.status_code}")
+
     except Exception as e:
-        print(f"Envsh upload error: {e}")
+        print(f"Error during upload: {e}")
         return None
 
-# --- Simple Catbox upload ---
-def upload_catbox(file_path):
-    try:
-        with open(file_path, 'rb') as f:
-            response = requests.post(
-                "https://catbox.moe/user/api.php",
-                files={'fileToUpload': f},
-                data={'reqtype': 'fileupload'}
-            )
-        return response.text.strip()  # returns the URL directly
-    except Exception as e:
-        print(f"Catbox error: {e}")
-        return None
-
-# --- /telegraph command (old envs.sh style) ---
 @Client.on_message(filters.command("telegraph") & filters.private)
-async def telegraph_upload(bot, message: Message):
-    t_msg = await bot.ask(
-        chat_id=message.from_user.id,
-        text="**Send your photo or video to get envs.sh link 🖇️**"
-    )
-
+async def telegraph_upload(bot, update):
+    t_msg = await bot.ask(chat_id = update.from_user.id, text = "**__Now Send Me Your Photo Or Video Under 5MB To Get Media Link 🖇️__**")
     if not t_msg.media:
-        return await message.reply_text("**Only media supported 😄**")
-
+        return await update.reply_text("**__Only Media Supported 😄__**")
     path = await t_msg.download()
-    uploading_msg = await message.reply_text("<b><i>Uploading to envs.sh 📤 ...</i></b>")
-
-    file_url = upload_envs(path)
-    if not file_url:
-        await uploading_msg.edit_text("**Failed to upload file 💢**")
-        os.remove(path)
+    uploading_message = await update.reply_text("<b><i>Uploading now 📤 ...</i></b>")
+    try:
+        image_url = upload_image_requests(path)
+        if not image_url:
+            return await uploading_message.edit_text("**__Failed to upload file 💢__**")
+    except Exception as error:
+        await uploading_message.edit_text(f"**__Upload failed: {error}__**")
         return
-
-    await uploading_msg.edit_text(
-        text=f"<b><blockquote>‣ 𝐘𝐎𝐔𝐑 𝐄𝐍𝐕𝐒 𝐋𝐈𝐍𝐊 </b></blockquote>\n\n<code>{file_url}</code>",
+    await uploading_message.edit_text(
+        text=f"<b><blockquote>‣ 𝐘𝐎𝐔𝐑 𝐋𝐈𝐍𝐊 </b></blockquote>\n\n<code>{image_url}</code>",
         disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("Oᴘᴇɴ Lɪɴᴋ 🔓", url=file_url),
-                InlineKeyboardButton("Sʜᴀʀᴇ Lɪɴᴋ 🖇️", url=f"https://telegram.me/share/url?url={file_url}")
-            ],
-            [InlineKeyboardButton("❌ Cʟᴏsᴇ ❌", callback_data="close")]
-        ])
+        reply_markup=InlineKeyboardMarkup( [[
+            InlineKeyboardButton(text="Oᴘᴇɴ Lɪɴᴋ 🔓", url=image_url),
+            InlineKeyboardButton(text="Sʜᴀʀᴇ Lɪɴᴋ 🖇️", url=f"https://telegram.me/share/url?url={image_url}")
+            ],[
+            InlineKeyboardButton(text="❌ Cʟᴏsᴇ ❌", callback_data="close")
+            ]])
     )
-
-    os.remove(path)
-
-# --- /catbox command (simple Catbox uploader) ---
-@Client.on_message(filters.command("catbox") & filters.private)
-async def catbox_upload(bot, message: Message):
-    t_msg = await bot.ask(
-        chat_id=message.from_user.id,
-        text="**Send your photo or video to upload on Catbox.moe 🖇️**"
-    )
-
-    if not t_msg.media:
-        return await message.reply_text("**Only media supported 😄**")
-
-    path = await t_msg.download()
-    uploading_msg = await message.reply_text("<b><i>Uploading to Catbox.moe 📤 ...</i></b>")
-
-    file_url = upload_catbox(path)
-    if not file_url:
-        await uploading_msg.edit_text("**Failed to upload file 💢**")
-        os.remove(path)
-        return
-
-    await uploading_msg.edit_text(
-        text=f"<b><blockquote>‣ 𝐘𝐎𝐔𝐑 𝐂𝐚𝐭𝐛𝐨𝐱 𝐋𝐈𝐍𝐊 </b></blockquote>\n\n<code>{file_url}</code>",
-        disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("Oᴘᴇɴ Lɪɴᴋ 🔓", url=file_url),
-                InlineKeyboardButton("Sʜᴀʀᴇ Lɪɴᴋ 🖇️", url=f"https://telegram.me/share/url?url={file_url}")
-            ],
-            [InlineKeyboardButton("❌ Cʟᴏsᴇ ❌", callback_data="close")]
-        ])
-    )
-
-    os.remove(path)
-
-# --- Close button handler ---
-@Client.on_callback_query(filters.regex("close"))
-async def close_callback(bot, callback):
-    await callback.message.delete()
-    await callback.answer()

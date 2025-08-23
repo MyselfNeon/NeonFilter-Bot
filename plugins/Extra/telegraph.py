@@ -1,20 +1,23 @@
 import os
 import requests
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 
-# --- Upload functions ---
+# --- Upload to envs.sh (original behavior) ---
 def upload_envs(file_path):
     try:
         with open(file_path, 'rb') as f:
             response = requests.post("https://envs.sh", files={'file': f})
         if response.status_code == 200:
             return response.text.strip()
-        return None
+        else:
+            print(f"Envsh upload failed: {response.status_code}")
+            return None
     except Exception as e:
-        print(f"Envsh error: {e}")
+        print(f"Envsh upload error: {e}")
         return None
 
+# --- Upload to Catbox ---
 def upload_catbox(file_path):
     try:
         with open(file_path, 'rb') as f:
@@ -22,55 +25,33 @@ def upload_catbox(file_path):
             response = requests.post("https://catbox.moe/user/api.php", files={'fileToUpload': f}, data=data)
         if response.status_code == 200:
             return response.text.strip()
-        return None
+        else:
+            print(f"Catbox upload failed: {response.status_code}")
+            return None
     except Exception as e:
-        print(f"Catbox error: {e}")
+        print(f"Catbox upload error: {e}")
         return None
 
-# --- Dictionary to store temporary media per user for /telegraph ---
-user_media = {}
-
-# --- /telegraph command (interactive choice, old style preserved) ---
+# --- /telegraph command (OLD style, envs.sh only) ---
 @Client.on_message(filters.command("telegraph") & filters.private)
-async def telegraph_command(bot, message: Message):
+async def telegraph_upload(bot, message: Message):
     t_msg = await bot.ask(
         chat_id=message.from_user.id,
-        text="**Send your photo or video (under 5MB) to get a media link 🖇️**"
+        text="**Send your photo or video (under 5MB) to get media link 🖇️**"
     )
     
     if not t_msg.media:
         return await message.reply_text("**Only media supported 😄**")
     
     path = await t_msg.download()
-    user_media[message.from_user.id] = path
-
-    # Ask user which service to upload
-    await message.reply_text(
-        "Choose the upload service:",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("envs.sh", callback_data="upload_envs")],
-            [InlineKeyboardButton("Catbox.moe", callback_data="upload_catbox")]
-        ])
-    )
-
-# --- Callback for /telegraph service selection ---
-@Client.on_callback_query()
-async def service_callback(bot, callback: CallbackQuery):
-    user_id = callback.from_user.id
-    if user_id not in user_media:
-        return await callback.answer("No media found. Please send a file first.", show_alert=True)
-
-    path = user_media[user_id]
-    uploading_msg = await callback.message.edit_text("<b><i>Uploading now 📤 ...</i></b>")
-
-    if callback.data == "upload_envs":
-        file_url = upload_envs(path)
-    else:
-        file_url = upload_catbox(path)
-
+    uploading_msg = await message.reply_text("<b><i>Uploading now 📤 ...</i></b>")
+    
+    file_url = upload_envs(path)
     if not file_url:
-        return await uploading_msg.edit_text("**Failed to upload file 💢**")
-
+        await uploading_msg.edit_text("**Failed to upload file 💢**")
+        os.remove(path)
+        return
+    
     await uploading_msg.edit_text(
         text=f"<b><blockquote>‣ 𝐘𝐎𝐔𝐑 𝐋𝐈𝐍𝐊 </b></blockquote>\n\n<code>{file_url}</code>",
         disable_web_page_preview=True,
@@ -82,12 +63,10 @@ async def service_callback(bot, callback: CallbackQuery):
             [InlineKeyboardButton("❌ Cʟᴏsᴇ ❌", callback_data="close")]
         ])
     )
-
-    # Cleanup
-    del user_media[user_id]
+    
     os.remove(path)
 
-# --- /catbox command (direct upload, independent) ---
+# --- /catbox command (NEW, direct Catbox upload) ---
 @Client.on_message(filters.command("catbox") & filters.private)
 async def catbox_upload(bot, message: Message):
     t_msg = await bot.ask(
@@ -103,7 +82,9 @@ async def catbox_upload(bot, message: Message):
 
     file_url = upload_catbox(path)
     if not file_url:
-        return await uploading_msg.edit_text("**Failed to upload file 💢**")
+        await uploading_msg.edit_text("**Failed to upload file 💢**")
+        os.remove(path)
+        return
 
     await uploading_msg.edit_text(
         text=f"<b><blockquote>‣ 𝐘𝐎𝐔𝐑 𝐂𝐚𝐭𝐛𝐨𝐱 𝐋𝐈𝐍𝐊 </b></blockquote>\n\n<code>{file_url}</code>",
@@ -119,8 +100,8 @@ async def catbox_upload(bot, message: Message):
 
     os.remove(path)
 
-# --- Optional close button handler ---
+# --- Close button handler ---
 @Client.on_callback_query(filters.regex("close"))
-async def close_callback(bot, callback: CallbackQuery):
+async def close_callback(bot, callback):
     await callback.message.delete()
     await callback.answer()

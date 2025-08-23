@@ -54,7 +54,7 @@ async def password(bot: Client, update: Message):
     
     btn = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("🏠 Hᴏᴍᴇ", callback_data="start"),
+            InlineKeyboardButton("🛐 Oᴡɴᴇʀ", callback_data="OWNER_LNK"),
             InlineKeyboardButton("🔄 Rᴇғʀᴇsʜ", callback_data="refresh")
         ]]
     )
@@ -82,7 +82,7 @@ async def button_handler(bot: Client, query: CallbackQuery):
             f"<b><i>🔓 Lᴇɴɢᴛʜ :</i></b> {length}\n"
             f"<b><i>🔑 Pᴀssᴡᴏʀᴅ :</i></b> <code>{pw}</code>\n\n"
             f"<i><b><blockquote>{tip}</blockquote></b></i>\n\n"
-            f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n<code>/genpw 20</code> <i>to Set Custom Length.</i>"
+            f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n<code>/genpw 23</code> <i>to Set Custom Length.</i>"
         )
         await query.message.edit_text(
             text=txt,

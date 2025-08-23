@@ -5,11 +5,11 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Security tips to display with password
 SECURITY_TIPS = [
-    "<b><i>Always Use Unique Passwords For Each Account !!</b></i>",
-    "<b><i>Combine Letters, Numbers & Symbols For Max Strength !!</b></i>",
-    "<b><i>Change Your Passwords Regularly For Safety !!</b></i>",
-    "<b><i>Avoid Using Personal Info in Your Passwords !!</b></i>",
-    "<b><i>Consider Using a Password Manager For Convenience !!</b></i>"
+    "Always Use Unique Passwords For Each Account !!",
+    "Combine Letters, Numbers & Symbols For Max Strength !!",
+    "Change Your Passwords Regularly For Safety !!",
+    "Avoid Using Personal Info in Your Passwords !!",
+    "Consider Using a Password Manager For Convenience !!"
 ]
 
 @Client.on_message(filters.command(["genpassword", "genpw"]))
@@ -44,10 +44,10 @@ async def password(bot, update):
     
     # Stylish message
     txt = (
-        f"<b><i>Yᴏᴜʀ Sᴇᴄᴜʀᴇ Pᴀssᴡᴏʀᴅ 🔐</i></b>\n\n"
+        f"<b><i><blockquote>Yᴏᴜʀ Sᴇᴄᴜʀᴇ Pᴀssᴡᴏʀᴅ 🔐</blockquote></i></b>\n\n"
         f"<b><i>🔓 Lᴇɴɢᴛʜ :</i></b> {length}\n"
         f"<b><i>🔑 Pᴀssᴡᴏʀᴅ :</i></b> <code>{password}</code>\n\n"
-        f"<i>{tip}</i>\n\n"
+        f"<i><b><blockquote>{tip}</blockquote></b></i>\n\n"
         f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n`/genpw 20` <i>to Set Custom Length.</i>"
     )
     

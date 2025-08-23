@@ -88,7 +88,7 @@ async def refresh_password(bot, query: CallbackQuery):
     # Keep buttons same
     btn = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("🌐 Owner", url=f"tg://user?id={OWNER_TG_ID}"),
+            InlineKeyboardButton("🌐 Owner", url=f"tg://user?id=841851780"),
             InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{user_id}")
         ]]
     )

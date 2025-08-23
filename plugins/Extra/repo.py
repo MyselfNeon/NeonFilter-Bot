@@ -21,17 +21,19 @@ async def git(bot, message):
         lol = lool.get("items")
         qw = lol[0]
         txt = f"""
-<b><i>Name : {qw.get("name")}</b></i>
+<blockquote>𝐑𝐄𝐏𝐎𝐒𝐈𝐓𝐎𝐑𝐘 𝐑𝐄𝐒𝐔𝐋𝐓𝐒</blockquote>
 
-<b><i>Full Name : {qw.get("full_name")}</b></i>
+<b>📛 <i>Nᴀᴍᴇ : {qw.get("name")}</b></i>
 
-<b><i>Link : <a href="{qw.get("html_url")}">Click Here</a></i></b>
+<b>🪪 <i>Fᴜʟʟ Nᴀᴍᴇ : {qw.get("full_name")}</b></i>
 
-<b><i>Fork Count : {qw.get("forks_count")}</i></b>
+<b>🖇️ <i>Lɪɴᴋ : <a href="{qw.get("html_url")}">Click Here</a></i></b>
 
-<b><i>Open Issues : {qw.get("open_issues")}</i></b>
+<b>🍴 <i>Fᴏʀᴋ Cᴏᴜɴᴛ : {qw.get("forks_count")}</i></b>
 
-<b><i>Powered by : {CHNL_LNK}</i></b>
+<b>🐞 <i>Oᴘᴇɴ Issᴜᴇs : {qw.get("open_issues")}</i></b>
+
+<b>🔥 <i>Pᴏᴡᴇʀᴇᴅ Bʏ : <a href="{CHNL_LNK}">@NeonFiles</a></i></b>
 
 """
         if qw.get("description"):

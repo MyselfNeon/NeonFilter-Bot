@@ -48,27 +48,27 @@ async def start(client, message):
             buttons = [[
                 InlineKeyboardButton('🍀 Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ 🍀', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
-                InlineKeyboardButton('Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
+                InlineKeyboardButton('💰 Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
+                InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
+                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
             ],[
                 InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ Aɴᴅ Rᴇғᴇʀʀᴀʟ', callback_data='subscription')
             ],[
-                InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
             ]]
         else:
             buttons = [[
                 InlineKeyboardButton('🍀 Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ 🍀', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
-                InlineKeyboardButton('Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
+                InlineKeyboardButton('💰 Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
+                InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
+                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
             ],[
-                InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
             ]]
         if CLONE_MODE == True:
             buttons.append([InlineKeyboardButton('Cʀᴇᴀᴛᴇ Oᴡɴ Cʟᴏɴᴇ Bᴏᴛ', callback_data='clone')])
@@ -134,27 +134,27 @@ async def start(client, message):
             buttons = [[
                 InlineKeyboardButton('🍀 Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ 🍀', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
-                InlineKeyboardButton('Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
+                InlineKeyboardButton('💰 Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
+                InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
+                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
             ],[
                 InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ Aɴᴅ Rᴇғᴇʀʀᴀʟ', callback_data='subscription')
             ],[
-                InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
             ]]
         else:
             buttons = [[
                 InlineKeyboardButton('🍀 Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ 🍀', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
-                InlineKeyboardButton('Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
+                InlineKeyboardButton('💰 Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
+                InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
+                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
             ],[
-                InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
             ]]
         if CLONE_MODE == True:
             buttons.append([InlineKeyboardButton('Cʀᴇᴀᴛᴇ Oᴡɴ Cʟᴏɴᴇ Bᴏᴛ', callback_data='clone')])
@@ -189,30 +189,30 @@ async def start(client, message):
                 buttons = [[
                     InlineKeyboardButton('🍀 Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ 🍀', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
                 ],[
-                    InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
-                    InlineKeyboardButton('Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
+                    InlineKeyboardButton('💰 Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
+                    InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
                 ],[
-                    InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
-                    InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
+                    InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
+                    InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
                 ],[
                     InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ Aɴᴅ Rᴇғᴇʀʀᴀʟ', callback_data='subscription')
                 ],[
-                    InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                    InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
                 ]]
             else:
                 buttons = [[
                     InlineKeyboardButton('🍀 Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ 🍀', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
                 ],[
-                    InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
-                    InlineKeyboardButton('Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
+                    InlineKeyboardButton('💰 Eᴀʀɴ Mᴏɴᴇʏ', callback_data="shortlink_info"),
+                    InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
                 ],[
-                    InlineKeyboardButton('Hᴇʟᴘ', callback_data='help'),
-                    InlineKeyboardButton('Aʙᴏᴜᴛ', callback_data='about')
+                    InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
+                    InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
                 ],[
-                    InlineKeyboardButton('Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                    InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
                 ]]
             if CLONE_MODE == True:
-                buttons.append([InlineKeyboardButton('Cʀᴇᴀᴛᴇ Oᴡɴ Cʟᴏɴᴇ Bᴏᴛ', callback_data='clone')])
+                buttons.append([InlineKeyboardButton('😎 Cʀᴇᴀᴛᴇ Oᴡɴ Cʟᴏɴᴇ Bᴏᴛ 😎', callback_data='clone')])
             reply_markup = InlineKeyboardMarkup(buttons)
             m=await message.reply_sticker("CAACAgUAAxkBAAEKVaxlCWGs1Ri6ti45xliLiUeweCnu4AACBAADwSQxMYnlHW4Ls8gQMAQ") 
             await asyncio.sleep(1)
@@ -1401,6 +1401,7 @@ async def purge_requests(client, message):
             parse_mode=enums.ParseMode.MARKDOWN,
             disable_web_page_preview=True
         )
+
 
 
 

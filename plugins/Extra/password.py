@@ -1,5 +1,5 @@
 import random, os
-from info import CHNL_LNK
+from info import OWNER_LNK
 from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
@@ -51,11 +51,11 @@ async def password(bot, update):
         f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n<code>/genpw 20</code> <i>to Set Custom Length.</i>"
     )
 
-    # Buttons: Refresh and Update Channel
+    # Buttons: Update Owner Link on left, Refresh on right
     btn = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{length}"),
-            InlineKeyboardButton("🌐 Update Channel", url=CHNL_LNK)
+            InlineKeyboardButton("🌐 Owner Link", url=OWNER_LNK),
+            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{length}")
         ]]
     )
     
@@ -75,11 +75,11 @@ async def refresh_password(bot, query: CallbackQuery):
         f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n<code>/genpw 20</code> <i>to Set Custom Length.</i>"
     )
     
-    # Keep same buttons
+    # Keep same buttons: Owner link left, Refresh right
     btn = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{length}"),
-            InlineKeyboardButton("🌐 Update Channel", url=CHNL_LNK)
+            InlineKeyboardButton("🌐 Owner Link", url=OWNER_LNK),
+            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{length}")
         ]]
     )
     

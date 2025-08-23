@@ -5,16 +5,16 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Security tips to display with password
 SECURITY_TIPS = [
-    "🔒 Always use unique passwords for each account!",
-    "🛡️ Combine letters, numbers & symbols for max strength!",
-    "⚡ Change your passwords regularly for safety!",
-    "💡 Avoid using personal info in your passwords!",
-    "📝 Consider using a password manager for convenience!"
+    "<b><i>Always Use Unique Passwords For Each Account !!</b></i>",
+    "<b><i>Combine Letters, Numbers & Symbols For Max Strength !!</b></i>",
+    "<b><i>Change Your Passwords Regularly For Safety !!</b></i>",
+    "<b><i>Avoid Using Personal Info in Your Passwords !!</b></i>",
+    "<b><i>Consider Using a Password Manager For Convenience !!</b></i>"
 ]
 
 @Client.on_message(filters.command(["genpassword", "genpw"]))
 async def password(bot, update):
-    message = await update.reply_text("`✨ Generating your secure password... 🛠️`")
+    message = await update.reply_text("**✨ __Generating your secure password__**")
     
     # Base character sets
     letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -44,16 +44,16 @@ async def password(bot, update):
     
     # Stylish message
     txt = (
-        f"🔑 <b>Your Secure Password</b> 🔑\n\n"
-        f"<b>Length:</b> {length}\n"
-        f"<b>Password:</b> <code>{password}</code>\n\n"
+        f"<b><i>Yᴏᴜʀ Sᴇᴄᴜʀᴇ Pᴀssᴡᴏʀᴅ 🔐</i></b>\n\n"
+        f"<b><i>🔓 Lᴇɴɢᴛʜ :</i></b> {length}\n"
+        f"<b><i>🔑 Pᴀssᴡᴏʀᴅ :</i></b> <code>{password}</code>\n\n"
         f"<i>{tip}</i>\n\n"
-        f"<b>Example:</b> `/genpw 20` to set custom length."
+        f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n`/genpw 20` <i>to Set Custom Length.</i>"
     )
     
     # Button
     btn = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("🌐 Updates Channel", url=CHNL_LNK)]]
+        [[InlineKeyboardButton("🌐 Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ", url=CHNL_LNK)]]
     )
     
     await message.edit_text(text=txt, reply_markup=btn, parse_mode=enums.ParseMode.HTML)

@@ -1587,7 +1587,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             ]
             reply_markup = InlineKeyboardMarkup(buttons)
             await query.message.edit_text(
-                text=f"<b>__Change your Settings for {title} As your Wish__ ⚙️</b>",
+                text=f"<b><i>Change your Settings for {title} As your Wish</i> ⚙️</b>",
                 disable_web_page_preview=True,
                 parse_mode=enums.ParseMode.HTML
             )
@@ -1670,7 +1670,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup = InlineKeyboardMarkup(buttons)
             await client.send_message(
                 chat_id=userid,
-                text=f"<b>__Change your Settings for {title} As your Wish__ ⚙️</b>",
+                text=f"<b><i>Change your Settings for {title} As your Wish</i> ⚙️</b>",
                 reply_markup=reply_markup,
                 disable_web_page_preview=True,
                 parse_mode=enums.ParseMode.HTML,
@@ -3283,4 +3283,5 @@ async def global_filters(client, message, text=False):
                 break
     else:
         return False
+
 

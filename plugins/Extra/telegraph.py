@@ -105,3 +105,23 @@ async def catbox_upload(bot, message: Message):
 async def close_callback(bot, callback):
     await callback.message.delete()
     await callback.answer()
+
+
+def upload_catbox(file_path):
+    try:
+        with open(file_path, 'rb') as f:
+            data = {'reqtype': 'fileupload'}
+            response = requests.post(
+                "https://catbox.moe/user/api.php",
+                files={'fileToUpload': f},
+                data=data
+            )
+        print("Catbox response:", response.text)   # Debug
+        if response.status_code == 200 and response.text.startswith("https://"):
+            return response.text.strip()
+        else:
+            print(f"Upload failed. Status code: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"Catbox error: {e}")
+        return None

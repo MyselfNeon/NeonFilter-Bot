@@ -48,7 +48,7 @@ async def password(bot, update):
         f"<b><i>🔓 Lᴇɴɢᴛʜ :</i></b> {length}\n"
         f"<b><i>🔑 Pᴀssᴡᴏʀᴅ :</i></b> <code>{password}</code>\n\n"
         f"<i><b><blockquote>{tip}</blockquote></b></i>\n\n"
-        f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n`/genpw 20` <i>to Set Custom Length.</i>"
+        f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n<code>/genpw 20</code> <i>to Set Custom Length.</i>"
     )
     
     # Button

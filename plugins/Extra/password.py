@@ -1,9 +1,10 @@
-import random, os
-from info import OWNER_LNK
+import random
 from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
-# Security tips to display with password
+OWNER_TG_ID = 841851780  # Your Telegram ID
+
+# Security tips
 SECURITY_TIPS = [
     "Always Use Unique Passwords For Each Account !!",
     "Combine Letters, Numbers & Symbols For Max Strength !!",
@@ -12,7 +13,10 @@ SECURITY_TIPS = [
     "Consider Using a Password Manager For Convenience !!"
 ]
 
-# Function to generate a password
+# In-memory dictionary to store user custom lengths
+user_lengths = {}
+
+# Function to generate password
 def generate_password(length=None):
     letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     digits = "0123456789"
@@ -32,17 +36,21 @@ def generate_password(length=None):
 # Command handler
 @Client.on_message(filters.command(["genpassword", "genpw"]))
 async def password(bot, update):
-    # Determine length if user provided it
+    user_id = update.from_user.id
+
+    # Determine length
+    length = None
     if len(update.command) > 1:
         try:
             length = int(update.text.split(" ", 1)[1])
+            user_lengths[user_id] = length  # Save custom length for this user
         except ValueError:
-            length = None
-    else:
-        length = None
+            pass
+    elif user_id in user_lengths:
+        length = user_lengths[user_id]  # Use stored custom length
 
     password_str, length, tip = generate_password(length)
-    
+
     txt = (
         f"<b><i><blockquote>Yᴏᴜʀ Sᴇᴄᴜʀᴇ Pᴀssᴡᴏʀᴅ 🔐</blockquote></i></b>\n\n"
         f"<b><i>🔓 Lᴇɴɢᴛʜ :</i></b> {length}\n"
@@ -51,22 +59,24 @@ async def password(bot, update):
         f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n<code>/genpw 20</code> <i>to Set Custom Length.</i>"
     )
 
-    # Buttons: Update Owner Link on left, Refresh on right
+    # Buttons: Telegram account left, Refresh right
     btn = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("🌐 Owner Link", url=OWNER_LNK),
-            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{length}")
+            InlineKeyboardButton("🌐 Owner", url=f"tg://user?id=841851780"),
+            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{user_id}")
         ]]
     )
-    
+
     await update.reply_text(text=txt, reply_markup=btn, parse_mode=enums.ParseMode.HTML)
 
-# Callback handler for refresh button
+# Callback handler
 @Client.on_callback_query(filters.regex(r"refresh_(\d+)"))
 async def refresh_password(bot, query: CallbackQuery):
-    length = int(query.data.split("_")[1])
+    user_id = int(query.data.split("_")[1])
+    length = user_lengths.get(user_id, None)  # Retrieve saved length if exists
+
     password_str, length, tip = generate_password(length)
-    
+
     txt = (
         f"<b><i><blockquote>Yᴏᴜʀ Sᴇᴄᴜʀᴇ Pᴀssᴡᴏʀᴅ 🔐</blockquote></i></b>\n\n"
         f"<b><i>🔓 Lᴇɴɢᴛʜ :</i></b> {length}\n"
@@ -74,14 +84,14 @@ async def refresh_password(bot, query: CallbackQuery):
         f"<i><b><blockquote>{tip}</blockquote></b></i>\n\n"
         f"<b><i>⚠️ Cᴜsᴛᴏᴍ Lᴇɴɢᴛʜ :</b></i>\n<code>/genpw 20</code> <i>to Set Custom Length.</i>"
     )
-    
-    # Keep same buttons: Owner link left, Refresh right
+
+    # Keep buttons same
     btn = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("🌐 Owner Link", url=OWNER_LNK),
-            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{length}")
+            InlineKeyboardButton("🌐 Owner", url=f"tg://user?id={OWNER_TG_ID}"),
+            InlineKeyboardButton("🔄 Refresh", callback_data=f"refresh_{user_id}")
         ]]
     )
-    
+
     await query.message.edit_text(text=txt, reply_markup=btn, parse_mode=enums.ParseMode.HTML)
     await query.answer("Password refreshed 🔄")

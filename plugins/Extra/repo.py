@@ -23,7 +23,7 @@ async def git(bot, message):
         txt = f"""
 <blockquote>𝐑𝐄𝐏𝐎𝐒𝐈𝐓𝐎𝐑𝐘 𝐑𝐄𝐒𝐔𝐋𝐓𝐒</blockquote>
 
-<b>🪪 <i>Nᴀᴍᴇ : {qw.get("name")}</b></i>
+<b>🪪 <i>Nᴀᴍᴇ : {qw.get("name").capitalize()}</b></i>
 <b>🛐 <i>Oᴡɴᴇʀ : {qw["owner"]["login"].capitalize()}</b></i>
 
 <b>🖇️ <i>Rᴇᴘᴏ Lɪɴᴋ : <a href="{qw.get("html_url")}">Click Here</a></i></b>

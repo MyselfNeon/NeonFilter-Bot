@@ -25,7 +25,7 @@ async def git(bot, message):
 
 <b>📛 <i>Nᴀᴍᴇ : {qw.get("name")}</b></i>
 
-<b>🪪 <i>Fᴜʟʟ Nᴀᴍᴇ : {qw.get("full_name")}</b></i>
+<b>🪪 <i>Owner : {qw["owner"]["login"]}</b></i>
 
 <b>🖇️ <i>Lɪɴᴋ : <a href="{qw.get("html_url")}">Click Here</a></i></b>
 

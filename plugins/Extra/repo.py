@@ -31,8 +31,6 @@ async def git(bot, message):
 <b>🍴 <i>Fᴏʀᴋ Cᴏᴜɴᴛ : {qw.get("forks_count")}</i></b>
 <b>🐞 <i>Oᴘᴇɴ Issᴜᴇs : {qw.get("open_issues")}</i></b>
 
-<b>🔥 <i>Pᴏᴡᴇʀᴇᴅ Bʏ : <a href="{CHNL_LNK}">@NeonFiles</a></i></b>
-
 """
       
         if qw.get("size"):
@@ -48,5 +46,7 @@ async def git(bot, message):
             txt += f'\n\n<b><i>Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'            
 
         if qw.get("archived") == True:
-            txt += f"<b><i>Tʜɪs Pʀᴏɪᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"
+            txt += f"<b><i>\nTʜɪs Pʀᴏjᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"
+
+\n\n<b>🔥 <i>Pᴏᴡᴇʀᴇᴅ Bʏ : <a href="{CHNL_LNK}">@NeonFiles</a></i></b>    
         await pablo.edit(txt, disable_web_page_preview=True)

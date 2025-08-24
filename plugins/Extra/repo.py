@@ -23,34 +23,32 @@ async def git(bot, message):
         txt = f"""
 <blockquote>𝐑𝐄𝐏𝐎𝐒𝐈𝐓𝐎𝐑𝐘 𝐑𝐄𝐒𝐔𝐋𝐓𝐒</blockquote>
 
-<b>📛 <i>Nᴀᴍᴇ : {qw.get("name")}</b></i>
+<b>🪪 <i>Nᴀᴍᴇ : {qw.get("name")}</b></i>
+<b>🛐 <i>Oᴡɴᴇʀ : {qw["owner"]["login"]}</b></i>
 
-<b>🪪 <i>Owner : {qw["owner"]["login"]}</b></i>
-
-<b>🖇️ <i>Lɪɴᴋ : <a href="{qw.get("html_url")}">Click Here</a></i></b>
+<b>🖇️ <i>Rᴇᴘᴏ Lɪɴᴋ : <a href="{qw.get("html_url")}">Click Here</a></i></b>
 
 <b>🍴 <i>Fᴏʀᴋ Cᴏᴜɴᴛ : {qw.get("forks_count")}</i></b>
-
 <b>🐞 <i>Oᴘᴇɴ Issᴜᴇs : {qw.get("open_issues")}</i></b>
 
 <b>🔥 <i>Pᴏᴡᴇʀᴇᴅ Bʏ : <a href="{CHNL_LNK}">@NeonFiles</a></i></b>
 
 """
-        if qw.get("description"):
-            txt += f'<b>Description :</b> <code>{qw.get("description")}</code>'
-
-        if qw.get("language"):
-            txt += f'<b>Language :</b> <code>{qw.get("language")}</code>'
-
+      
         if qw.get("size"):
             txt += f'<b>Size :</b> <code>{qw.get("size")}</code>'
 
         if qw.get("score"):
             txt += f'<b>Score :</b> <code>{qw.get("score")}</code>'
+        if qw.get("language"):
+            txt += f'<b>Language :</b> <code>{qw.get("language")}</code>'
 
         if qw.get("created_at"):
             txt += f'<b>Created At :</b> <code>{qw.get("created_at")}</code>'
+            
+        if qw.get("description"):
+            txt += f'<b>Description :</b> {qw.get("description")}'            
 
         if qw.get("archived") == True:
-            txt += f"<b>This Project is Archived</b>"
+            txt += f"<b><i>This Project is Archived</i></b>"
         await pablo.edit(txt, disable_web_page_preview=True)

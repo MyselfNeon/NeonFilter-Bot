@@ -49,12 +49,4 @@ async def git(bot, message):
 
         if qw.get("archived") == True:
             txt += f"<b><i>\nTʜɪs Pʀᴏjᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"       
-       
-# Create inline button for “Bot Powered By”
-    buttons = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("🔥 Bot Powered By @NeonFiles", url=CHNL_LNK)]
-        ]
-)
-        
 await pablo.edit(txt, disable_web_page_preview=True)

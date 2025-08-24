@@ -36,17 +36,17 @@ async def git(bot, message):
 """
       
         if qw.get("size"):
-            txt += f'<b><i>Size : {qw.get("size")}</i></b>'
+            txt += f'<b><i>Sɪᴢᴇ : {qw.get("size")}</i></b>'
         if qw.get("score"):
-            txt += f'\n<b><i>Score : {qw.get("score")}</i></b>'
+            txt += f'\n<b><i>Sᴄᴏʀᴇ : {qw.get("score")}</i></b>'
         if qw.get("language"):
-            txt += f'\n<b><i>Language : {qw.get("language")}</i></b>'
+            txt += f'\n<b><i>Lᴀɴɢᴜᴀɢᴇ : {qw.get("language")}</i></b>'
         if qw.get("created_at"):
-            txt += f'\n<b><i>Created At : {qw.get("created_at")}</i></b>'
+            txt += f'\n<b><i>Cʀᴇᴀᴛᴇᴅ Oɴ : {qw.get("created_at")}</i></b>'
             
         if qw.get("description"):
-            txt += f'<b><i>Description :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'            
+            txt += f'\n\n<b><i>Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'            
 
         if qw.get("archived") == True:
-            txt += f"<b><i>This Project is Archived</i></b>"
+            txt += f"<b><i>Tʜɪs Pʀᴏɪᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"
         await pablo.edit(txt, disable_web_page_preview=True)

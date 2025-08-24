@@ -49,4 +49,6 @@ async def git(bot, message):
 
         if qw.get("archived") == True:
             txt += f"<b><i>\nTʜɪs Pʀᴏjᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"  
+        
+ <b>🔥 <i>Bᴏᴛ Pᴏᴡᴇʀᴇᴅ Bʏ : <a href="{CHNL_LNK}">@NeonFiles</a></i></b>       
         await pablo.edit(txt, disable_web_page_preview=True)

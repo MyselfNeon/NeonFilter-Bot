@@ -36,18 +36,16 @@ async def git(bot, message):
 """
       
         if qw.get("size"):
-            txt += f'<b>Size :</b> <code>{qw.get("size")}</code>'
-
+            txt += f'<b><i>Size : {qw.get("size")}</i></b>'
         if qw.get("score"):
-            txt += f'<b>Score :</b> <code>{qw.get("score")}</code>'
+            txt += f'\n<b><i>Score : {qw.get("score")}</i></b>'
         if qw.get("language"):
-            txt += f'<b>Language :</b> <code>{qw.get("language")}</code>'
-
+            txt += f'\n<b><i>Language : {qw.get("language")}</i></b>'
         if qw.get("created_at"):
-            txt += f'<b>Created At :</b> <code>{qw.get("created_at")}</code>'
+            txt += f'\n<b><i>Created At : {qw.get("created_at")}</i></b>'
             
         if qw.get("description"):
-            txt += f'<b>Description :</b> {qw.get("description")}'            
+            txt += f'<b><i>Description :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'            
 
         if qw.get("archived") == True:
             txt += f"<b><i>This Project is Archived</i></b>"

@@ -34,8 +34,6 @@ async def git(bot, message):
 <b>🔥 <i>Bᴏᴛ Pᴏᴡᴇʀᴇᴅ Bʏ : <a href="{CHNL_LNK}">@NeonFiles</a></i></b>
 
 """
-        if qw.get("description"):
-            txt += f'\n\n<b><i>📝 Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'
       
         if qw.get("size"):
             txt += f'<b><i>Sɪᴢᴇ : {qw.get("size")}</i></b>'

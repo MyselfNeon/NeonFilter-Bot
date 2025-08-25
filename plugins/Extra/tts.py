@@ -39,7 +39,7 @@ async def text_to_speech(bot, message: Message):
         voice = DEFAULT_VOICE
 
 # Send tip message immediately after /tts
-    reminder_msg = await message.reply_text("**__Use Custom Voice Models__ 🗣️ -**\n\n<code>/tts fr</code> - **__DeniseNeural__**\n<code>/tts hi</code> - **__SwaraNeural__**\n<code>/tts es</code> - **__ElviraNeural__**\n<code>/tts en</code> - **__AriaNeural__**")
+    reminder_msg = await message.reply_text("⚡Tip: Type your text within a few seconds!")
     await asyncio.sleep(5)
     await reminder_msg.delete()  # Auto-delete after 5 seconds
     

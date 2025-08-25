@@ -46,7 +46,7 @@ async def git(bot, message):
     issues = f"{qw.get('open_issues'):,}"
 
     txt = f"""
-<blockquote>𝐑𝐄𝐏𝐎𝐒𝐈𝐓𝐎𝐑𝐘 𝐑𝐄𝐒𝐔𝐋𝐓𝐒</blockquote>
+<blockquote><b>𝐑𝐄𝐏𝐎𝐒𝐈𝐓𝐎𝐑𝐘 𝐑𝐄𝐒𝐔𝐋𝐓𝐒</b></blockquote>
 
 <b>🪪 <i>Nᴀᴍᴇ : {qw.get("name").capitalize()}</b></i>
 <b>🛐 <i>Oᴡɴᴇʀ : {qw["owner"]["login"].capitalize()}</b></i>

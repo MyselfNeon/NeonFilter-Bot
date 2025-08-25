@@ -38,15 +38,15 @@ async def text_to_speech(bot, message: Message):
     else:
         voice = DEFAULT_VOICE
 
-    vj = await bot.ask(
-        chat_id=message.from_user.id, 
-        text="Now send me your text."
-    )
-
 # New message right after "Now send me your text"
     reminder_msg = await vj.reply_text("⚡Tip: Type your text within a few seconds!")
     await asyncio.sleep(5)
     await reminder_msg.delete()  # Auto-delete after 5 seconds
+    
+    vj = await bot.ask(
+        chat_id=message.from_user.id, 
+        text="Now send me your text."
+    )
     
     if vj.text:
         m = await vj.reply_text("🎙️ Processing your voice...")

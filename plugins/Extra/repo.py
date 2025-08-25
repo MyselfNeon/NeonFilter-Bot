@@ -43,6 +43,8 @@ async def git(bot, message):
             txt += f'\n<b><i>Lᴀɴɢᴜᴀɢᴇ : {qw.get("language")}</i></b>'
         if qw.get("created_at"):
             txt += f'\n<b><i>Cʀᴇᴀᴛᴇᴅ Oɴ : {qw.get("created_at").replace("Z", "").replace("T", " T")}</i></b>'            
+        if qw.get("description"):
+            txt += f'\n\n<b><i>📝 Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'
 
         if qw.get("archived") == True:
             txt += f"<b><i>\nTʜɪs Pʀᴏjᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"       

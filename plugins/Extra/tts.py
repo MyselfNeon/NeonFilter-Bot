@@ -38,8 +38,8 @@ async def text_to_speech(bot, message: Message):
     else:
         voice = DEFAULT_VOICE
 
-# New message right after "Now send me your text"
-    reminder_msg = await vj.reply_text("⚡Tip: Type your text within a few seconds!")
+# Send tip message immediately after /tts
+    reminder_msg = await message.reply_text("⚡Tip: Type your text within a few seconds!")
     await asyncio.sleep(5)
     await reminder_msg.delete()  # Auto-delete after 5 seconds
     

@@ -39,17 +39,17 @@ async def text_to_speech(bot, message: Message):
         voice = DEFAULT_VOICE
 
 # Send tip message immediately after /tts
-    reminder_msg = await message.reply_text("⚡Tip: Type your text within a few seconds!")
+    reminder_msg = await message.reply_text("**__Use Custom Voice Models__ 🗣️ -**\n\n<code>/tts fr</code> - **__DeniseNeural__**\n<code>/tts hi</code> - **__SwaraNeural__**\n<code>/tts es</code> - **__ElviraNeural__**\n<code>/tts en</code> - **__AriaNeural__**")
     await asyncio.sleep(5)
     await reminder_msg.delete()  # Auto-delete after 5 seconds
     
     vj = await bot.ask(
         chat_id=message.from_user.id, 
-        text="Now send me your text."
+        text="**__Now Send Me Your Text__ 😄**"
     )
     
     if vj.text:
-        m = await vj.reply_text("🎙️ Processing your voice...")
+        m = await vj.reply_text("🎙️ **Processing your voice...**")
         try:
             audio = await convert(vj.text, voice)
             await vj.reply_audio(audio)
@@ -58,4 +58,4 @@ async def text_to_speech(bot, message: Message):
         except Exception as e:
             await m.edit(f"❌ Error: {e}")
     else:
-        await vj.reply_text("Send me only text Buddy.")
+        await vj.reply_text("**__Send Me Only Text Buddy__**")

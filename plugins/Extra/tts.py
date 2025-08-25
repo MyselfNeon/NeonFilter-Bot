@@ -38,15 +38,14 @@ async def text_to_speech(bot, message: Message):
     else:
         voice = DEFAULT_VOICE
     
-    vj = await bot.ask(
-        chat_id=message.from_user.id, 
-        text="**__Now Send Me Your Text__ 😄**"
-    )
-
-# Immediately send auto-delete tip message
+    # Send both messages together
+    ask_msg = await message.reply_text("**__Now Send Me Your Text__ 😄**")
     reminder_msg = await message.reply_text("⚡Tip: Type your text quickly!")
     asyncio.create_task(auto_delete(reminder_msg))  # run async without blocking
-    
+
+    # Wait for user reply
+    vj = await bot.listen(message.chat.id)
+
     if vj.text:
         m = await vj.reply_text("🎙️ **Processing your voice...**")
         try:
@@ -58,3 +57,7 @@ async def text_to_speech(bot, message: Message):
             await m.edit(f"❌ Error: {e}")
     else:
         await vj.reply_text("**__Send Me Only Text Buddy__**")
+
+async def auto_delete(msg):
+    await asyncio.sleep(4)  # auto delete after 4 seconds
+    await msg.delete()

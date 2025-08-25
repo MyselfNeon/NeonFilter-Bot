@@ -37,16 +37,15 @@ async def text_to_speech(bot, message: Message):
         voice = VOICE_MAP.get(voice_input, voice_input)  # Map code or direct voice
     else:
         voice = DEFAULT_VOICE
-
-# Send tip message immediately after /tts
-    reminder_msg = await message.reply_text("⚡Tip: Type your text within a few seconds!")
-    await asyncio.sleep(5)
-    await reminder_msg.delete()  # Auto-delete after 5 seconds
     
     vj = await bot.ask(
         chat_id=message.from_user.id, 
         text="**__Now Send Me Your Text__ 😄**"
     )
+
+# Immediately send auto-delete tip message
+    reminder_msg = await message.reply_text("⚡Tip: Type your text quickly!")
+    asyncio.create_task(auto_delete(reminder_msg))  # run async without blocking
     
     if vj.text:
         m = await vj.reply_text("🎙️ **Processing your voice...**")

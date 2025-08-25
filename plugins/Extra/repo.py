@@ -63,11 +63,11 @@ async def git(bot, message):
 
     # Put description immediately after main details
     if qw.get("description"):
-        txt += f'\n\n<b><i>📝 Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'
+        txt += f'\n<b><i>📝 Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'
 
     # Then add technical/meta info
     if qw.get("size"):
-        txt += f'\n<b><i>Sɪᴢᴇ : {qw.get("size"):,} KB</i></b>'
+        txt += f'\n\n<b><i>Sɪᴢᴇ : {qw.get("size"):,} KB</i></b>'
     if qw.get("score"):
         txt += f'\n<b><i>Sᴄᴏʀᴇ : {qw.get("score")}</i></b>'
     if qw.get("language"):

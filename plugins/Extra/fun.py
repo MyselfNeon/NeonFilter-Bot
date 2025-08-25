@@ -6,15 +6,18 @@ import time
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 
-# --- Config ---
+# -----------------------
+# CONFIG
+# -----------------------
 BANK_FILE = "bank.json"
 XP_FILE = "xp.json"
 DAILY_FILE = "daily.json"
 
-# Add your Telegram user IDs here
-ADMINS = [841851780,]  # replace with your IDs
+ADMINS = [841851780]  # replace with your IDs
 
-# --- Persistent JSON Helpers ---
+# -----------------------
+# JSON Helpers
+# -----------------------
 def load_json(path):
     if os.path.exists(path):
         with open(path, "r") as f:
@@ -29,7 +32,9 @@ BANK = load_json(BANK_FILE)
 XP = load_json(XP_FILE)
 DAILY = load_json(DAILY_FILE)
 
-# --- Bank Functions ---
+# -----------------------
+# BANK FUNCTIONS
+# -----------------------
 def get_balance(user_id: int) -> int:
     return BANK.get(str(user_id), 100)
 
@@ -41,7 +46,9 @@ def set_balance(user_id: int, amount: int):
     BANK[str(user_id)] = amount
     save_json(BANK_FILE, BANK)
 
-# --- XP Functions ---
+# -----------------------
+# XP FUNCTIONS
+# -----------------------
 def get_xp(user_id: int) -> int:
     return XP.get(str(user_id), 0)
 
@@ -50,9 +57,11 @@ def add_xp(user_id: int, amount: int):
     save_json(XP_FILE, XP)
 
 def get_level(user_id: int) -> int:
-    return get_xp(user_id) // 100  # 100 XP per level
+    return get_xp(user_id) // 100
 
-# --- Daily Reward ---
+# -----------------------
+# DAILY REWARD
+# -----------------------
 def can_claim_daily(user_id: int) -> bool:
     last = DAILY.get(str(user_id), 0)
     return (time.time() - last) >= 86400  # 24h
@@ -61,11 +70,15 @@ def set_daily(user_id: int):
     DAILY[str(user_id)] = time.time()
     save_json(DAILY_FILE, DAILY)
 
-# --- Check Admin ---
+# -----------------------
+# ADMIN CHECK
+# -----------------------
 def is_admin(user_id: int) -> bool:
     return user_id in ADMINS
 
-# --- Rock Paper Scissors ---
+# -----------------------
+# ROCK PAPER SCISSORS
+# -----------------------
 RPS_EMOJI = {"rock": "🪨", "paper": "📄", "scissors": "✂️"}
 
 def rps_keyboard() -> InlineKeyboardMarkup:
@@ -115,7 +128,9 @@ async def rps_play(_: Client, cq: CallbackQuery):
     await cq.message.edit_text(txt, reply_markup=rps_keyboard())
     await cq.answer()
 
-# --- Roulette Game ---
+# -----------------------
+# ROULETTE GAME
+# -----------------------
 @Client.on_message(filters.command(["roulette"]))
 async def roulette(_: Client, message: Message):
     user_id = message.from_user.id
@@ -141,7 +156,9 @@ async def roulette(_: Client, message: Message):
         f"🎰 **Roulette Result**\nLanded: {outcome.upper()}\n{result}\nBalance: {get_balance(user_id)} 💰\nXP: {get_xp(user_id)} | Level: {get_level(user_id)}"
     )
 
-# --- Chicken Fight ---
+# -----------------------
+# CHICKEN FIGHT
+# -----------------------
 @Client.on_message(filters.command(["chickfight"]))
 async def chick_fight(_: Client, message: Message):
     user_id = message.from_user.id
@@ -168,7 +185,9 @@ async def chick_fight(_: Client, message: Message):
 
     await message.reply_text(f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰\nXP: {get_xp(user_id)} | Level: {get_level(user_id)}")
 
-# --- Bank Commands ---
+# -----------------------
+# BALANCE COMMANDS
+# -----------------------
 @Client.on_message(filters.command(["balance"]))
 async def check_balance(_: Client, message: Message):
     user_id = message.from_user.id
@@ -182,7 +201,9 @@ async def earn(_: Client, message: Message):
     add_xp(user_id, 5)
     await message.reply_text(f"✨ You worked and earned {amount} coins!\nNew balance: {get_balance(user_id)} 💰 | XP: {get_xp(user_id)}")
 
-# --- Daily Reward ---
+# -----------------------
+# DAILY REWARD
+# -----------------------
 @Client.on_message(filters.command(["daily"]))
 async def daily(_: Client, message: Message):
     user_id = message.from_user.id
@@ -196,19 +217,28 @@ async def daily(_: Client, message: Message):
 
     await message.reply_text(f"🎁 Daily reward: {reward} coins!\nBalance: {get_balance(user_id)} 💰 | XP: {get_xp(user_id)} | Level: {get_level(user_id)}")
 
-# --- Leaderboard ---
-@Client.on_message(filters.command(["top"]))
-async def leaderboard(_: Client, message: Message):
+# -----------------------
+# LEADERBOARD
+# -----------------------
+@Client.on_message(filters.command(["top", "leaderboard"]))
+async def leaderboard(client: Client, message: Message):
     # Sort by balance
     top_users = sorted(BANK.items(), key=lambda x: x[1], reverse=True)[:10]
     text = "🏆 Top 10 Richest Users\n"
     for i, (uid, bal) in enumerate(top_users, start=1):
+        try:
+            user_obj = await client.get_users(int(uid))
+            name = user_obj.first_name if user_obj else str(uid)
+        except:
+            name = str(uid)
         xp = XP.get(uid, 0)
         lvl = xp // 100
-        text += f"{i}. User {uid} → {bal} 💰 | Lvl {lvl}\n"
+        text += f"{i}. {name} → {bal} 💰 | Lvl {lvl}\n"
     await message.reply_text(text)
 
-# --- Admin Economy Commands ---
+# -----------------------
+# ADMIN ECONOMY COMMANDS
+# -----------------------
 @Client.on_message(filters.command(["givemoney"]))
 async def give_money(_: Client, message: Message):
     user_id = message.from_user.id
@@ -238,4 +268,30 @@ async def remove_money(_: Client, message: Message):
     await message.reply_text(f"✅ Removed {amount} coins from {target}")
 
 @Client.on_message(filters.command(["setmoney"]))
-async def set_money
+async def set_money(_: Client, message: Message):
+    user_id = message.from_user.id
+    if not is_admin(user_id):
+        return await message.reply_text("🚫 You need to be admin to use this command!")
+
+    args = message.text.split()
+    if len(args) < 3:
+        return await message.reply_text("Usage: /setmoney <user_id> <amount>")
+
+    target, amount = int(args[1]), int(args[2])
+    set_balance(target, amount)
+    await message.reply_text(f"✅ Set {target}'s balance to {amount}")
+
+# -----------------------
+# AUTO XP ON MESSAGES (30s cooldown)
+# -----------------------
+LAST_XP = {}
+
+@Client.on_message(filters.text & ~filters.command(["rps","roulette","chickfight","balance","earn","daily","top","givemoney","removemoney","setmoney"]))
+async def auto_xp(_: Client, message: Message):
+    user_id = message.from_user.id
+    now = time.time()
+    last = LAST_XP.get(user_id, 0)
+    if now - last >= 30:  # cooldown 30s
+        xp_gain = random.randint(1, 3)
+        add_xp(user_id, xp_gain)
+        LAST_XP[user_id] = now

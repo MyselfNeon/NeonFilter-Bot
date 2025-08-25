@@ -1,134 +1,162 @@
-
-from __future__ import unicode_literals
-
-import os, requests, asyncio, math, time, wget
-from pyrogram import filters, Client
-from pyrogram.types import Message
-from info import CHNL_LNK
-from youtube_search import YoutubeSearch
-from youtubesearchpython import SearchVideos
+import os
+import asyncio
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from yt_dlp import YoutubeDL
+from yt_dlp.utils import DownloadError
+from youtubesearchpython import VideosSearch
 
-
-@Client.on_message(filters.command(['song', 'mp3']) & filters.private)
-async def song(client, message):
-    user_id = message.from_user.id 
-    user_name = message.from_user.first_name 
-    rpk = "["+user_name+"](tg://user?id="+str(user_id)+")"
-    query = ''
-    for i in message.command[1:]:
-        query += ' ' + str(i)
-    print(query)
-    m = await message.reply(f"**__Searching your Song... !! 😇\n {query}__**")
-    ydl_opts = {"format": "bestaudio[ext=m4a]"}
-    try:
-        results = YoutubeSearch(query, max_results=1).to_dict()
-        link = f"https://youtube.com{results[0]['url_suffix']}"
-        title = results[0]["title"][:40]       
-        thumbnail = results[0]["thumbnails"][0]
-        thumb_name = f'thumb{title}.jpg'
-        thumb = requests.get(thumbnail, allow_redirects=True)
-        open(thumb_name, 'wb').write(thumb.content)
-        performer = f"[NETWORKS™]" 
-        duration = results[0]["duration"]
-        url_suffix = results[0]["url_suffix"]
-        views = results[0]["views"]
-    except Exception as e:
-        print(str(e))
-        return await m.edit("**__Example: /song Apna bna le__ 🎙️**")
-                
-    await m.edit("**__Downloading your Song... !!__ 📥**")
-    try:
-        with YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(link, download=False)
-            audio_file = ydl.prepare_filename(info_dict)
-            ydl.process_info(info_dict)
-
-        cap = f"**BY›› [UPDATE]({CHNL_LNK})**"
-        secmul, dur, dur_arr = 1, 0, duration.split(':')
-        for i in range(len(dur_arr)-1, -1, -1):
-            dur += (int(dur_arr[i]) * secmul)
-            secmul *= 60
-        await message.reply_audio(
-            audio_file,
-            caption=cap,            
-            quote=False,
-            title=title,
-            duration=dur,
-            performer=performer,
-            thumb=thumb_name
-        )            
-        await m.delete()
-    except Exception as e:
-        await m.edit("**__🚫 ERROR 🚫__**")
-        print(e)
-    try:
-        os.remove(audio_file)
-        os.remove(thumb_name)
-    except Exception as e:
-        print(e)
-
-def get_text(message: Message) -> [None,str]:
-    text_to_return = message.text
-    if message.text is None:
-        return None
-    if " " not in text_to_return:
-        return None
-    try:
-        return message.text.split(None, 1)[1]
-    except IndexError:
-        return None
-
-
-@Client.on_message(filters.command(["video", "mp4"]))
-async def vsong(client, message: Message):
-    urlissed = get_text(message)
-    pablo = await client.send_message(message.chat.id, f"**__Finding Your Video__ 😇** `{urlissed}`")
-    if not urlissed:
-        return await pablo.edit("**__Example: /video Your video Link__ 🖇️**")     
-    search = SearchVideos(f"{urlissed}", offset=1, mode="dict", max_results=1)
-    mi = search.result()
-    mio = mi["search_result"]
-    mo = mio[0]["link"]
-    thum = mio[0]["title"]
-    fridayz = mio[0]["id"]
-    mio[0]["channel"]
-    kekme = f"https://img.youtube.com/vi/{fridayz}/hqdefault.jpg"
-    await asyncio.sleep(0.6)
-    url = mo
-    sedlyf = wget.download(kekme)
-    opts = {
-        "format": "best",
-        "addmetadata": True,
-        "key": "FFmpegMetadata",
-        "prefer_ffmpeg": True,
+# -----------------------------
+# YT-DLP OPTIONS
+# -----------------------------
+def audio_opts_factory(bitrate="192"):
+    return {
+        "format": "bestaudio/best",
+        "outtmpl": "%(title)s.%(ext)s",
+        "noplaylist": True,
+        "quiet": True,
         "geo_bypass": True,
         "nocheckcertificate": True,
-        "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
-        "outtmpl": "%(id)s.mp4",
-        "logtostderr": False,
-        "quiet": True,
+        "postprocessors": [{
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "mp3",
+            "preferredquality": bitrate,
+        }]
     }
-    try:
-        with YoutubeDL(opts) as ytdl:
-            ytdl_data = ytdl.extract_info(url, download=True)
-    except Exception as e:
-        return await pablo.edit_text(f"**__Download Failed Please Try Again__ ❌** \n**__ERROR:** `{str(e)}`__")       
-    
-    file_stark = f"{ytdl_data['id']}.mp4"
-    capy = f"""**__TITLE :__** [{thum}]({mo})\n**__Requested By : {message.from_user.mention}__ ✨**"""
 
-    await client.send_video(
-        message.chat.id,
-        video=open(file_stark, "rb"),
-        duration=int(ytdl_data["duration"]),
-        file_name=str(ytdl_data["title"]),
-        thumb=sedlyf,
-        caption=capy,
-        supports_streaming=True,        
-        reply_to_message_id=message.id 
+def video_opts_factory(resolution="best"):
+    return {
+        "format": f"bestvideo[height<={resolution}]+bestaudio/best" if resolution != "best" else "bestvideo+bestaudio/best",
+        "outtmpl": "%(title)s.%(ext)s",
+        "noplaylist": True,
+        "quiet": True,
+        "geo_bypass": True,
+        "nocheckcertificate": True,
+        "merge_output_format": "mp4",
+    }
+
+# -----------------------------
+# YT SEARCH
+# -----------------------------
+def yt_search(query: str) -> str:
+    search = VideosSearch(query, limit=1)
+    results = search.result().get("result")
+    if not results:
+        return None
+    return results[0]["link"]
+
+# -----------------------------
+# DOWNLOAD WITH PROGRESS
+# -----------------------------
+async def yt_download(url, opts, message):
+    loop = asyncio.get_running_loop()
+    progress_msg = await message.reply("⏳ Starting download...")
+
+    def progress_hook(d):
+        if d['status'] == 'downloading':
+            total = d.get('total_bytes') or d.get('total_bytes_estimate') or 1
+            downloaded = d.get('downloaded_bytes', 0)
+            percent = int(downloaded * 100 / total)
+            loop.create_task(progress_msg.edit(f"⏳ Downloading... {percent}%"))
+        elif d['status'] == 'finished':
+            loop.create_task(progress_msg.edit("✅ Download finished, uploading..."))
+
+    opts["progress_hooks"] = [progress_hook]
+
+    file_path, info = await loop.run_in_executor(None, lambda: download_sync(url, opts))
+    await progress_msg.delete()
+    return file_path, info
+
+def download_sync(url, opts):
+    with YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        file_path = ydl.prepare_filename(info)
+        if "postprocessors" in opts and opts["postprocessors"][0]["key"] == "FFmpegExtractAudio":
+            if not file_path.endswith(".mp3"):
+                file_path = os.path.splitext(file_path)[0] + ".mp3"
+        return file_path, info
+
+# -----------------------------
+# /song COMMAND
+# -----------------------------
+@Client.on_message(filters.command(["song", "mp3"]) & filters.private)
+async def song_handler(client, message):
+    if len(message.command) < 2:
+        return await message.reply("**Usage:** `/song <link or search>` 🎵")
+
+    query = message.text.split(maxsplit=1)[1]
+    await message.reply(
+        "Select audio quality:",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("128 kbps", callback_data=f"audio|128|{query}")],
+            [InlineKeyboardButton("192 kbps", callback_data=f"audio|192|{query}")],
+            [InlineKeyboardButton("320 kbps", callback_data=f"audio|320|{query}")]
+        ])
     )
-    await pablo.delete()
-    for files in (sedlyf, file_stark):
-        if files and os.path.exists(files):
-            os.remove(files)
+
+# -----------------------------
+# /video COMMAND
+# -----------------------------
+@Client.on_message(filters.command(["video", "mp4"]) & filters.private)
+async def video_handler(client, message):
+    if len(message.command) < 2:
+        return await message.reply("**Usage:** `/video <link or search>` 🎬")
+
+    query = message.text.split(maxsplit=1)[1]
+    await message.reply(
+        "Select video quality:",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("360p", callback_data=f"video|360|{query}")],
+            [InlineKeyboardButton("720p", callback_data=f"video|720|{query}")],
+            [InlineKeyboardButton("1080p", callback_data=f"video|1080|{query}")],
+            [InlineKeyboardButton("Best", callback_data=f"video|best|{query}")]
+        ])
+    )
+
+# -----------------------------
+# CALLBACK QUERY HANDLER
+# -----------------------------
+@Client.on_callback_query()
+async def callback_query_handler(client: Client, cq: CallbackQuery):
+    action, quality, query = cq.data.split("|")
+
+    await cq.answer("Processing your request... ⏳")
+    url = query if query.startswith(("http://", "https://")) else yt_search(query)
+    if not url:
+        return await cq.message.edit("❌ No results found.")
+
+    try:
+        if action == "audio":
+            opts = audio_opts_factory(quality)
+            file_path, info = await yt_download(url, opts, cq.message)
+            await client.send_audio(
+                chat_id=cq.message.chat.id,
+                audio=file_path,
+                title=info.get("title"),
+                performer=info.get("uploader"),
+                duration=int(info.get("duration", 0)),
+                caption=f"🎵 **{info.get('title')}**\n👤 {info.get('uploader')}"
+            )
+        elif action == "video":
+            opts = video_opts_factory(quality)
+            file_path, info = await yt_download(url, opts, cq.message)
+            await client.send_video(
+                chat_id=cq.message.chat.id,
+                video=file_path,
+                caption=f"🎬 **{info.get('title')}**\n👤 {info.get('uploader')}",
+                duration=int(info.get("duration", 0)),
+                supports_streaming=True
+            )
+        os.remove(file_path)
+        await cq.message.delete()
+
+    except DownloadError as e:
+        if "Sign in" in str(e) or "login" in str(e).lower():
+            await cq.message.edit(
+                "⚠️ This video is age-restricted, private, or requires sign-in and cannot be downloaded."
+            )
+        else:
+            await cq.message.edit(f"❌ Error: `{str(e)}`")
+
+    except Exception as e:
+        await cq.message.edit(f"❌ Error: `{str(e)}`")

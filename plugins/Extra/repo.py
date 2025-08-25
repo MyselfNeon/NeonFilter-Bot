@@ -34,6 +34,8 @@ async def git(bot, message):
 <b>🔥 <i>Bᴏᴛ Pᴏᴡᴇʀᴇᴅ Bʏ : <a href="{CHNL_LNK}">@NeonFiles</a></i></b>
 
 """
+        if qw.get("description"):
+            txt += f'\n\n<b><i>📝 Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'
       
         if qw.get("size"):
             txt += f'<b><i>Sɪᴢᴇ : {qw.get("size")}</i></b>'
@@ -42,10 +44,7 @@ async def git(bot, message):
         if qw.get("language"):
             txt += f'\n<b><i>Lᴀɴɢᴜᴀɢᴇ : {qw.get("language")}</i></b>'
         if qw.get("created_at"):
-            txt += f'\n<b><i>Cʀᴇᴀᴛᴇᴅ Oɴ : {qw.get("created_at").replace("Z", "").replace("T", " T")}</i></b>'
-            
-        if qw.get("description"):
-            txt += f'\n\n<b><i>📝 Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'            
+            txt += f'\n<b><i>Cʀᴇᴀᴛᴇᴅ Oɴ : {qw.get("created_at").replace("Z", "").replace("T", " T")}</i></b>'            
 
         if qw.get("archived") == True:
             txt += f"<b><i>\nTʜɪs Pʀᴏjᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"       

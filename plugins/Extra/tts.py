@@ -40,14 +40,14 @@ async def text_to_speech(bot, message: Message):
     
     # Send both messages together
     ask_msg = await message.reply_text("**__Now Send Me Your Text__ 😄**")
-    reminder_msg = await message.reply_text("⚡Tip: Type your text quickly!")
+    reminder_msg = await message.reply_text("**__Use Custom Voice Models__ 🗣️**\n\n<code>/tts es</code> - **__Eʟᴠɪʀᴀ__**\n<code>/tts en</code> - **__Aʀɪᴀ__**\n<code>/tts hi</code>  - **__Sᴡᴀʀᴀ__**\n<code>/tts fr</code>   - **__Dᴇɴɪᴄᴇ__**")
     asyncio.create_task(auto_delete(reminder_msg))  # run async without blocking
 
     # Wait for user reply
     vj = await bot.listen(message.chat.id)
 
     if vj.text:
-        m = await vj.reply_text("🎙️ **Processing your voice...**")
+        m = await vj.reply_text("🎙️ **__Processing Your Voice__...**")
         try:
             audio = await convert(vj.text, voice)
             await vj.reply_audio(audio)

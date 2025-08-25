@@ -61,9 +61,13 @@ async def git(bot, message):
 <b>🔥 <i>Bᴏᴛ Pᴏᴡᴇʀᴇᴅ Bʏ : <a href="{CHNL_LNK}">@NeonFiles</a></i></b>
 """
 
-    # Extra optional details
+    # Put description immediately after main details
+    if qw.get("description"):
+        txt += f'\n\n<b><i>📝 Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'
+
+    # Then add technical/meta info
     if qw.get("size"):
-        txt += f'<b><i>Sɪᴢᴇ : {qw.get("size"):,} KB</i></b>'
+        txt += f'\n<b><i>Sɪᴢᴇ : {qw.get("size"):,} KB</i></b>'
     if qw.get("score"):
         txt += f'\n<b><i>Sᴄᴏʀᴇ : {qw.get("score")}</i></b>'
     if qw.get("language"):
@@ -72,8 +76,6 @@ async def git(bot, message):
         txt += f'\n<b><i>Cʀᴇᴀᴛᴇᴅ Oɴ : {format_date(qw.get("created_at"))}</i></b>'
     if qw.get("updated_at"):
         txt += f'\n<b><i>Lᴀsᴛ Uᴘᴅᴀᴛᴇᴅ : {format_date(qw.get("updated_at"))}</i></b>'
-    if qw.get("description"):
-        txt += f'\n\n<b><i>📝 Dᴇsᴄʀɪᴘᴛɪᴏɴ :</b></i>\n<blockquote expandable>{qw.get("description")}</blockquote>'
     if qw.get("archived") is True:
         txt += f"\n<b><i>Tʜɪs Pʀᴏjᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"
 

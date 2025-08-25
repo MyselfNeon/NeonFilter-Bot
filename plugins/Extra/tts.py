@@ -17,7 +17,7 @@ VOICE_MAP = {
 
 async def convert(text: str, voice: str) -> BytesIO:
     audio = BytesIO()
-    audio.name = "tts.mp3"
+    audio.name = "Neon.mp3"
 
     communicate = edge_tts.Communicate(text, voice=voice)
     async for chunk in communicate.stream():

@@ -73,11 +73,11 @@ async def git(bot, message):
     if qw.get("language"):
         txt += f'\n<b><i>Lᴀɴɢᴜᴀɢᴇ : {qw.get("language")}</i></b>'
     if qw.get("created_at"):
-        txt += f'\n<b><i>Cʀᴇᴀᴛᴇᴅ Oɴ : {format_date(qw.get("created_at"))}</i></b>'
+        txt += f'\n\n<b><i>Cʀᴇᴀᴛᴇᴅ Oɴ : {format_date(qw.get("created_at"))}</i></b>'
     if qw.get("updated_at"):
-        txt += f'\n<b><i>Lᴀsᴛ Uᴘᴅᴀᴛᴇᴅ : {format_date(qw.get("updated_at"))}</i></b>'
+        txt += f'\n<b><i>Uᴘᴅᴀᴛᴇᴅ Oɴ : {format_date(qw.get("updated_at"))}</i></b>'
     if qw.get("archived") is True:
-        txt += f"\n<b><i>Tʜɪs Pʀᴏjᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"
+        txt += f"\n\n<b><i>🔐 Tʜɪs Pʀᴏjᴇᴄᴛ Is Aʀᴄʜɪᴠᴇᴅ 🔐</i></b>"
 
     # Final edit
     await pablo.edit(txt, disable_web_page_preview=True)

@@ -180,7 +180,7 @@ async def chick_fight(_: Client, message: Message):
     user_id = message.from_user.id
     args = message.text.split()
     if len(args) < 2:
-        return await message.reply_text("Usage: /chickfight <amount>")
+        return await message.reply_text("Usage: /chickfight or /cf <amount>")
 
     amount = int(args[1])
     if get_balance(user_id) < amount:

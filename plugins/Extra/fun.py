@@ -178,7 +178,7 @@ async def leaderboard(client: Client, message: Message):
 # -----------------------
 # ADDMONEY (Admin Only)
 # -----------------------
-@Client.on_message(filters.command(["addmoney"]))
+@Client.on_message(filters.command(["addbal"]))
 async def addmoney(_: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in ADMINS:

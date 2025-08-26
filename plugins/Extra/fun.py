@@ -1,8 +1,10 @@
 import random
 import asyncio
-from pymongo import MongoClient
+import os
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from pymongo import MongoClient
+from info import DATABASE_NAME  # your existing config
 
 # -----------------------
 # CONFIG
@@ -11,16 +13,16 @@ ADMINS = [841851780]  # replace with your Telegram ID(s)
 START_BALANCE_USER = 5000
 START_BALANCE_ADMIN = 10000
 
-# MongoDB config (use your existing values)
-DATABASE_URI = os.environ.get('DATABASE_URI')
-DATABASE_NAME = "MyselfNeon"
+# -----------------------
+# MONGODB SETUP
+# -----------------------
+DATABASE_URI = os.environ.get("DATABASE_URI")
+if not DATABASE_URI:
+    raise ValueError("DATABASE_URI environment variable is not set!")
 
-# -----------------------
-# CONNECT TO MONGODB
-# -----------------------
 mongo_client = MongoClient(DATABASE_URI)
 db = mongo_client[DATABASE_NAME]
-balances_col = db["balances"]
+balances_col = db["balances"]  # or any collection you want
 
 # -----------------------
 # BALANCE HELPERS
@@ -29,17 +31,12 @@ def get_balance(user_id: int) -> int:
     user = balances_col.find_one({"_id": user_id})
     if user:
         return user["balance"]
-    else:
-        default = START_BALANCE_ADMIN if user_id in ADMINS else START_BALANCE_USER
-        balances_col.insert_one({"_id": user_id, "balance": default})
-        return default
+    default = START_BALANCE_ADMIN if user_id in ADMINS else START_BALANCE_USER
+    balances_col.insert_one({"_id": user_id, "balance": default})
+    return default
 
 def update_balance(user_id: int, amount: int):
-    balances_col.update_one(
-        {"_id": user_id},
-        {"$inc": {"balance": amount}},
-        upsert=True
-    )
+    balances_col.update_one({"_id": user_id}, {"$inc": {"balance": amount}}, upsert=True)
 
 def reset_all_balances():
     balances_col.update_many({}, {"$set": {"balance": START_BALANCE_USER}})
@@ -63,42 +60,35 @@ async def reset_bal(_: Client, message: Message):
     reset_all_balances()
     await message.reply_text("♻️ All balances have been reset to defaults!")
 
-# -----------------------
-# ADDMONEY (Admin Only)
-# -----------------------
-@Client.on_message(filters.command(["addbal", "addmoney"]))
+@Client.on_message(filters.command(["addbal"]))
 async def addmoney(_: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in ADMINS:
         return await message.reply_text("🚫 Only admins can use this!")
-
     args = message.text.split()
     if len(args) < 3:
         return await message.reply_text("Usage: /addbal <user_id> <amount>")
-
     target = int(args[1])
     amount = int(args[2])
     update_balance(target, amount)
     await message.reply_text(f"✅ Added {amount} coins to user {target}")
 
 # -----------------------
-# LEADERBOARD (/lb)
+# LEADERBOARD
 # -----------------------
 @Client.on_message(filters.command(["lb"]))
 async def leaderboard(client: Client, message: Message):
-    top_users = balances_col.find().sort("balance", -1).limit(10)
+    top_users = list(balances_col.find().sort("balance", -1).limit(10))
     text = "🏆 **Top 10 Richest Users**\n\n"
-
     for i, user in enumerate(top_users, start=1):
         uid = user["_id"]
         bal = user["balance"]
         try:
-            user_obj = await client.get_users(int(uid))
-            name = f"@{user_obj.username}" if user_obj.username else user_obj.first_name
+            u = await client.get_users(int(uid))
+            name = f"@{u.username}" if u.username else u.first_name
         except:
             name = f"User {uid}"
         text += f"{i}. {name} → {bal} 💰\n"
-
     await message.reply_text(text)
 
 # -----------------------
@@ -157,11 +147,9 @@ async def roulette(_: Client, message: Message):
     args = message.text.split()
     if len(args) < 3:
         return await message.reply_text("Usage: /roulette <red/black> <amount>")
-
     choice, amount = args[1].lower(), int(args[2])
     if get_balance(user_id) < amount:
         return await message.reply_text("Not enough balance!")
-
     outcome = random.choice(["red", "black"])
     if outcome == choice:
         update_balance(user_id, amount)
@@ -169,7 +157,6 @@ async def roulette(_: Client, message: Message):
     else:
         update_balance(user_id, -amount)
         result = f"💀 You lost {amount}!"
-
     await message.reply_text(f"🎰 **Roulette Result**\nLanded: {outcome.upper()}\n{result}\nBalance: {get_balance(user_id)} 💰")
 
 # -----------------------
@@ -180,21 +167,17 @@ async def chick_fight(_: Client, message: Message):
     user_id = message.from_user.id
     args = message.text.split()
     if len(args) < 2:
-        return await message.reply_text("Usage: /chickfight or /cf <amount>")
-
+        return await message.reply_text("Usage: /chickfight <amount>")
     amount = int(args[1])
     if get_balance(user_id) < amount:
         return await message.reply_text("Not enough balance!")
-
     await message.reply_text("🐔 Two chickens are fighting...")
     await asyncio.sleep(2)
     winner = random.choice(["you", "bot"])
-
     if winner == "you":
         update_balance(user_id, amount)
         result = f"🎉 Your chicken won! You earned {amount}."
     else:
         update_balance(user_id, -amount)
         result = f"💀 Your chicken lost! You lost {amount}."
-
     await message.reply_text(f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰")

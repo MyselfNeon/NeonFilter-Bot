@@ -194,7 +194,7 @@ def shop_keyboard() -> InlineKeyboardMarkup:
 
 @Client.on_message(filters.command(["fshop"]))
 async def fshop(_: Client, message: Message):
-    await message.reply_text("🛒 **Fun Shop**\nChoose an item to buy:", reply_markup=shop_keyboard())
+    await message.reply_text("🛒 **Fun Shop**\nChoose an item to buy:", reply_markup=shop_keyboard(), quote=True)
 
 @Client.on_callback_query(filters.regex("^buy:(.+)$"))
 async def buy_item(client: Client, cq: CallbackQuery):
@@ -211,5 +211,13 @@ async def buy_item(client: Client, cq: CallbackQuery):
         return await cq.answer("💰 Not enough coins!", show_alert=True)
 
     update_balance(user_id, -price)
-    await cq.message.reply_text(f"✅ You bought {item['name']}!\n\n{item['effect']}\nBalance: {get_balance(user_id)} 💰")
-    await cq.answer(f"You used {item['name']}!", show_alert=True)
+
+    # React to the original /fshop command message with emoji (self animation only)
+    try:
+        if cq.message.reply_to_message:
+            await cq.message.reply_to_message.react([item["name"].split()[0]])
+    except Exception as e:
+        print("Reaction failed:", e)
+
+    # Small toast confirmation (not big popup, no chat spam)
+    await cq.answer(f"Used {item['name']} (-{price}💰)", show_alert=False)

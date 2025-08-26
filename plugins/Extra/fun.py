@@ -147,18 +147,43 @@ async def give_coins(_: Client, message: Message):
     update_balance(target, amount)
     await message.reply_text(f"✅ Gave {amount} coins to user {target}")
 
-# -----------------------
-# LEADERBOARD
-# -----------------------
+# --- Leaderboard with usernames ---
 @Client.on_message(filters.command(["top"]))
 async def leaderboard(_: Client, message: Message):
-    if not BALANCES:
-        return await message.reply_text("No users have coins yet!")
+    top_users = sorted(BANK.items(), key=lambda x: x[1], reverse=True)[:10]
+    text = "🏆 Top 10 Richest Users\n"
 
-    top_users = sorted(BALANCES.items(), key=lambda x: x[1], reverse=True)[:10]
-
-    text = "🏆 **Top 10 Richest Users**\n\n"
     for i, (uid, bal) in enumerate(top_users, start=1):
-        text += f"{i}. User {uid} → {bal} 💰\n"
+        try:
+            user = await _.get_users(int(uid))
+            name = f"@{user.username}" if user.username else user.first_name
+        except:
+            name = f"User {uid}"  # fallback if username not available
 
+        lvl = get_level(int(uid))
+        text += f"{i}. {name} → {bal} 💰 | Lvl {lvl}\n"
+
+    await message.reply_text(text)
+
+# -----------------------
+# FUN HELP COMMAND
+# -----------------------
+@Client.on_message(filters.command(["funhelp"]))
+async def funhelp_command(_: Client, message: Message):
+    user_id = message.from_user.id
+    text = "**🎮 Bot Commands:**\n\n"
+    
+    # User commands
+    text += "💡 **User Commands:**\n"
+    text += "/rps - Play Rock-Paper-Scissors\n"
+    text += "/roulette <red/black> <amount> - Play Roulette\n"
+    text += "/chickfight <amount> - Fight a chicken\n"
+    text += "/balance - Check your balance\n"
+    text += "/top - View top 10 richest users\n"
+    
+    # Admin commands
+    if user_id in ADMINS:
+        text += "\n🛠 **Admin Commands:**\n"
+        text += "/givecoins <user_id> <amount> - Give coins to a user\n"
+    
     await message.reply_text(text)

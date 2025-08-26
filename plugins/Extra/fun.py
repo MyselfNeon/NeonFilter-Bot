@@ -168,11 +168,15 @@ async def chick_fight(_: Client, message: Message):
     args = message.text.split()
     if len(args) < 2:
         return await message.reply_text("Usage: /chickfight <amount>")
+    
     amount = int(args[1])
     if get_balance(user_id) < amount:
         return await message.reply_text("Not enough balance!")
-    await message.reply_text("🐔 Two chickens are fighting...")
+
+    fight_msg = await message.reply_text("🐔 Two chickens are fighting...")  # Store the message
     await asyncio.sleep(2)
+    await fight_msg.delete()  # Auto-delete after 2 seconds
+
     winner = random.choice(["you", "bot"])
     if winner == "you":
         update_balance(user_id, amount)
@@ -180,4 +184,5 @@ async def chick_fight(_: Client, message: Message):
     else:
         update_balance(user_id, -amount)
         result = f"💀 Your chicken lost! You lost {amount}."
+
     await message.reply_text(f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰")

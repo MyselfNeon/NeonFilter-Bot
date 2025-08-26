@@ -9,8 +9,8 @@ from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineK
 # CONFIG
 # -----------------------
 ADMINS = [841851780]  # replace with your Telegram ID(s)
-START_BALANCE_USER = 50000
-START_BALANCE_ADMIN = 200000
+START_BALANCE_USER = 5000
+START_BALANCE_ADMIN = 10000
 DATA_FILE = "balances.json"
 
 # -----------------------
@@ -35,6 +35,12 @@ def get_balance(user_id: int) -> int:
 def update_balance(user_id: int, amount: int):
     BALANCES[str(user_id)] = get_balance(user_id) + amount
     save_balances()
+
+@Client.on_message(filters.command(["bal", "balance"]))
+async def balance_check(_: Client, message: Message):
+    user_id = message.from_user.id
+    bal = get_balance(user_id)
+    await message.reply_text(f"💰 Your balance: {bal} coins")
 
 # -----------------------
 # ROCK PAPER SCISSORS
@@ -86,7 +92,7 @@ async def rps_play(client: Client, cq: CallbackQuery):
 # -----------------------
 # ROULETTE
 # -----------------------
-@Client.on_message(filters.command(["roulette"]))
+@Client.on_message(filters.command(["roulette","rlt"]))
 async def roulette(_: Client, message: Message):
     user_id = message.from_user.id
     args = message.text.split()
@@ -110,7 +116,7 @@ async def roulette(_: Client, message: Message):
 # -----------------------
 # CHICKEN FIGHT
 # -----------------------
-@Client.on_message(filters.command(["chickfight"]))
+@Client.on_message(filters.command(["chickfight","cf"]))
 async def chick_fight(_: Client, message: Message):
     user_id = message.from_user.id
     args = message.text.split()

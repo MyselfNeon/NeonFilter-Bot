@@ -12,7 +12,7 @@ START_BALANCE_USER = 5000
 START_BALANCE_ADMIN = 10000
 
 # MongoDB config (use your existing values)
-DATABASE_URI = environ.get('DATABASE_URI', "")
+DATABASE_URI = environ.get('DATABASE_URI')
 DATABASE_NAME = "MyselfNeon"
 
 # -----------------------

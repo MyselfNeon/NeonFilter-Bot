@@ -1,5 +1,7 @@
 import random
 import asyncio
+import json
+import os
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -9,19 +11,30 @@ from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineK
 ADMINS = [841851780]  # replace with your Telegram ID(s)
 START_BALANCE_USER = 50000
 START_BALANCE_ADMIN = 200000
+DATA_FILE = "balances.json"
 
 # -----------------------
-# BALANCES IN MEMORY
+# BALANCE SYSTEM (Persistent)
 # -----------------------
-BALANCES = {}
+if os.path.exists(DATA_FILE):
+    with open(DATA_FILE, "r") as f:
+        BALANCES = json.load(f)
+else:
+    BALANCES = {}
+
+def save_balances():
+    with open(DATA_FILE, "w") as f:
+        json.dump(BALANCES, f)
 
 def get_balance(user_id: int) -> int:
-    if user_id not in BALANCES:
-        BALANCES[user_id] = START_BALANCE_ADMIN if user_id in ADMINS else START_BALANCE_USER
-    return BALANCES[user_id]
+    if str(user_id) not in BALANCES:
+        BALANCES[str(user_id)] = START_BALANCE_ADMIN if user_id in ADMINS else START_BALANCE_USER
+        save_balances()
+    return BALANCES[str(user_id)]
 
 def update_balance(user_id: int, amount: int):
-    BALANCES[user_id] = get_balance(user_id) + amount
+    BALANCES[str(user_id)] = get_balance(user_id) + amount
+    save_balances()
 
 # -----------------------
 # ROCK PAPER SCISSORS
@@ -46,7 +59,7 @@ def _rps_result(user: str, bot: str) -> str:
     return "win" if (user, bot) in wins else "lose"
 
 @Client.on_callback_query(filters.regex("^rps:(rock|paper|scissors)$"))
-async def rps_play(_: Client, cq: CallbackQuery):
+async def rps_play(client: Client, cq: CallbackQuery):
     user_id = cq.from_user.id
     user_choice = cq.data.split(":")[1]
     bot_choice = random.choice(["rock", "paper", "scissors"])
@@ -122,68 +135,75 @@ async def chick_fight(_: Client, message: Message):
     await message.reply_text(f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰")
 
 # -----------------------
-# BALANCE COMMAND
+# LEADERBOARD (/lb)
 # -----------------------
-@Client.on_message(filters.command(["balance"]))
-async def balance_check(_: Client, message: Message):
-    user_id = message.from_user.id
-    await message.reply_text(f"💰 Your balance: {get_balance(user_id)} coins")
-
-# -----------------------
-# ADMIN GIVE COINS
-# -----------------------
-@Client.on_message(filters.command(["givecoins"]))
-async def give_coins(_: Client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in ADMINS:
-        return await message.reply_text("🚫 You need to be admin to use this command!")
-
-    args = message.text.split()
-    if len(args) < 3:
-        return await message.reply_text("Usage: /givecoins <user_id> <amount>")
-
-    target = int(args[1])
-    amount = int(args[2])
-    update_balance(target, amount)
-    await message.reply_text(f"✅ Gave {amount} coins to user {target}")
-
-# --- Leaderboard with usernames ---
-@Client.on_message(filters.command(["top"]))
-async def leaderboard(_: Client, message: Message):
-    top_users = sorted(BANK.items(), key=lambda x: x[1], reverse=True)[:10]
-    text = "🏆 Top 10 Richest Users\n"
+@Client.on_message(filters.command(["lb"]))
+async def leaderboard(client: Client, message: Message):
+    top_users = sorted(BALANCES.items(), key=lambda x: x[1], reverse=True)[:10]
+    text = "🏆 **Top 10 Richest Users**\n\n"
 
     for i, (uid, bal) in enumerate(top_users, start=1):
         try:
-            user = await _.get_users(int(uid))
+            user = await client.get_users(int(uid))
             name = f"@{user.username}" if user.username else user.first_name
         except:
             name = f"User {uid}"  # fallback if username not available
 
-        lvl = get_level(int(uid))
-        text += f"{i}. {name} → {bal} 💰 | Lvl {lvl}\n"
+        text += f"{i}. {name} → {bal} 💰\n"
 
     await message.reply_text(text)
 
 # -----------------------
-# FUN HELP COMMAND
+# ADDMONEY (Admin Only)
 # -----------------------
-@Client.on_message(filters.command(["funhelp"]))
-async def funhelp_command(_: Client, message: Message):
+@Client.on_message(filters.command(["addmoney"]))
+async def addmoney(_: Client, message: Message):
     user_id = message.from_user.id
-    text = "**🎮 Bot Commands:**\n\n"
-    
-    # User commands
-    text += "💡 **User Commands:**\n"
-    text += "/rps - Play Rock-Paper-Scissors\n"
-    text += "/roulette <red/black> <amount> - Play Roulette\n"
-    text += "/chickfight <amount> - Fight a chicken\n"
-    text += "/balance - Check your balance\n"
-    text += "/top - View top 10 richest users\n"
-    
-    # Admin commands
-    if user_id in ADMINS:
-        text += "\n🛠 **Admin Commands:**\n"
-        text += "/givecoins <user_id> <amount> - Give coins to a user\n"
-    
-    await message.reply_text(text)
+    if user_id not in ADMINS:
+        return await message.reply_text("🚫 Only admins can use this!")
+
+    args = message.text.split()
+    if len(args) < 3:
+        return await message.reply_text("Usage: /addmoney <user_id> <amount>")
+
+    target = int(args[1])
+    amount = int(args[2])
+    update_balance(target, amount)
+    await message.reply_text(f"✅ Added {amount} coins to user {target}")
+
+# -----------------------
+# FUN SHOP (/fshop)
+# -----------------------
+SHOP_ITEMS = {
+    "bomb": {"name": "💣 Bomb", "price": 5000, "effect": "💥 BOOM! The bomb explodes loudly!"},
+    "firework": {"name": "🎆 Firework", "price": 3000, "effect": "✨🎇 Fireworks light up the sky!"},
+    "cake": {"name": "🎂 Cake", "price": 2000, "effect": "🎂 You enjoyed a tasty cake!"},
+    "beer": {"name": "🍺 Beer", "price": 1500, "effect": "🍺 Cheers! You had a cold beer."},
+}
+
+def shop_keyboard() -> InlineKeyboardMarkup:
+    buttons = [[InlineKeyboardButton(f"{item['name']} - {item['price']}💰", callback_data=f"buy:{key}")]
+               for key, item in SHOP_ITEMS.items()]
+    return InlineKeyboardMarkup(buttons)
+
+@Client.on_message(filters.command(["fshop"]))
+async def fshop(_: Client, message: Message):
+    await message.reply_text("🛒 **Fun Shop**\nChoose an item to buy:", reply_markup=shop_keyboard())
+
+@Client.on_callback_query(filters.regex("^buy:(.+)$"))
+async def buy_item(client: Client, cq: CallbackQuery):
+    user_id = cq.from_user.id
+    item_key = cq.data.split(":")[1]
+
+    if item_key not in SHOP_ITEMS:
+        return await cq.answer("❌ Item not found!", show_alert=True)
+
+    item = SHOP_ITEMS[item_key]
+    price = item["price"]
+
+    if get_balance(user_id) < price:
+        return await cq.answer("💰 Not enough coins!", show_alert=True)
+
+    update_balance(user_id, -price)
+    await cq.message.reply_text(f"✅ You bought {item['name']}!\n\n{item['effect']}\nBalance: {get_balance(user_id)} 💰")
+    await cq.answer(f"You used {item['name']}!", show_alert=True)

@@ -36,11 +36,27 @@ def update_balance(user_id: int, amount: int):
     BALANCES[str(user_id)] = get_balance(user_id) + amount
     save_balances()
 
+def reset_all_balances():
+    global BALANCES
+    BALANCES = {}
+    save_balances()
+
+# -----------------------
+# BALANCE COMMANDS
+# -----------------------
 @Client.on_message(filters.command(["bal", "balance"]))
 async def balance_check(_: Client, message: Message):
     user_id = message.from_user.id
     bal = get_balance(user_id)
     await message.reply_text(f"💰 Your balance: {bal} coins")
+
+@Client.on_message(filters.command("resetbal"))
+async def reset_bal(_: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id not in ADMINS:
+        return await message.reply_text("🚫 Only admins can use this!")
+    reset_all_balances()
+    await message.reply_text("♻️ All balances have been reset to defaults!")
 
 # -----------------------
 # ROCK PAPER SCISSORS
@@ -153,7 +169,7 @@ async def leaderboard(client: Client, message: Message):
             user = await client.get_users(int(uid))
             name = f"@{user.username}" if user.username else user.first_name
         except:
-            name = f"User {uid}"  # fallback if username not available
+            name = f"User {uid}"
 
         text += f"{i}. {name} → {bal} 💰\n"
 
@@ -176,48 +192,3 @@ async def addmoney(_: Client, message: Message):
     amount = int(args[2])
     update_balance(target, amount)
     await message.reply_text(f"✅ Added {amount} coins to user {target}")
-
-# -----------------------
-# FUN SHOP (/fshop)
-# -----------------------
-SHOP_ITEMS = {
-    "bomb": {"name": "💣 Bomb", "price": 5000, "effect": "💥 BOOM! The bomb explodes loudly!"},
-    "firework": {"name": "🎆 Firework", "price": 3000, "effect": "✨🎇 Fireworks light up the sky!"},
-    "cake": {"name": "🎂 Cake", "price": 2000, "effect": "🎂 You enjoyed a tasty cake!"},
-    "beer": {"name": "🍺 Beer", "price": 1500, "effect": "🍺 Cheers! You had a cold beer."},
-}
-
-def shop_keyboard() -> InlineKeyboardMarkup:
-    buttons = [[InlineKeyboardButton(f"{item['name']} - {item['price']}💰", callback_data=f"buy:{key}")]
-               for key, item in SHOP_ITEMS.items()]
-    return InlineKeyboardMarkup(buttons)
-
-@Client.on_message(filters.command(["fshop"]))
-async def fshop(_: Client, message: Message):
-    await message.reply_text("🛒 **Fun Shop**\nChoose an item to buy:", reply_markup=shop_keyboard(), quote=True)
-
-@Client.on_callback_query(filters.regex("^buy:(.+)$"))
-async def buy_item(client: Client, cq: CallbackQuery):
-    user_id = cq.from_user.id
-    item_key = cq.data.split(":")[1]
-
-    if item_key not in SHOP_ITEMS:
-        return await cq.answer("❌ Item not found!", show_alert=True)
-
-    item = SHOP_ITEMS[item_key]
-    price = item["price"]
-
-    if get_balance(user_id) < price:
-        return await cq.answer("💰 Not enough coins!", show_alert=True)
-
-    update_balance(user_id, -price)
-
-    # React to the original /fshop command message with emoji (self animation only)
-    try:
-        if cq.message.reply_to_message:
-            await cq.message.reply_to_message.react([item["name"].split()[0]])
-    except Exception as e:
-        print("Reaction failed:", e)
-
-    # Small toast confirmation (not big popup, no chat spam)
-    await cq.answer(f"Used {item['name']} (-{price}💰)", show_alert=False)

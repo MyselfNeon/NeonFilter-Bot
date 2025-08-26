@@ -1,7 +1,6 @@
 import random
 import asyncio
-import json
-import os
+from pymongo import MongoClient
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -11,35 +10,41 @@ from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineK
 ADMINS = [841851780]  # replace with your Telegram ID(s)
 START_BALANCE_USER = 5000
 START_BALANCE_ADMIN = 10000
-DATA_FILE = "balances.json"
+
+# MongoDB config (use your existing values)
+DATABASE_URI = environ.get('DATABASE_URI', "")
+DATABASE_NAME = "MyselfNeon"
 
 # -----------------------
-# BALANCE SYSTEM (Persistent)
+# CONNECT TO MONGODB
 # -----------------------
-if os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "r") as f:
-        BALANCES = json.load(f)
-else:
-    BALANCES = {}
+mongo_client = MongoClient(DATABASE_URI)
+db = mongo_client[DATABASE_NAME]
+balances_col = db["balances"]
 
-def save_balances():
-    with open(DATA_FILE, "w") as f:
-        json.dump(BALANCES, f)
-
+# -----------------------
+# BALANCE HELPERS
+# -----------------------
 def get_balance(user_id: int) -> int:
-    if str(user_id) not in BALANCES:
-        BALANCES[str(user_id)] = START_BALANCE_ADMIN if user_id in ADMINS else START_BALANCE_USER
-        save_balances()
-    return BALANCES[str(user_id)]
+    user = balances_col.find_one({"_id": user_id})
+    if user:
+        return user["balance"]
+    else:
+        default = START_BALANCE_ADMIN if user_id in ADMINS else START_BALANCE_USER
+        balances_col.insert_one({"_id": user_id, "balance": default})
+        return default
 
 def update_balance(user_id: int, amount: int):
-    BALANCES[str(user_id)] = get_balance(user_id) + amount
-    save_balances()
+    balances_col.update_one(
+        {"_id": user_id},
+        {"$inc": {"balance": amount}},
+        upsert=True
+    )
 
 def reset_all_balances():
-    global BALANCES
-    BALANCES = {}
-    save_balances()
+    balances_col.update_many({}, {"$set": {"balance": START_BALANCE_USER}})
+    for admin_id in ADMINS:
+        balances_col.update_one({"_id": admin_id}, {"$set": {"balance": START_BALANCE_ADMIN}}, upsert=True)
 
 # -----------------------
 # BALANCE COMMANDS
@@ -57,6 +62,44 @@ async def reset_bal(_: Client, message: Message):
         return await message.reply_text("🚫 Only admins can use this!")
     reset_all_balances()
     await message.reply_text("♻️ All balances have been reset to defaults!")
+
+# -----------------------
+# ADDMONEY (Admin Only)
+# -----------------------
+@Client.on_message(filters.command(["addbal", "addmoney"]))
+async def addmoney(_: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id not in ADMINS:
+        return await message.reply_text("🚫 Only admins can use this!")
+
+    args = message.text.split()
+    if len(args) < 3:
+        return await message.reply_text("Usage: /addbal <user_id> <amount>")
+
+    target = int(args[1])
+    amount = int(args[2])
+    update_balance(target, amount)
+    await message.reply_text(f"✅ Added {amount} coins to user {target}")
+
+# -----------------------
+# LEADERBOARD (/lb)
+# -----------------------
+@Client.on_message(filters.command(["lb"]))
+async def leaderboard(client: Client, message: Message):
+    top_users = balances_col.find().sort("balance", -1).limit(10)
+    text = "🏆 **Top 10 Richest Users**\n\n"
+
+    for i, user in enumerate(top_users, start=1):
+        uid = user["_id"]
+        bal = user["balance"]
+        try:
+            user_obj = await client.get_users(int(uid))
+            name = f"@{user_obj.username}" if user_obj.username else user_obj.first_name
+        except:
+            name = f"User {uid}"
+        text += f"{i}. {name} → {bal} 💰\n"
+
+    await message.reply_text(text)
 
 # -----------------------
 # ROCK PAPER SCISSORS
@@ -155,40 +198,3 @@ async def chick_fight(_: Client, message: Message):
         result = f"💀 Your chicken lost! You lost {amount}."
 
     await message.reply_text(f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰")
-
-# -----------------------
-# LEADERBOARD (/lb)
-# -----------------------
-@Client.on_message(filters.command(["lb"]))
-async def leaderboard(client: Client, message: Message):
-    top_users = sorted(BALANCES.items(), key=lambda x: x[1], reverse=True)[:10]
-    text = "🏆 **Top 10 Richest Users**\n\n"
-
-    for i, (uid, bal) in enumerate(top_users, start=1):
-        try:
-            user = await client.get_users(int(uid))
-            name = f"@{user.username}" if user.username else user.first_name
-        except:
-            name = f"User {uid}"
-
-        text += f"{i}. {name} → {bal} 💰\n"
-
-    await message.reply_text(text)
-
-# -----------------------
-# ADDMONEY (Admin Only)
-# -----------------------
-@Client.on_message(filters.command(["addbal"]))
-async def addmoney(_: Client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in ADMINS:
-        return await message.reply_text("🚫 Only admins can use this!")
-
-    args = message.text.split()
-    if len(args) < 3:
-        return await message.reply_text("Usage: /addmoney <user_id> <amount>")
-
-    target = int(args[1])
-    amount = int(args[2])
-    update_balance(target, amount)
-    await message.reply_text(f"✅ Added {amount} coins to user {target}")

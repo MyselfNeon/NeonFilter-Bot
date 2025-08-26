@@ -174,7 +174,7 @@ async def chick_fight(_: Client, message: Message):
         return await message.reply_text("Not enough balance!")
 
     fight_msg = await message.reply_text("🐔 Two chickens are fighting...")  # Store the message
-    await asyncio.sleep(2)
+    await asyncio.sleep(3)
     await fight_msg.delete()  # Auto-delete after 2 seconds
 
     winner = random.choice(["you", "bot"])

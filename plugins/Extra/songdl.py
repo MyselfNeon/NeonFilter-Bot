@@ -9,10 +9,10 @@ SEARCH_CACHE = {}
 # -----------------------------
 # SEARCH & SHOW RESULTS
 # -----------------------------
-@Client.on_message(filters.command("song") & filters.private)
+@Client.on_message(filters.command("sonfl") & filters.private)
 async def saavn_search(client, message):
     if len(message.command) < 2:
-        return await message.reply_text("❌ Usage: `/song <name>`")
+        return await message.reply_text("❌ Usage: `/sonfl <name>`")
 
     query = " ".join(message.command[1:])
     m = await message.reply_text(f"🔎 Searching **{query}** ...")
@@ -123,4 +123,4 @@ async def saavn_back(client, callback: CallbackQuery):
     await callback.message.edit(
         "🎶 Pick a song:",
         reply_markup=InlineKeyboardMarkup(buttons)
-                            )
+            )

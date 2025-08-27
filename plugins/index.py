@@ -23,7 +23,7 @@ async def index_files(bot, query):
         await query.message.delete()
         await bot.send_message(
             int(from_user),
-            f'**__Your Submission for Indexing {chat} has been Decliened by Our Moderators__**.',
+            f'**__Your Submission For Indexing {chat} Has Been Decliened By Our Moderators__**.',
             reply_to_message_id=int(lst_msg_id)
         )
         return
@@ -36,7 +36,7 @@ async def index_files(bot, query):
     if int(from_user) not in ADMINS:
         await bot.send_message(
             int(from_user),
-            f'**__Your Submission for Indexing {chat} has been Accepted by Our Moderators and will be Added Soon.__**',
+            f'**__Your Submission For Indexing {chat} Has been Accepted By Our Moderators And Will Be Added Soon.__**',
             reply_to_message_id=int(lst_msg_id)
         )
     await msg.edit(
@@ -72,7 +72,7 @@ async def send_for_index(bot, message):
     try:
         await bot.get_chat(chat_id)
     except ChannelInvalid:
-        return await vj.reply('**__This May be a Private Channel / Group. Make me an Admin Over there to Index the files.__**')
+        return await vj.reply('**__This May Be a Private Channel / Group. Make Me Admin Over There To Index The Files__**')
     except (UsernameInvalid, UsernameNotModified):
         return await vj.reply('Invalid Link specified.')
     except Exception as e:
@@ -81,19 +81,19 @@ async def send_for_index(bot, message):
     try:
         k = await bot.get_messages(chat_id, last_msg_id)
     except:
-        return await message.reply('**__Make Sure That Iam An Admin In The Channel, if channel is private__**')
+        return await message.reply('**__Make Sure That I am An Admin In The Channel, If Channel Is Private__**')
     if k.empty:
-        return await message.reply('**__This may be Group and I am not am Admin of the Group.__**')
+        return await message.reply('**__This May Be Group And I Am Not Am Admin Of The Group__**')
 
     if message.from_user.id in ADMINS:
         buttons = [[
-            InlineKeyboardButton('Yes', callback_data=f'index#accept#{chat_id}#{last_msg_id}#{message.from_user.id}')
+            InlineKeyboardButton('Cᴏɴғɪʀᴍ ✅', callback_data=f'index#accept#{chat_id}#{last_msg_id}#{message.from_user.id}')
         ],[
-            InlineKeyboardButton('close', callback_data='close_data')
+            InlineKeyboardButton('Dᴇᴄʟɪɴᴇ ❌', callback_data='close_data')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         return await message.reply(
-            f'**__Do you Want To Index This Channel/ Group ?\n\nChat ID/ Username:__** <code>{chat_id}</code>\n**__Last Message ID:__** <code>{last_msg_id}</code>',
+            f'**__Do you Want To Index This Channel or Group ?\n\n🆔 Chat ID/ Username :__ ⬇️** \n<code>{chat_id}</code>\n\n**📄 __Last Message ID :__ ⬇️** \n<code>{last_msg_id}</code>',
             reply_markup=reply_markup
         )
 
@@ -125,11 +125,11 @@ async def set_skip_number(bot, message):
         try:
             skip = int(skip)
         except:
-            return await message.reply("**__Skip Number Should be an Integer.__**")
-        await message.reply(f"**__Successfully set SKIP number as__** {skip}")
+            return await message.reply("**__Skip Number Should Be An Integer__**")
+        await message.reply(f"**__Successfully Set SKIP Number As__** {skip}")
         temp.CURRENT = int(skip)
     else:
-        await message.reply("**__Give me a Skip Number__**")
+        await message.reply("**__Give Me a Skip Number__**")
 
 
 async def index_files_to_db(lst_msg_id, chat, msg, bot):
@@ -145,7 +145,7 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
             temp.CANCEL = False
             async for message in bot.iter_messages(chat, lst_msg_id, temp.CURRENT):
                 if temp.CANCEL:
-                    await msg.edit(f"**__Successfully Cancelled!!\n\nSaved__ <code>{total_files}</code> __files to dataBase!\nDuplicate Files Skipped:__ <code>{duplicate}</code>\n__Deleted Messages Skipped:__ <code>{deleted}</code>\n__Non-Media messages skipped:__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Errors Occurred:__ <code>{errors}</code>**")
+                    await msg.edit(f"**__Sᴜᴄᴄᴇssғᴜʟʟʏ Cᴀɴᴄᴇʟʟᴇᴅ 🥹\n\nSᴀᴠᴇᴅ__ <code>{total_files}</code> __Fɪʟᴇs Tᴏ Dᴀᴛᴀʙᴀsᴇ !\n__Dᴜᴘʟɪᴄᴀᴛᴇ Fɪʟᴇs Sᴋɪᴘᴘᴇᴅ :__ <code>{duplicate}</code>\n__Dᴇʟᴇᴛᴇᴅ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{deleted}</code>\n__Nᴏɴ-Mᴇᴅɪᴀ Msɢs :__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Eʀʀᴏʀs Oᴄᴄᴜʀʀᴇᴅ :__ <code>{errors}</code>**")
                     break
                 current += 1
                 if current % 30 == 0:
@@ -153,7 +153,7 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
                     reply = InlineKeyboardMarkup(can)
                     try:
                         await msg.edit_text(
-                            text=f"**__Total messages fetched:__ <code>{current}</code>\n__Total messages saved:__ <code>{total_files}</code>\n__Duplicate Files Skipped:__ <code>{duplicate}</code>\n__Deleted Messages Skipped:__ <code>{deleted}</code>\n__Non-Media messages skipped:__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Errors Occurred:__ <code>{errors}</code>**",
+                            text=f"**__Tᴏᴛᴀʟ Msɢs Fᴇᴛᴄʜᴇᴅ :__ <code>{current}</code>\n__Tᴏᴛᴀʟ Msɢs Sᴀᴠᴇᴅ :__ <code>{total_files}</code>\n__Dᴜᴘʟɪᴄᴀᴛᴇ Fɪʟᴇs Sᴋɪᴘᴘᴇᴅ :__ <code>{duplicate}</code>\n__Dᴇʟᴇᴛᴇᴅ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{deleted}</code>\n__Nᴏɴ-Mᴇᴅɪᴀ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Eʀʀᴏʀs Oᴄᴄᴜʀʀᴇᴅ :__ <code>{errors}</code>**",
                             reply_markup=reply
                         )
                     except MessageNotModified:
@@ -182,9 +182,9 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
         except Exception as e:
             logger.exception(e)
             k = await msg.edit(f'**__Error: {e}__**')
-            await k.reply_text(f'**__Succesfully saved__ <code>{total_files}</code> __To DataBase!\nDuplicate Files Skipped:__ <code>{duplicate}</code>\n__Deleted Messages Skipped:__ <code>{deleted}</code>\n__Non-Media messages Skipped:__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Errors Occurred:__ <code>{errors}</code>**')
+            await k.reply_text(f'**__Sᴜᴄᴄᴇssғᴜʟʟʏ Sᴀᴠᴇᴅ__ ✅ : <code>{total_files}</code> __Tᴏ Dᴀᴛᴀʙᴀsᴇ__\n__Dᴜᴘʟɪᴄᴀᴛᴇ Fɪʟᴇs Sᴋɪᴘᴘᴇᴅ :__ <code>{duplicate}</code>\n__Dᴇʟᴇᴛᴇᴅ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{deleted}</code>\n__Nᴏɴ-Mᴇᴅɪᴀ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Eʀʀᴏʀs Oᴄᴄᴜʀʀᴇᴅ :__ <code>{errors}</code>**')
             await k.reply_text("**__If You Get Message Not Modified Error Then Skip Your Saved File Then Index Again__**")
         else:
-            await msg.edit(f'**__Succesfully Saved__ <code>{total_files}</code> __To DataBase!\nDuplicate Files Skipped:__ <code>{duplicate}</code>\n__Deleted Messages Skipped:__ <code>{deleted}</code>\n__Non-Media messages skipped:__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Errors Occurred__: <code>{errors}</code>**')
+            await msg.edit(f'**__Sᴜᴄᴄᴇssғᴜʟʟʏ Sᴀᴠᴇᴅ__ ✅ : <code>{total_files}</code> __To DataBase!\nDᴜᴘʟɪᴄᴀᴛᴇ Fɪʟᴇs Sᴋɪᴘᴘᴇᴅ :__ <code>{duplicate}</code>\n__Dᴇʟᴇᴛᴇᴅ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{deleted}</code>\n__Nᴏɴ-Mᴇᴅɪᴀ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{Uɴsᴜᴘᴘᴏʀᴛᴇᴅ Mᴇᴅɪᴀ}</code>(Unsupported Media - `{unsupported}` )\n__Eʀʀᴏʀs Oᴄᴄᴜʀʀᴇᴅ__ : <code>{errors}</code>**')
 
 

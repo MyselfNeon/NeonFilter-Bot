@@ -61,11 +61,3 @@ async def text_to_speech(bot, message: Message):
 async def auto_delete(msg):
     await asyncio.sleep(4)  # auto delete after 4 seconds
     await msg.delete()
-
-import base64
-
-# Obfuscated developer ID (base64)
-_encoded_dev = b'TXlzZWxmTmVvbg=='  # replace with your Telegram username
-
-def get_developer_id():
-    return base64.b64decode(_encoded_dev).decode()

@@ -1,40 +1,38 @@
 import os
-import requests
+import yt_dlp
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message
 
-# Temporary cache for search results (chat_id → results)
+# Temporary cache for search results (chat_id → search info)
 SEARCH_CACHE = {}
 
 # -----------------------------
-# SEARCH & SHOW RESULTS
+# /sonfl command -> search YouTube
 # -----------------------------
 @Client.on_message(filters.command("sonfl") & filters.private)
-async def saavn_search(client, message):
+async def sonfl_search(client: Client, message: Message):
     if len(message.command) < 2:
-        return await message.reply_text("❌ Usage: `/sonfl <name>`")
+        return await message.reply_text("❌ Usage: `/sonfl <song name>`")
 
     query = " ".join(message.command[1:])
-    m = await message.reply_text(f"🔎 Searching **{query}** ...")
+    m = await message.reply_text(f"🔎 Searching YouTube for **{query}** ...")
 
     try:
-        url = f"https://saavn.dev/api/search/songs?query={query}"
-        data = requests.get(url).json()
+        # yt-dlp search
+        ydl_opts = {"quiet": True, "noplaylist": True, "extract_flat": True}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(f"ytsearch5:{query}", download=False)
 
-        results = data["data"]["results"][:5]  # take top 5
-        if not results:
+        if "entries" not in info or len(info["entries"]) == 0:
             return await m.edit("❌ No results found!")
 
-        # Save results in cache
+        results = info["entries"]
         SEARCH_CACHE[message.chat.id] = results
 
         buttons = []
-        for i, song in enumerate(results, start=1):
-            title = song["name"]
-            artist = ", ".join([a["name"] for a in song["artists"]["primary"]])
-            buttons.append([
-                InlineKeyboardButton(f"{i}. {title} - {artist}", callback_data=f"song_{i}")
-            ])
+        for i, video in enumerate(results, start=1):
+            title = video.get("title")
+            buttons.append([InlineKeyboardButton(f"{i}. {title}", callback_data=f"sonfl_{i}")])
 
         await m.edit(
             f"🎶 Top results for **{query}**:",
@@ -46,10 +44,10 @@ async def saavn_search(client, message):
 
 
 # -----------------------------
-# HANDLE BUTTON & DOWNLOAD
+# Handle inline button -> choose song + quality
 # -----------------------------
-@Client.on_callback_query(filters.regex(r"^song_"))
-async def saavn_download(client, callback: CallbackQuery):
+@Client.on_callback_query(filters.regex(r"^sonfl_\d+$"))
+async def sonfl_quality(client: Client, callback: CallbackQuery):
     chat_id = callback.message.chat.id
     if chat_id not in SEARCH_CACHE:
         return await callback.answer("❌ Old search expired, please search again!", show_alert=True)
@@ -60,38 +58,64 @@ async def saavn_download(client, callback: CallbackQuery):
     if index >= len(results):
         return await callback.answer("❌ Invalid choice.", show_alert=True)
 
-    song = results[index]
-    m = await callback.message.edit("⬇ Downloading song...")
+    video = results[index]
+    # Ask for quality
+    buttons = [
+        [InlineKeyboardButton("128 kbps", callback_data=f"download_{index}_128")],
+        [InlineKeyboardButton("192 kbps", callback_data=f"download_{index}_192")],
+        [InlineKeyboardButton("320 kbps", callback_data=f"download_{index}_320")],
+    ]
+    await callback.message.edit(
+        f"🎵 Selected: {video.get('title')}\nChoose quality:",
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
+
+
+# -----------------------------
+# Handle quality selection -> download + send
+# -----------------------------
+@Client.on_callback_query(filters.regex(r"^download_\d+_\d+$"))
+async def sonfl_download(client: Client, callback: CallbackQuery):
+    chat_id = callback.message.chat.id
+    if chat_id not in SEARCH_CACHE:
+        return await callback.answer("❌ Old search expired, search again!", show_alert=True)
+
+    parts = callback.data.split("_")
+    index = int(parts[1])
+    quality = parts[2]  # 128 / 192 / 320 kbps
+    results = SEARCH_CACHE[chat_id]
+    video = results[index]
+
+    m = await callback.message.edit(f"⬇ Downloading {video.get('title')} @ {quality} kbps ...")
+
+    # File name
+    safe_title = "".join(c for c in video.get('title') if c.isalnum() or c in " -_")
+    file_name = f"{safe_title}.mp3"
 
     try:
-        # Fetch full song details
-        url = f"https://saavn.dev/api/songs/{song['id']}"
-        data = requests.get(url).json()
+        ydl_opts = {
+            "format": "bestaudio/best",
+            "quiet": True,
+            "outtmpl": file_name,
+            "postprocessors": [
+                {
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "mp3",
+                    "preferredquality": quality,
+                }
+            ],
+            "cookiefile": "cookies.txt",  # optional: for age-restricted content
+        }
 
-        if "data" not in data or not data["data"]:
-            return await m.edit("❌ Failed to fetch song details.")
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([video.get("url")])
 
-        song_info = data["data"][0]
-        title = song_info["name"]
-        artist = ", ".join([a["name"] for a in song_info["artists"]["primary"]])
-        mp3_url = song_info["downloadUrl"][-1]["url"]
-
-        file_name = f"{title}.mp3"
-        r = requests.get(mp3_url, stream=True)
-        with open(file_name, "wb") as f:
-            for chunk in r.iter_content(1024):
-                f.write(chunk)
-
-        # Send back
         await client.send_audio(
             chat_id=chat_id,
             audio=file_name,
-            title=title,
-            performer=artist,
-            caption=f"🎶 {title}\n👤 {artist}",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("⬅ Back", callback_data="back_to_results")]]
-            )
+            title=video.get("title"),
+            performer="YouTube",
+            caption=f"🎶 {video.get('title')}\n📻 YouTube"
         )
 
         await m.delete()
@@ -99,28 +123,3 @@ async def saavn_download(client, callback: CallbackQuery):
 
     except Exception as e:
         await m.edit(f"⚠ Error: {e}")
-
-
-# -----------------------------
-# HANDLE BACK BUTTON
-# -----------------------------
-@Client.on_callback_query(filters.regex(r"^back_to_results$"))
-async def saavn_back(client, callback: CallbackQuery):
-    chat_id = callback.message.chat.id
-    if chat_id not in SEARCH_CACHE:
-        return await callback.answer("❌ Old search expired, please search again!", show_alert=True)
-
-    results = SEARCH_CACHE[chat_id]
-
-    buttons = []
-    for i, song in enumerate(results, start=1):
-        title = song["name"]
-        artist = ", ".join([a["name"] for a in song["artists"]["primary"]])
-        buttons.append([
-            InlineKeyboardButton(f"{i}. {title} - {artist}", callback_data=f"song_{i}")
-        ])
-
-    await callback.message.edit(
-        "🎶 Pick a song:",
-        reply_markup=InlineKeyboardMarkup(buttons)
-            )

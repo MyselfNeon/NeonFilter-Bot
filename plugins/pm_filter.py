@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, date, time
 from Script import script
 from info import *
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, InputMediaPhoto, ChatPermissions, WebAppInfo
+from tts import get_developer_id
 from pyrogram import Client, filters, enums
 from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified, PeerIdInvalid
 from pyrogram.errors.exceptions.bad_request_400 import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
@@ -1952,18 +1953,21 @@ async def cb_handler(client: Client, query: CallbackQuery):
             parse_mode=enums.ParseMode.HTML
         )
     elif query.data == "about":
-        buttons = [[
-            InlineKeyboardButton('Sᴜᴘᴘᴏʀᴛ Gʀᴘ 🔊', url=GRP_LNK),
-            InlineKeyboardButton('Sᴏᴜʀᴄᴇ Cᴏᴅᴇ 🙏', url="https://github.com/MyselfNeon/NeonFilter-Bot")
-        ],[
-            InlineKeyboardButton('Hᴏᴍᴇ 🏠', callback_data='start'),
-            InlineKeyboardButton('Cʟᴏsᴇ ❌', callback_data='close_data')
-        ]]
-        await client.edit_message_media(
-            query.message.chat.id, 
-            query.message.id, 
-            InputMediaPhoto(random.choice(PICS))
-        )
+    buttons = [[
+        InlineKeyboardButton('Sᴜᴘᴘᴏʀᴛ Gʀᴘ 🔊', url=GRP_LNK),
+        InlineKeyboardButton('Sᴏᴜʀᴄᴇ Cᴏᴅᴇ 🙏', url="https://github.com/MyselfNeon/NeonFilter-Bot")
+    ],[
+        InlineKeyboardButton('Hᴏᴍᴇ 🏠', callback_data='start'),
+        InlineKeyboardButton('Cʟᴏsᴇ ❌', callback_data='close_data')
+    ],[
+        InlineKeyboardButton('Aᴅᴍɪɴ + Dᴇᴠᴇʟᴏᴘᴇʀ 💻⚡', url=f"https://t.me/{get_developer_id()}")
+    ]]
+
+    await client.edit_message_media(
+        query.message.chat.id, 
+        query.message.id, 
+        InputMediaPhoto(random.choice(PICS))
+    )
         reply_markup = InlineKeyboardMarkup(buttons)
         await query.message.edit_text(
             text=script.ABOUT_TXT.format(temp.U_NAME, temp.B_NAME, OWNER_LNK),

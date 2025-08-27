@@ -100,25 +100,25 @@ This Bot support both URL and alert inline buttons.
 
     ADMIN_TXT = """<b><i><blockquote>‣ Admin Mods 🛐</blockquote>
 These Commands are made just for Admins and will work Only for Admins 🥰
-\n<blockquote>Commands and Usage</blockquote>
-• /logs - To get recent errors
-• /stats - Get status of Files in DB
-• /delete - Delete a files from DB
-• /users - To get list of Users and IDs
-• /chats - To get list of my chats and IDs
-• /leave  - To leave from a chat
-• /disable  - To disable a chat
-• /ban  - Ban a User
-• /unban  - Unban a User
-• /channel - List of Total Connected channels
-• /broadcast - Broadcast a msg to all users of Bot
-• /grp_broadcast - Broadcast a msg to all connected Groups
-• /gfilter - Add a global filters
-• /gfilters - List of all global filters
-• /delg - Delete a specific global filter
-• /request - To send a Movie/Series request to all Bot Admins. Only work on Support Group.
-• /delallg - To delete all Gfilters from the Bot's database
-• /deletefiles - To delete CamRip and PreDVD files from Bot's database</i></b>"""
+\n<blockquote>Cᴏᴍᴍᴀɴᴅs ᴀɴᴅ Usᴀɢᴇ</blockquote>
+• /logs - Tᴏ Gᴇᴛ Rᴇᴄᴇɴᴛ Eʀʀᴏʀs
+• /stats - Gᴇᴛ Sᴛᴀᴛᴜs ᴏғ Fɪʟᴇs ɪɴ DB
+• /delete - Dᴇʟᴇᴛᴇ ᴀ Fɪʟᴇ Fʀᴏᴍ DB
+• /users - Tᴏ Gᴇᴛ Lɪsᴛ ᴏғ Usᴇʀs Aɴᴅ IDs
+• /chats - Tᴏ Gᴇᴛ Lɪsᴛ ᴏғ Mʏ Cʜᴀᴛs Aɴᴅ IDs
+• /leave  - Tᴏ Lᴇᴀᴠᴇ Fʀᴏᴍ ᴀ Cʜᴀᴛ
+• /disable  - Tᴏ Dɪsᴀʙʟᴇ ᴀ Cʜᴀᴛ
+• /ban  - Bᴀɴ ᴀ Usᴇʀ
+• /unban  - Uɴʙᴀɴ ᴀ Usᴇʀ
+• /channel - Lɪsᴛ ᴏғ Tᴏᴛᴀʟ Cᴏɴɴᴇᴄᴛᴇᴅ Cʜᴀɴɴᴇʟs
+• /broadcast - Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Usᴇʀs ᴏғ Bᴏᴛ
+• /grp_broadcast - Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Cᴏɴɴᴇᴄᴛᴇᴅ Gʀᴏᴜᴘs
+• /gfilter - Aᴅᴅ ᴀ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs
+• /gfilters - Lɪsᴛ ᴏғ Aʟʟ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs
+• /delg - Dᴇʟᴇᴛᴇ ᴀ Sᴘᴇᴄɪғɪᴄ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀ
+• /request - Tᴏ Sᴇɴᴅ ᴀ Mᴏᴠɪᴇ/Sᴇʀɪᴇs Rᴇǫᴜᴇsᴛ Tᴏ Aʟʟ Bᴏᴛ Aᴅᴍɪɴs Oɴʟʏ Wᴏʀᴋ Oɴ Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ
+• /delallg - Tᴏ Dᴇʟᴇᴛᴇ Aʟʟ Gғɪʟᴛᴇʀs Fʀᴏᴍ Tʜᴇ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ
+• /deletefiles - Tᴏ Dᴇʟᴇᴛᴇ CᴀᴍRɪᴘ Aɴᴅ PʀᴇDVD Fɪʟᴇs Fʀᴏᴍ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ</i></b>"""
 
     SEC_STATUS_TXT = """<b><i>★ Tᴏᴛᴀʟ Usᴇʀs: <code>{}</code>
 ★ Tᴏᴛᴀʟ Cʜᴀᴛs: <code>{}</code>

@@ -67,7 +67,7 @@ async def git(bot, message):
 
     # Then add technical/meta info
     if qw.get("size"):
-        txt += f'\n\n<b><i>Sɪᴢᴇ : {qw.get("size"):,} KB</i></b>'
+        txt += f'\n<b><i>Sɪᴢᴇ : {qw.get("size"):,} KB</i></b>'
     if qw.get("score"):
         txt += f'\n<b><i>Sᴄᴏʀᴇ : {qw.get("score")}</i></b>'
     if qw.get("language"):

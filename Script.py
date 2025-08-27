@@ -104,18 +104,18 @@ These Commands are made just for Admins and will work Only for Admins 🥰
 • /logs - Tᴏ Gᴇᴛ Rᴇᴄᴇɴᴛ Eʀʀᴏʀs
 • /stats - Gᴇᴛ Sᴛᴀᴛᴜs ᴏғ Fɪʟᴇs ɪɴ DB
 • /delete - Dᴇʟᴇᴛᴇ ᴀ Fɪʟᴇ Fʀᴏᴍ DB
-• /users - Tᴏ Gᴇᴛ Lɪsᴛ ᴏғ Usᴇʀs Aɴᴅ IDs
-• /chats - Tᴏ Gᴇᴛ Lɪsᴛ ᴏғ Mʏ Cʜᴀᴛs Aɴᴅ IDs
+• /users - Gᴇᴛ Lɪsᴛ ᴏғ Usᴇʀs Aɴᴅ IDs
+• /chats - Gᴇᴛ Lɪsᴛ ᴏғ Cʜᴀᴛs Aɴᴅ IDs
 • /leave  - Tᴏ Lᴇᴀᴠᴇ Fʀᴏᴍ ᴀ Cʜᴀᴛ
 • /disable  - Tᴏ Dɪsᴀʙʟᴇ ᴀ Cʜᴀᴛ
 • /ban  - Bᴀɴ ᴀ Usᴇʀ
 • /unban  - Uɴʙᴀɴ ᴀ Usᴇʀ
-• /channel - Lɪsᴛ ᴏғ Tᴏᴛᴀʟ Cᴏɴɴᴇᴄᴛᴇᴅ Cʜᴀɴɴᴇʟs
+• /channel - Tᴏᴛᴀʟ Cᴏɴɴᴇᴄᴛᴇᴅ Cʜɴʟs
 • /broadcast - Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Usᴇʀs ᴏғ Bᴏᴛ
 • /grp_broadcast - Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Cᴏɴɴᴇᴄᴛᴇᴅ Gʀᴏᴜᴘs
 • /gfilter - Aᴅᴅ ᴀ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs
 • /gfilters - Lɪsᴛ ᴏғ Aʟʟ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs
-• /delg - Dᴇʟᴇᴛᴇ ᴀ Sᴘᴇᴄɪғɪᴄ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀ
+• /delg - Dʟᴛ ᴀ Sᴘᴇᴄɪғɪᴄ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀ
 • /request - Tᴏ Sᴇɴᴅ ᴀ Mᴏᴠɪᴇ/Sᴇʀɪᴇs Rᴇǫᴜᴇsᴛ Tᴏ Aʟʟ Bᴏᴛ Aᴅᴍɪɴs Oɴʟʏ Wᴏʀᴋ Oɴ Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ
 • /delallg - Tᴏ Dᴇʟᴇᴛᴇ Aʟʟ Gғɪʟᴛᴇʀs Fʀᴏᴍ Tʜᴇ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ
 • /deletefiles - Tᴏ Dᴇʟᴇᴛᴇ CᴀᴍRɪᴘ Aɴᴅ PʀᴇDVD Fɪʟᴇs Fʀᴏᴍ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ</i></b>"""

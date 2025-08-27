@@ -185,6 +185,7 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
             await k.reply_text(f'**__Sᴜᴄᴄᴇssғᴜʟʟʏ Sᴀᴠᴇᴅ__ ✅ : <code>{total_files}</code> __Tᴏ Dᴀᴛᴀʙᴀsᴇ__\n__Dᴜᴘʟɪᴄᴀᴛᴇ Fɪʟᴇs Sᴋɪᴘᴘᴇᴅ :__ <code>{duplicate}</code>\n__Dᴇʟᴇᴛᴇᴅ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{deleted}</code>\n__Nᴏɴ-Mᴇᴅɪᴀ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Eʀʀᴏʀs Oᴄᴄᴜʀʀᴇᴅ :__ <code>{errors}</code>**')
             await k.reply_text("**__If You Get Message Not Modified Error Then Skip Your Saved File Then Index Again__**")
         else:
-            await msg.edit(f'**__Sᴜᴄᴄᴇssғᴜʟʟʏ Sᴀᴠᴇᴅ__ ✅ : <code>{total_files}</code> __To DataBase!\nDᴜᴘʟɪᴄᴀᴛᴇ Fɪʟᴇs Sᴋɪᴘᴘᴇᴅ :__ <code>{duplicate}</code>\n__Dᴇʟᴇᴛᴇᴅ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{deleted}</code>\n__Nᴏɴ-Mᴇᴅɪᴀ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{Unsupported Media}</code>(Unsupported Media - `{unsupported}` )\n__Eʀʀᴏʀs Oᴄᴄᴜʀʀᴇᴅ__ : <code>{errors}</code>**')
+            await msg.edit(f'**__Sᴜᴄᴄᴇssғᴜʟʟʏ Sᴀᴠᴇᴅ__ ✅ : <code>{total_files}</code> __To DataBase!\nDᴜᴘʟɪᴄᴀᴛᴇ Fɪʟᴇs Sᴋɪᴘᴘᴇᴅ :__ <code>{duplicate}</code>\n__Dᴇʟᴇᴛᴇᴅ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{deleted}</code>\n__Nᴏɴ-Mᴇᴅɪᴀ Msɢs Sᴋɪᴘᴘᴇᴅ :__ <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\n__Eʀʀᴏʀs Oᴄᴄᴜʀʀᴇᴅ__ : <code>{errors}</code>**')
+
 
 

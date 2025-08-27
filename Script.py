@@ -98,9 +98,9 @@ This Bot support both URL and alert inline buttons.
 /font - Stylish and cool Font generator</i></b>"""
 
 
-    ADMIN_TXT = """<b><blockquote>𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐬 🛐</blockquote>
-<i>Tʜᴇsᴇ Cᴏᴍᴍᴀɴᴅs ᴀʀᴇ Mᴀᴅᴇ Jᴜsᴛ Fᴏʀ Aᴅᴍɪɴs Aɴᴅ Wɪʟʟ Wᴏʀᴋ Oɴʟʏ Fᴏʀ Aᴅᴍɪɴs 🥰</i>
-\n<blockquote>𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 & 𝐔𝐒𝐀𝐆𝐄</blockquote>
+    ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐬 🛐</blockquote>
+<i><blockquote>Tʜᴇsᴇ Cᴏᴍᴍᴀɴᴅs ᴀʀᴇ Mᴀᴅᴇ Jᴜsᴛ Fᴏʀ Aᴅᴍɪɴs Aɴᴅ Wɪʟʟ Wᴏʀᴋ Oɴʟʏ Fᴏʀ Aᴅᴍɪɴs 🥰</i></blockquote>
+\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 & 𝐔𝐒𝐀𝐆𝐄</blockquote>
 <i>• /logs - Tᴏ Gᴇᴛ Rᴇᴄᴇɴᴛ Eʀʀᴏʀs
 • /stats - Gᴇᴛ Sᴛᴀᴛᴜs ᴏғ Fɪʟᴇs ɪɴ DB
 • /delete - Dᴇʟᴇᴛᴇ ᴀ Fɪʟᴇ Fʀᴏᴍ DB
@@ -666,6 +666,7 @@ Get Streamable and Downloadable link of any file by using /stream</b></i>"""
 
 
     
+
 
 
 

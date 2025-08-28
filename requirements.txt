@@ -41,4 +41,5 @@ openai==0.25.0
 git+https://github.com/Joelkb/cinemagoer
 pikepdf
 rarfile
+pyzipper
 

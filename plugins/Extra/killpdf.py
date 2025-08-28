@@ -44,12 +44,12 @@ async def remove_password(client: Client, message: Message):
                 await status.delete()
                 await message.reply_document(
                     unlocked_path,
-                    caption="**✅ __File Unlocked Successfully !__**"
+                    caption="**__File Unlocked Successfully__ ✅**"
                 )
             except pikepdf.PasswordError:
                 await status.edit("❌ **__Wrong PDF Password Or Unable To Remove__**")
 
-        # Handle ZIP
+        # HANDLE ZIP
         elif file_name.lower().endswith(".zip"):
             unlocked_files = []
             too_large = False
@@ -98,14 +98,14 @@ async def remove_password(client: Client, message: Message):
             else:
                 buttons.append([InlineKeyboardButton("📂 Sᴇɴᴅ ZIP", callback_data="send_zip")])
                 buttons.append([InlineKeyboardButton("📄 Sᴇɴᴅ Fɪʟᴇs", callback_data="send_files")])
-                await status.edit("**✅ __ZIP Unlocked Successfully\nChoose How To Receive Files__**",
+                await status.edit("**__ZIP Unlocked Successfully__ ✅\n__Choose How To Receive Files__**",
                                   reply_markup=InlineKeyboardMarkup(buttons))
 
         else:
             await status.edit("⚠️ **__Only Pdf And Zip Files Are Supported__**")
 
     except Exception as e:
-        await status.edit(f"⚠️ **__Error: {e}__**")
+        await status.edit(f"🚫 **Error: \n__{e}__**")
 
     finally:
         if os.path.exists(file_path):
@@ -124,7 +124,7 @@ async def add_password(client: Client, message: Message):
     if not password:
         return await message.reply("⚠️ **__Please Provide A Password.\n\nUsage__**: `/addpass yourpassword`")
 
-    status = await message.reply("⏳ **Aᴅᴅɪɴɢ Pᴀssᴡᴏʀᴅ__...**")
+    status = await message.reply("**⏳ __Aᴅᴅɪɴɢ Pᴀssᴡᴏʀᴅ__...**")
 
     try:
         file_path = await message.reply_to_message.download()
@@ -162,7 +162,7 @@ async def add_password(client: Client, message: Message):
             await status.edit("⚠️ **__Only PDF And ZIP Files Are Supported__**")
 
     except Exception as e:
-        await status.edit(f"⚠️ **__Error: {e}__**")
+        await status.edit(f"🚫 **Error: \n__{e}__**")
 
     finally:
         shutil.rmtree(base_dir, ignore_errors=True)
@@ -194,7 +194,7 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
             return await callback.answer("⚠️ **__Some Files Exceed 2GB. ZIP Is Required__**", show_alert=True)
         for f in results["files"]:
             try:
-                await callback.message.reply_document(f, caption="**✅ __File Unlocked Successfully__ !**")
+                await callback.message.reply_document(f, caption="**__File Unlocked Successfully__ ✅**")
             except:
                 pass
 

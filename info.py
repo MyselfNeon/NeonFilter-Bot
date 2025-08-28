@@ -20,14 +20,13 @@ auth_users = [int(user) if id_pattern.search(user) else user for user in environ
 AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 
 
-# 🔹 LOGGING AND FILE CHANNELS
 # 🔹 THIS CHANNEL IS FOR WHEN USER START YOUR BOT THEN BOT SEND THAT USER NAME AND ID IN THIS LOG CHANNEL, SAME FOR GROUP ALSO.
 LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001889915480'))
 
 # This Is File Channel Where You Upload Your File Then Bot Automatically Save It In Database 
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1002627138181 -1002487845241').split()]  # For Multiple Id Use One Space Between Each.
 
-# 🔹 AUTH_CHANNEL MEANS FORCE SUBSCRIBE CHANNEL.
+# AUTH_CHANNEL MEANS FORCE SUBSCRIBE CHANNEL.
 # 🔹 IF REQUEST_TO_JOIN_MODE IS TRUE THEN FORCE SUBSCRIBE WORK LIKE REQUEST TO JOIN FSUB, ELSE IF FALSE THEN WORK LIKE NORMAL FSUB.
 REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', False)) # Set True Or False
 TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', False)) # Set True Or False (This try again button is only for request to join fsub not for normal fsub)
@@ -37,7 +36,7 @@ auth_channel = environ.get('AUTH_CHANNEL', '-1002384933640') # give your force s
 AUTH_CHANNEL = int(auth_channel) if auth_channel and id_pattern.search(auth_channel) else None
 
 
-# 🔹 REQUEST AND SUPPORT CHANNEL
+# REQUEST AND SUPPORT CHANNELS
 # 🔹 THIS CHANNEL IS FOR WHEN USER REQUEST ANY FILE NAME WITH COMMAND OR HASHTAG LIKE - /request OR #REQUEST
 reqst_channel = environ.get('REQST_CHANNEL', '-1002158258466')
 REQST_CHANNEL = int(reqst_channel) if reqst_channel and id_pattern.search(reqst_channel) else None
@@ -185,4 +184,5 @@ else:
     OTHER_DB_URI = O_DB_URI       # This Db Is For Other Data Store
     FILE_DB_URI = F_DB_URI        # This Db Is For File Data Store
     SEC_FILE_DB_URI = S_DB_URI    # This Db is for File Data Store When First Db Is Going To Be Full.
+
 

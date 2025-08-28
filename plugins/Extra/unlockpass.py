@@ -41,16 +41,23 @@ async def auto_cleanup(chat_id):
         del PROCESSED_RESULTS[chat_id]
 
 # -------------------------------
+# BARE COMMAND REPLY
+# -------------------------------
+@Client.on_message(filters.command(["unlock", "newpass"]) & filters.regex(r"^/\w+$"))
+async def bare_command_reply(client: Client, message: Message):
+    cmd = message.text[1:]  # gets "unlock" or "newpass"
+    await message.reply(f"❌ Usage: Reply to a file with `/{cmd} <password>`")
+
+# -------------------------------
 # UNLOCK COMMAND
 # -------------------------------
 @Client.on_message(filters.command("unlock") & filters.reply)
 async def unlock_files(client: Client, message: Message):
     if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("⚠️ Reply to a **PDF or ZIP file** with `/unlock <password>`")
+        return await message.reply("❌ Usage: Reply to a PDF or ZIP file with `/unlock <password>`")
 
-    file_name = message.reply_to_message.document.file_name
     args = message.text.split(" ", 1)
-    if len(args) < 2:
+    if len(args) < 2 or not args[1].strip():
         return await message.reply("❌ Usage: /unlock <password>")
 
     password = args[1]
@@ -64,6 +71,8 @@ async def unlock_files(client: Client, message: Message):
         unlocked_dir = os.path.join(base_dir, "unlocked")
         os.makedirs(extracted_dir, exist_ok=True)
         os.makedirs(unlocked_dir, exist_ok=True)
+
+        file_name = message.reply_to_message.document.file_name
 
         # ---------------- PDF ----------------
         if file_name.endswith(".pdf"):
@@ -140,6 +149,17 @@ async def unlock_files(client: Client, message: Message):
                     f"⏳ ETA: {int(remaining)}s"
                 )
 
+            # ---------------- SUMMARY ----------------
+            unlocked_count = sum(1 for f in unlocked_files if sha256(f) in UNLOCKED_HASHES)
+            skipped_count = total_pdfs - unlocked_count
+            summary_text = (
+                f"✅ All PDFs processed!\n"
+                f"Total PDFs: {total_pdfs}\n"
+                f"Unlocked: {unlocked_count}\n"
+                f"Skipped (already unlocked): {skipped_count}\n\n"
+                f"Choose how to receive:"
+            )
+
             task = asyncio.create_task(auto_cleanup(message.chat.id))
             PROCESSED_RESULTS[message.chat.id] = {
                 "files": unlocked_files,
@@ -156,7 +176,7 @@ async def unlock_files(client: Client, message: Message):
                     InlineKeyboardButton("📂 Get Unlocked ZIP", callback_data="send_zip"),
                     InlineKeyboardButton("📄 Get Unlocked PDFs", callback_data="send_files")
                 ])
-            await status_msg.edit_text(f"✅ All PDFs processed! Choose how to receive:", reply_markup=InlineKeyboardMarkup(buttons))
+            await status_msg.edit_text(summary_text, reply_markup=InlineKeyboardMarkup(buttons))
 
         else:
             await message.reply("⚠️ Only PDF and ZIP files are supported.")
@@ -171,10 +191,10 @@ async def unlock_files(client: Client, message: Message):
 @Client.on_message(filters.command("newpass") & filters.reply)
 async def add_password(client: Client, message: Message):
     if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("⚠️ Reply to a **PDF or ZIP file** with `/newpass <newpassword>`")
+        return await message.reply("❌ Usage: Reply to a PDF or ZIP file with `/newpass <newpassword>`")
 
     args = message.text.split(" ", 1)
-    if len(args) < 2:
+    if len(args) < 2 or not args[1].strip():
         return await message.reply("❌ Usage: /newpass <newpassword>")
 
     new_pass = args[1]
@@ -198,8 +218,7 @@ async def add_password(client: Client, message: Message):
                 try:
                     zf.extractall(extracted_dir)
                 except RuntimeError:
-                    # If encrypted, skip extraction
-                    pass
+                    pass  # Skip if encrypted
             new_zip_path = os.path.join(output_dir, f"protected_{file_name}")
             with pyzipper.AESZipFile(new_zip_path, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
                 newzf.setpassword(new_pass.encode("utf-8"))

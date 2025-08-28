@@ -1,4 +1,3 @@
-
 import sys, glob, importlib, logging, logging.config, pytz, asyncio
 from pathlib import Path
 
@@ -23,8 +22,20 @@ from Neon.bot import TechVJBot
 from Neon.util.keepalive import ping_server
 from Neon.bot.clients import initialize_clients
 
-ppath = "plugins/*.py"
-files = glob.glob(ppath)
+# ------------------- Updated plugin loader -------------------
+def get_all_plugin_files(root="plugins"):
+    """
+    Recursively get all .py files in the plugins folder and subfolders.
+    """
+    files = []
+    for path in Path(root).rglob("*.py"):
+        if path.name != "__init__.py":  # skip __init__.py
+            files.append(path)
+    return files
+
+files = get_all_plugin_files()
+# -------------------------------------------------------------
+
 TechVJBot.start()
 loop = asyncio.get_event_loop()
 
@@ -34,17 +45,18 @@ async def start():
     print('Initalizing Your Bot')
     bot_info = await TechVJBot.get_me()
     await initialize_clients()
-    for name in files:
-        with open(name) as a:
-            patt = Path(a.name)
-            plugin_name = patt.stem.replace(".py", "")
-            plugins_dir = Path(f"plugins/{plugin_name}.py")
-            import_path = "plugins.{}".format(plugin_name)
-            spec = importlib.util.spec_from_file_location(import_path, plugins_dir)
-            load = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(load)
-            sys.modules["plugins." + plugin_name] = load
-            print("Tech VJ Imported => " + plugin_name)
+
+    # ------------------- Import plugins -------------------
+    for plugin_path in files:
+        plugin_name = plugin_path.stem
+        import_path = ".".join(plugin_path.with_suffix("").parts)  # convert path to module path
+        spec = importlib.util.spec_from_file_location(import_path, plugin_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        sys.modules[import_path] = mod
+        print(f"Tech VJ Imported => {plugin_name}")
+    # -------------------------------------------------------
+
     if ON_HEROKU:
         asyncio.create_task(ping_server())
     b_users, b_chats = await db.get_banned()
@@ -91,4 +103,4 @@ if __name__ == '__main__':
         loop.run_until_complete(start())
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
-
+        

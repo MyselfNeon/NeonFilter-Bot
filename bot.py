@@ -54,7 +54,7 @@ async def start():
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         sys.modules[import_path] = mod
-        print(f"MyselfNeon Imported => {plugin_name}")
+        print(f"✨ Neon Imported => {plugin_name}")
     # -------------------------------------------------------
 
     if ON_HEROKU:
@@ -104,4 +104,5 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
         
+
 

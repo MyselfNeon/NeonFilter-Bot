@@ -88,8 +88,7 @@ async def unlock_files(client: Client, message: Message):
 
             try:
                 with pyzipper.AESZipFile(file_path) as zf:
-                    if zf.needs_password():
-                        zf.pwd = password.encode("utf-8")
+                    zf.pwd = password.encode("utf-8")
                     zf.extractall(extracted_dir)
             except RuntimeError:
                 return await message.reply("❌ Wrong ZIP password or extraction failed.")
@@ -196,7 +195,11 @@ async def add_password(client: Client, message: Message):
             extracted_dir = os.path.join(base_dir, "extracted")
             os.makedirs(extracted_dir, exist_ok=True)
             with pyzipper.AESZipFile(file_path) as zf:
-                zf.extractall(extracted_dir)
+                try:
+                    zf.extractall(extracted_dir)
+                except RuntimeError:
+                    # If encrypted, skip extraction
+                    pass
             new_zip_path = os.path.join(output_dir, f"protected_{file_name}")
             with pyzipper.AESZipFile(new_zip_path, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
                 newzf.setpassword(new_pass.encode("utf-8"))
@@ -214,3 +217,40 @@ async def add_password(client: Client, message: Message):
         shutil.rmtree(base_dir, ignore_errors=True)
         if os.path.exists(file_path):
             os.remove(file_path)
+
+# -------------------------------
+# INLINE BUTTON HANDLER
+# -------------------------------
+@Client.on_callback_query(filters.regex("send_zip|send_files"))
+async def handle_send_choice(client: Client, callback: CallbackQuery):
+    chat_id = callback.message.chat.id
+    if chat_id not in PROCESSED_RESULTS:
+        return await callback.answer("⚠️ No processed files found.", show_alert=True)
+
+    choice = callback.data
+    results = PROCESSED_RESULTS[chat_id]
+
+    if "task" in results and not results["task"].done():
+        results["task"].cancel()
+
+    if choice == "send_zip":
+        new_zip = f"unlocked_{results.get('original_zip', 'files')}"
+        with pyzipper.AESZipFile(new_zip, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
+            for f in results["files"]:
+                arcname = os.path.relpath(f, "temp_files/unlocked")
+                newzf.write(f, arcname=arcname)
+        await callback.message.reply_document(new_zip, caption="📂 Here’s your unlocked ZIP!")
+        os.remove(new_zip)
+
+    elif choice == "send_files":
+        if results.get("force_zip"):
+            return await callback.answer("⚠️ Some files exceed 2GB. ZIP is required.", show_alert=True)
+        for f in results["files"]:
+            try:
+                await callback.message.reply_document(f)
+            except:
+                pass
+
+    shutil.rmtree("temp_files", ignore_errors=True)
+    del PROCESSED_RESULTS[chat_id]
+    await callback.answer()

@@ -17,7 +17,6 @@ UNLOCKED_HASHES = set()  # SHA256 of unlocked PDFs
 TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
 AUTO_DELETE_MINUTES = 10
 MAX_PDFS = 50
-MAX_FILE_SIZE_WARN = 500 * 1024 * 1024
 
 # -------------------------------
 # HELPERS
@@ -41,21 +40,20 @@ async def auto_cleanup(chat_id):
         del PROCESSED_RESULTS[chat_id]
 
 # -------------------------------
-# BARE COMMAND REPLY
+# USAGE PROMPT IF NO FILE REPLIED
 # -------------------------------
-@Client.on_message(filters.command(["unlock", "newpass"]) & filters.regex(r"^/\w+$"))
-async def bare_command_reply(client: Client, message: Message):
-    cmd = message.text[1:]  # gets "unlock" or "newpass"
-    await message.reply(f"❌ Usage: Reply to a file with `/{cmd} <password>`")
+@Client.on_message(filters.command(["unlock", "newpass"]))
+async def usage_prompt(client: Client, message: Message):
+    if not message.reply_to_message or not message.reply_to_message.document:
+        cmd = message.text.split()[0][1:]  # "unlock" or "newpass"
+        await message.reply(f"❌ Usage: Reply to a file with `/{cmd} <password>`")
+        return
 
 # -------------------------------
 # UNLOCK COMMAND
 # -------------------------------
 @Client.on_message(filters.command("unlock") & filters.reply)
 async def unlock_files(client: Client, message: Message):
-    if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("❌ Usage: Reply to a PDF or ZIP file with `/unlock <password>`")
-
     args = message.text.split(" ", 1)
     if len(args) < 2 or not args[1].strip():
         return await message.reply("❌ Usage: /unlock <password>")
@@ -190,9 +188,6 @@ async def unlock_files(client: Client, message: Message):
 # -------------------------------
 @Client.on_message(filters.command("newpass") & filters.reply)
 async def add_password(client: Client, message: Message):
-    if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("❌ Usage: Reply to a PDF or ZIP file with `/newpass <newpassword>`")
-
     args = message.text.split(" ", 1)
     if len(args) < 2 or not args[1].strip():
         return await message.reply("❌ Usage: /newpass <newpassword>")
@@ -218,7 +213,7 @@ async def add_password(client: Client, message: Message):
                 try:
                     zf.extractall(extracted_dir)
                 except RuntimeError:
-                    pass  # Skip if encrypted
+                    pass
             new_zip_path = os.path.join(output_dir, f"protected_{file_name}")
             with pyzipper.AESZipFile(new_zip_path, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
                 newzf.setpassword(new_pass.encode("utf-8"))

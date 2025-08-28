@@ -1,15 +1,21 @@
 FROM python:3.10.8-slim-bullseye
 
+# Update system and install git
 RUN apt update && apt upgrade -y
 RUN apt install git -y
+
+# Copy Python dependencies and install
 COPY requirements.txt /requirements.txt
-RUN pip install edge-tts
+RUN pip install --no-cache-dir -U pip
+RUN pip install --no-cache-dir -U -r /requirements.txt
+RUN pip install --no-cache-dir edge-tts
 
-RUN cd /
-RUN pip3 install -U pip && pip3 install -U -r requirements.txt
-RUN mkdir /VJ-FILTER-BOT
-WORKDIR /VJ-FILTER-BOT
-COPY . /VJ-FILTER-BOT
+# Create custom working directory
+RUN mkdir /neon-bot
+WORKDIR /neon-bot
+
+# Copy bot code into working directory
+COPY . /neon-bot
+
+# Run the bot
 CMD ["python", "bot.py"]
-
-

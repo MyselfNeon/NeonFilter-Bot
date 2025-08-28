@@ -12,17 +12,17 @@ PROCESSED_RESULTS = {}  # {chat_id: {"files": [paths], "force_zip": bool}}
 TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
 
 
-# ====================== UNLOCK COMMAND ======================
-@Client.on_message(filters.command("unlock") & filters.reply)
-async def unlock_files(client: Client, message: Message):
+# ====================== REMOVE PASSWORD COMMAND ======================
+@Client.on_message(filters.command("removepass") & filters.reply)
+async def remove_password(client: Client, message: Message):
     if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("⚠️ Reply to a **PDF or ZIP file** with `/unlock <password>`")
+        return await message.reply("⚠️ Reply to a **PDF or ZIP file** with `/removepass <password>`")
 
     file_name = message.reply_to_message.document.file_name
     args = message.text.split(" ", 1)
     password = args[1] if len(args) > 1 else None
 
-    status = await message.reply("⏳ Processing...")
+    status = await message.reply("⏳ Removing password...")
 
     try:
         # Download file
@@ -42,9 +42,9 @@ async def unlock_files(client: Client, message: Message):
                 if os.path.getsize(unlocked_path) > TG_MAX_FILE_SIZE:
                     return await status.edit("❌ File too large for Telegram (2GB limit).")
                 await status.delete()
-                await message.reply_document(unlocked_path, caption="✅ PDF unlocked successfully!")
+                await message.reply_document(unlocked_path, caption="✅ PDF password removed successfully!")
             except pikepdf._qpdf.PasswordError:
-                await status.edit("❌ Wrong PDF password or unable to unlock.")
+                await status.edit("❌ Wrong PDF password or unable to remove.")
 
         # Handle ZIP
         elif file_name.lower().endswith(".zip"):
@@ -134,7 +134,10 @@ async def add_password(client: Client, message: Message):
             with pikepdf.open(file_path) as pdf:
                 pdf.save(protected_path, encryption=pikepdf.Encryption(owner=password, user=password, R=4))
             await status.delete()
-            await message.reply_document(protected_path, caption="🔐 PDF protected successfully!")
+            await message.reply_document(
+                protected_path,
+                caption=f"🔐 PDF protected successfully!\n\n**Password:** `{password}`"
+            )
 
         # ZIP case
         elif file_name.lower().endswith(".zip"):
@@ -146,7 +149,10 @@ async def add_password(client: Client, message: Message):
                         data = original_zip.read(f)
                         zf.writestr(f, data, pwd=password.encode("utf-8"))
             await status.delete()
-            await message.reply_document(protected_path, caption="🔐 ZIP protected successfully!")
+            await message.reply_document(
+                protected_path,
+                caption=f"🔐 ZIP protected successfully!\n\n**Password:** `{password}`"
+            )
 
         else:
             await status.edit("⚠️ Only PDF and ZIP files are supported.")
@@ -176,7 +182,7 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
             for f in results["files"]:
                 arcname = os.path.relpath(f, "temp_unlock/unlocked")
                 newzf.write(f, arcname=arcname)
-        await callback.message.reply_document(new_zip, caption="📂 Here’s your unlocked ZIP!")
+        await callback.message.reply_document(new_zip, caption="📂 Here’s your ZIP without password!")
         os.remove(new_zip)
 
     elif choice == "send_files":

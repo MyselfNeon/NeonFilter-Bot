@@ -1,6 +1,6 @@
 import jinja2
 from info import *
-from Neon.bot import TechVJBot
+from Neon.bot import NeonBot
 from Neon.util.human_readable import humanbytes
 from Neon.util.file_properties import get_file_ids
 from Neon.server.exceptions import InvalidHash
@@ -10,8 +10,8 @@ import aiohttp
 
 
 async def render_page(id, secure_hash, src=None):
-    file = await TechVJBot.get_messages(int(LOG_CHANNEL), int(id))
-    file_data = await get_file_ids(TechVJBot, int(LOG_CHANNEL), int(id))
+    file = await NeonBot.get_messages(int(LOG_CHANNEL), int(id))
+    file_data = await get_file_ids(NeonBot, int(LOG_CHANNEL), int(id))
     if file_data.unique_id[:6] != secure_hash:
         logging.debug(f"link hash: {secure_hash} - {file_data.unique_id[:6]}")
         logging.debug(f"Invalid hash for message with - ID {id}")

@@ -18,7 +18,7 @@ from aiohttp import web
 from plugins import web_server
 from plugins.clone import restart_bots
 
-from Neon.bot import TechVJBot
+from Neon.bot import NeonBot
 from Neon.util.keepalive import ping_server
 from Neon.bot.clients import initialize_clients
 
@@ -36,14 +36,14 @@ def get_all_plugin_files(root="plugins"):
 files = get_all_plugin_files()
 # -------------------------------------------------------------
 
-TechVJBot.start()
+NeonBot.start()
 loop = asyncio.get_event_loop()
 
 
 async def start():
     print('\n')
     print('Initalizing Your Bot')
-    bot_info = await TechVJBot.get_me()
+    bot_info = await NeonBot.get_me()
     await initialize_clients()
 
     # ------------------- Import plugins -------------------
@@ -62,8 +62,8 @@ async def start():
     b_users, b_chats = await db.get_banned()
     temp.BANNED_USERS = b_users
     temp.BANNED_CHATS = b_chats
-    me = await TechVJBot.get_me()
-    temp.BOT = TechVJBot
+    me = await NeonBot.get_me()
+    temp.BOT = NeonBot
     temp.ME = me.id
     temp.U_NAME = me.username
     temp.B_NAME = me.first_name
@@ -73,17 +73,17 @@ async def start():
     now = datetime.now(tz)
     time = now.strftime("%H:%M:%S %p")
     try:
-        await TechVJBot.send_message(chat_id=LOG_CHANNEL, text=script.RESTART_TXT.format(today, time))
+        await NeonBot.send_message(chat_id=LOG_CHANNEL, text=script.RESTART_TXT.format(today, time))
     except:
         print("Make Your Bot Admin In Log Channel With Full Rights")
     for ch in CHANNELS:
         try:
-            k = await TechVJBot.send_message(chat_id=ch, text="**Bot Restarted**")
+            k = await NeonBot.send_message(chat_id=ch, text="**Bot Restarted**")
             await k.delete()
         except:
             print("Make Your Bot Admin In File Channels With Full Rights")
     try:
-        k = await TechVJBot.send_message(chat_id=AUTH_CHANNEL, text="**Bot Restarted**")
+        k = await NeonBot.send_message(chat_id=AUTH_CHANNEL, text="**Bot Restarted**")
         await k.delete()
     except:
         print("Make Your Bot Admin In Force Subscribe Channel With Full Rights")

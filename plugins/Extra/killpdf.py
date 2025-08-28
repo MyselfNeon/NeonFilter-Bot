@@ -46,7 +46,7 @@ async def remove_password(client: Client, message: Message):
                     unlocked_path,
                     caption="✅ File unlocked successfully!"
                 )
-            except pikepdf._qpdf.PasswordError:
+            except pikepdf.PasswordError:
                 await status.edit("❌ Wrong PDF password or unable to remove.")
 
         # Handle ZIP
@@ -147,10 +147,11 @@ async def add_password(client: Client, message: Message):
             protected_path = os.path.join(base_dir, file_name)
             with pyzipper.AESZipFile(protected_path, "w", compression=pyzipper.ZIP_DEFLATED,
                                      encryption=pyzipper.WZ_AES) as zf:
+                zf.setpassword(password.encode("utf-8"))   # set password once
                 with pyzipper.AESZipFile(file_path) as original_zip:
                     for f in original_zip.namelist():
                         data = original_zip.read(f)
-                        zf.writestr(f, data, pwd=password.encode("utf-8"))
+                        zf.writestr(f, data)  # no pwd arg here
             await status.delete()
             await message.reply_document(
                 protected_path,

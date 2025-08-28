@@ -2,181 +2,120 @@ import os
 import shutil
 import pyzipper
 import pikepdf
+import asyncio
+import time
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.types import Message
 
-# Temporary storage for processed files & actions
-PROCESSED_RESULTS = {}  # {chat_id: {"files": [paths], "force_zip": bool}}
-USER_ACTIONS = {}       # {chat_id: {"action": "addpass"/"removepass", "file_id": str, "file_name": str}}
+# ---------------- GLOBALS ----------------
+USER_ACTIONS = {}  # {(chat_id, user_id): {"action": str, "file_chat_id": int, "file_msg_id": int, "timestamp": float}}
 
-TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024  # 2GB
-
-
-# ====================== STEP 1: COMMAND (ASK FOR PASSWORD) ======================
-@Client.on_message(filters.command(["addpass", "removepass"]) & filters.reply)
-async def ask_password(_: Client, message: Message):
-    if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("⚠️ Reply to a **PDF or ZIP file** with `/addpass` or `/removepass`")
-
-    file_id = message.reply_to_message.id
-    file_name = message.reply_to_message.document.file_name
-    action = message.text.split()[0].lstrip("/")
-
-    USER_ACTIONS[message.chat.id] = {
-        "action": action,
-        "file_id": file_id,
-        "file_name": file_name
+# ---------------- COMMAND HANDLERS ----------------
+@Client.on_message(filters.command("addpass") & filters.reply)
+async def add_pass_handler(client: Client, message: Message):
+    if not message.reply_to_message.document:
+        return await message.reply("⚠️ Please reply to a PDF or ZIP file.")
+    USER_ACTIONS[(message.chat.id, message.from_user.id)] = {
+        "action": "addpass",
+        "file_chat_id": message.chat.id,
+        "file_msg_id": message.reply_to_message.id,
+        "timestamp": time.time()
     }
+    await message.reply("🔐 Please send me the password (just type it, no reply).")
 
-    await message.reply("🔑 Please reply with the password for this file.")
+@Client.on_message(filters.command("removepass") & filters.reply)
+async def remove_pass_handler(client: Client, message: Message):
+    if not message.reply_to_message.document:
+        return await message.reply("⚠️ Please reply to a PDF or ZIP file.")
+    USER_ACTIONS[(message.chat.id, message.from_user.id)] = {
+        "action": "removepass",
+        "file_chat_id": message.chat.id,
+        "file_msg_id": message.reply_to_message.id,
+        "timestamp": time.time()
+    }
+    await message.reply("🔓 Please send me the password (just type it, no reply).")
 
+# ---------------- PASSWORD LISTENER ----------------
+@Client.on_message(filters.text & ~filters.command(["addpass", "removepass"]))
+async def password_listener(client: Client, message: Message):
+    key = (message.chat.id, message.from_user.id)
+    if key not in USER_ACTIONS:
+        return
 
-# ====================== STEP 2: PASSWORD REPLY ======================
-@Client.on_message(filters.reply)
-async def process_password(client: Client, message: Message):
-    chat_id = message.chat.id
-    if chat_id not in USER_ACTIONS:
-        return  # ignore normal replies
+    action_data = USER_ACTIONS.pop(key)
+    # Check timeout (2 min)
+    if time.time() - action_data["timestamp"] > 120:
+        return await message.reply("⌛ Session expired. Please send the command again.")
 
-    action_data = USER_ACTIONS[chat_id]
     password = message.text.strip()
-
-    # Ensure this reply is to the same file
-    if not message.reply_to_message or message.reply_to_message.id != action_data["file_id"]:
-        return await message.reply("⚠️ Please reply to the same file message with the password.")
-
-    file_name = action_data["file_name"]
-    action = action_data["action"]
-
-    status = await message.reply("⏳ Processing...")
-
     try:
-        file_path = await message.reply_to_message.download()
+        orig_msg = await client.get_messages(action_data["file_chat_id"], action_data["file_msg_id"])
+        file_path = await orig_msg.download()
 
-        if action == "removepass":
-            # ========== REMOVE PASSWORD ==========
-            base_dir = "temp_unlock"
-            extracted_dir = os.path.join(base_dir, "extracted")
-            unlocked_dir = os.path.join(base_dir, "unlocked")
-            os.makedirs(extracted_dir, exist_ok=True)
-            os.makedirs(unlocked_dir, exist_ok=True)
+        if action_data["action"] == "addpass":
+            await process_add_password(message, file_path, password)
+        elif action_data["action"] == "removepass":
+            await process_remove_password(message, file_path, password)
 
-            if file_name.lower().endswith(".pdf"):
-                unlocked_path = os.path.join(unlocked_dir, "unlocked_" + file_name)
-                try:
-                    with pikepdf.open(file_path, password=password) as pdf:
-                        pdf.save(unlocked_path)
-                    if os.path.getsize(unlocked_path) > TG_MAX_FILE_SIZE:
-                        return await status.edit("❌ File too large for Telegram (2GB limit).")
-                    await status.delete()
-                    await message.reply_document(unlocked_path, caption="✅ PDF password removed successfully!")
-                except pikepdf._qpdf.PasswordError:
-                    await status.edit("❌ Wrong PDF password or unable to remove.")
-
-            elif file_name.lower().endswith(".zip"):
-                unlocked_files = []
-                too_large = False
-                try:
-                    with pyzipper.AESZipFile(file_path) as zf:
-                        zf.extractall(path=extracted_dir, pwd=password.encode("utf-8"))
-                except Exception:
-                    return await status.edit("❌ Wrong ZIP password or extraction failed.")
-
-                for root, _, files in os.walk(extracted_dir):
-                    for f in files:
-                        src_path = os.path.join(root, f)
-                        rel_path = os.path.relpath(src_path, extracted_dir)
-                        dest_path = os.path.join(unlocked_dir, rel_path)
-                        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-
-                        if f.lower().endswith(".pdf"):
-                            try:
-                                with pikepdf.open(src_path, password=password) as pdf:
-                                    pdf.save(dest_path)
-                            except Exception:
-                                shutil.copy(src_path, dest_path)
-                        else:
-                            shutil.copy(src_path, dest_path)
-
-                        unlocked_files.append(dest_path)
-                        if os.path.getsize(dest_path) > TG_MAX_FILE_SIZE:
-                            too_large = True
-
-                PROCESSED_RESULTS[chat_id] = {"files": unlocked_files, "force_zip": too_large}
-
-                buttons = [[InlineKeyboardButton("📂 Send as ZIP", callback_data="send_zip")]]
-                if not too_large:
-                    buttons.append([InlineKeyboardButton("📄 Send files separately", callback_data="send_files")])
-
-                await status.edit("✅ ZIP processed! Choose how to receive files:",
-                                  reply_markup=InlineKeyboardMarkup(buttons))
-            else:
-                await status.edit("⚠️ Only PDF and ZIP files are supported.")
-
-        elif action == "addpass":
-            # ========== ADD PASSWORD ==========
-            base_dir = "temp_addpass"
-            os.makedirs(base_dir, exist_ok=True)
-
-            if file_name.lower().endswith(".pdf"):
-                protected_path = os.path.join(base_dir, "protected_" + file_name)
-                with pikepdf.open(file_path) as pdf:
-                    pdf.save(protected_path, encryption=pikepdf.Encryption(owner=password, user=password, R=4))
-                await status.delete()
-                await message.reply_document(protected_path, caption=f"🔐 PDF protected successfully!\nPassword: `{password}`")
-
-            elif file_name.lower().endswith(".zip"):
-                protected_path = os.path.join(base_dir, "protected_" + file_name)
-                with pyzipper.AESZipFile(protected_path, "w", compression=pyzipper.ZIP_DEFLATED,
-                                         encryption=pyzipper.WZ_AES) as zf:
-                    with pyzipper.AESZipFile(file_path) as original_zip:
-                        for f in original_zip.namelist():
-                            data = original_zip.read(f)
-                            zf.writestr(f, data, pwd=password.encode("utf-8"))
-                await status.delete()
-                await message.reply_document(protected_path, caption=f"🔐 ZIP protected successfully!\nPassword: `{password}`")
-            else:
-                await status.edit("⚠️ Only PDF and ZIP files are supported.")
-
+        os.remove(file_path)
     except Exception as e:
-        await status.edit(f"⚠️ Error: {e}")
+        await message.reply(f"❌ Error: {e}")
 
-    finally:
-        # cleanup
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        USER_ACTIONS.pop(chat_id, None)
+# ---------------- PDF & ZIP PROCESSING ----------------
+async def process_add_password(message: Message, file_path: str, password: str):
+    filename = os.path.basename(file_path)
+    name, ext = os.path.splitext(filename)
 
+    if ext.lower() == ".pdf":
+        out_file = f"{name}_locked.pdf"
+        try:
+            with pikepdf.open(file_path) as pdf:
+                pdf.save(out_file, encryption=pikepdf.Encryption(owner=password, user=password, R=4))
+            await message.reply_document(out_file, caption=f"🔐 PDF protected successfully!\nPassword: `{password}`")
+            os.remove(out_file)
+        except Exception as e:
+            await message.reply(f"❌ Failed to lock PDF: {e}")
 
-# ====================== CALLBACK HANDLER ======================
-@Client.on_callback_query(filters.regex("send_zip|send_files"))
-async def handle_send_choice(client: Client, callback: CallbackQuery):
-    chat_id = callback.message.chat.id
-    if chat_id not in PROCESSED_RESULTS:
-        return await callback.answer("⚠️ No processed files found.", show_alert=True)
+    elif ext.lower() == ".zip":
+        out_file = f"{name}_locked.zip"
+        try:
+            with pyzipper.AESZipFile(out_file, 'w', compression=pyzipper.ZIP_DEFLATED, encryption=pyzipper.WZ_AES) as zf:
+                zf.setpassword(password.encode())
+                zf.write(file_path, filename)
+            await message.reply_document(out_file, caption=f"🔐 ZIP protected successfully!\nPassword: `{password}`")
+            os.remove(out_file)
+        except Exception as e:
+            await message.reply(f"❌ Failed to lock ZIP: {e}")
+    else:
+        await message.reply("⚠️ Only PDF and ZIP files are supported.")
 
-    results = PROCESSED_RESULTS[chat_id]
-    choice = callback.data
+async def process_remove_password(message: Message, file_path: str, password: str):
+    filename = os.path.basename(file_path)
+    name, ext = os.path.splitext(filename)
 
-    if choice == "send_zip":
-        new_zip = "unlocked_files.zip"
-        with pyzipper.AESZipFile(new_zip, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
-            for f in results["files"]:
-                arcname = os.path.relpath(f, "temp_unlock/unlocked")
-                newzf.write(f, arcname=arcname)
-        await callback.message.reply_document(new_zip, caption="📂 Here’s your ZIP without password!")
-        os.remove(new_zip)
+    if ext.lower() == ".pdf":
+        out_file = f"{name}_unlocked.pdf"
+        try:
+            with pikepdf.open(file_path, password=password) as pdf:
+                pdf.save(out_file)
+            await message.reply_document(out_file, caption="🔓 PDF unlocked successfully!")
+            os.remove(out_file)
+        except Exception as e:
+            await message.reply(f"❌ Failed to unlock PDF: {e}")
 
-    elif choice == "send_files":
-        if results.get("force_zip"):
-            return await callback.answer("⚠️ Some files exceed 2GB. ZIP is required.", show_alert=True)
-        for f in results["files"]:
-            try:
-                await callback.message.reply_document(f)
-            except:
-                pass
-
-    shutil.rmtree("temp_unlock", ignore_errors=True)
-    del PROCESSED_RESULTS[chat_id]
-    await callback.answer()
-    
+    elif ext.lower() == ".zip":
+        out_dir = f"{name}_unzipped"
+        os.makedirs(out_dir, exist_ok=True)
+        try:
+            with pyzipper.AESZipFile(file_path) as zf:
+                zf.pwd = password.encode()
+                zf.extractall(out_dir)
+            shutil.make_archive(out_dir, 'zip', out_dir)
+            await message.reply_document(f"{out_dir}.zip", caption="🔓 ZIP extracted and re-packed!")
+            shutil.rmtree(out_dir)
+            os.remove(f"{out_dir}.zip")
+        except Exception as e:
+            await message.reply(f"❌ Failed to unlock ZIP: {e}")
+    else:
+        await message.reply("⚠️ Only PDF and ZIP files are supported.")
+        

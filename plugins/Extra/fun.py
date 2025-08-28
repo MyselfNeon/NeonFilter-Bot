@@ -214,3 +214,26 @@ async def chick_fight(_: Client, message: Message):
         result = f"💀 Your chicken lost! You lost {amount}."
 
     await message.reply_text(f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰")
+
+# -----------------------
+# FUN HELP MENU
+# -----------------------
+@Client.on_message(filters.command(["funhelp"]))
+async def fun_help(_: Client, message: Message):
+    text = (
+        "🎮 **Fun & Games Menu** 🎮\n\n"
+        "💰 Balance System:\n"
+        "• `/bal` or `/balance` → Check your balance\n"
+        "• `/lb` → Show Top 10 richest users\n"
+        "• `/addbal` → (Admin only) Add coins\n"
+        "• `/resetbal` → (Admin only) Reset all balances\n\n"
+        
+        "🎲 Games:\n"
+        "• `/rps` → Rock-Paper-Scissors (Win: +2000 | Lose: -1000)\n"
+        "• `/roulette <red/black> <amount>` → Bet on roulette colors\n"
+        "• `/chickfight <amount>` → Bet on a chicken fight 🐔\n\n"
+        
+        "✨ Enjoy the games and try to climb the leaderboard!"
+    )
+    await message.reply_text(text)
+    

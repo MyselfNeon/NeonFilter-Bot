@@ -3,6 +3,7 @@ import shutil
 import pyzipper
 import pikepdf
 import asyncio
+import time
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
@@ -15,14 +16,13 @@ AUTO_DELETE_MINUTES = 10
 MAX_PDFS = 50  # max PDFs per ZIP
 MAX_FILE_SIZE_WARN = 500 * 1024 * 1024  # warn if PDF >500MB
 
-# Helper to generate progress bar
+# Generate progress bar string
 def progress_bar(current, total, length=20):
     filled = int(current / total * length)
     empty = length - filled
     return "▰" * filled + "▱" * empty
 
 async def auto_cleanup(chat_id):
-    """Automatically delete temp files after timeout"""
     await asyncio.sleep(AUTO_DELETE_MINUTES * 60)
     if chat_id in PROCESSED_RESULTS:
         shutil.rmtree("temp_unlock", ignore_errors=True)
@@ -40,7 +40,6 @@ async def unlock_files(client: Client, message: Message):
 
     password = args[1]
 
-    # Per-user temp quota
     if message.chat.id in PROCESSED_RESULTS:
         return await message.reply("⚠️ You already have a processing task. Wait until it finishes or times out.")
 
@@ -66,6 +65,7 @@ async def unlock_files(client: Client, message: Message):
         elif file_name.endswith(".zip"):
             unlocked_files = []
             too_large = False
+
             # Extract ZIP
             try:
                 with pyzipper.AESZipFile(file_path) as zf:
@@ -77,7 +77,7 @@ async def unlock_files(client: Client, message: Message):
             except Exception as e:
                 return await message.reply(f"❌ ZIP extraction error: {e}")
 
-            # Gather PDFs only
+            # Gather PDFs
             pdf_list = []
             for root, _, files in os.walk(extracted_dir):
                 for f in files:
@@ -91,9 +91,10 @@ async def unlock_files(client: Client, message: Message):
                 return await message.reply(f"⚠️ Too many PDFs ({len(pdf_list)}) in ZIP. Max allowed: {MAX_PDFS}.")
 
             total_pdfs = len(pdf_list)
-            status_msg = await message.reply(f"🔓 Unlocking PDFs... 0/{total_pdfs} unlocked\nProgress: {progress_bar(0, total_pdfs)}")
+            start_time = time.time()
+            status_msg = await message.reply(f"🔓 Unlocking PDFs... 0/{total_pdfs} unlocked\nProgress: {progress_bar(0, total_pdfs)} 0%")
 
-            # Unlock PDFs
+            # Unlock PDFs with ETA
             for idx, pdf_path in enumerate(pdf_list, start=1):
                 rel_path = os.path.relpath(pdf_path, extracted_dir)
                 dest_path = os.path.join(unlocked_dir, rel_path)
@@ -108,9 +109,16 @@ async def unlock_files(client: Client, message: Message):
                 if os.path.getsize(dest_path) > TG_MAX_FILE_SIZE:
                     too_large = True
 
-                # Update progress
+                # Calculate ETA
+                elapsed = time.time() - start_time
+                avg_time = elapsed / idx
+                remaining = avg_time * (total_pdfs - idx)
+                percent = int(idx / total_pdfs * 100)
+
                 await status_msg.edit_text(
-                    f"🔓 Unlocking PDFs... {idx}/{total_pdfs} unlocked\nProgress: {progress_bar(idx, total_pdfs)}"
+                    f"🔓 Unlocking PDFs... {idx}/{total_pdfs} unlocked\n"
+                    f"Progress: {progress_bar(idx, total_pdfs)} {percent}%\n"
+                    f"⏳ ETA: {int(remaining)}s"
                 )
 
             # Schedule auto-cleanup
@@ -142,7 +150,6 @@ async def unlock_files(client: Client, message: Message):
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)
-
 
 @Client.on_callback_query(filters.regex("send_zip|send_files"))
 async def handle_send_choice(client: Client, callback: CallbackQuery):

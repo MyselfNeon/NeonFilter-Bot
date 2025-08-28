@@ -46,7 +46,7 @@ async def auto_cleanup(chat_id):
 async def usage_prompt(client: Client, message: Message):
     if not message.reply_to_message or not message.reply_to_message.document:
         cmd = message.text.split()[0][1:]
-        await message.reply(f"❌ Usage: Reply to a file with `/{cmd} <password>`")
+        await message.reply(f"❌ Usage: Reply to a file with /{cmd} <password>")
         return
 
 # -------------------------------
@@ -188,7 +188,7 @@ async def add_pass(client: Client, message: Message):
             out_file = os.path.join(output_dir, "protected_" + file_name)
             with pikepdf.open(file_path) as pdf:
                 pdf.save(out_file, encryption=pikepdf.Encryption(owner=new_pass, user=new_pass, R=4))
-            await message.reply_document(out_file, caption=f"✅ PDF now protected with password: `{new_pass}`")
+            await message.reply_document(out_file, caption=f"✅ PDF now protected with password: {new_pass}")
 
         elif file_name.endswith(".zip"):
             extracted_dir = os.path.join(base_dir, "extracted")
@@ -206,7 +206,7 @@ async def add_pass(client: Client, message: Message):
                         full_path = os.path.join(root, f)
                         arcname = os.path.relpath(full_path, extracted_dir)
                         newzf.write(full_path, arcname=arcname)
-            await message.reply_document(new_zip_path, caption=f"✅ ZIP now protected with password: `{new_pass}`")
+            await message.reply_document(new_zip_path, caption=f"✅ ZIP now protected with password: {new_pass}")
 
         else:
             await message.reply("⚠️ Only PDF and ZIP files are supported.")

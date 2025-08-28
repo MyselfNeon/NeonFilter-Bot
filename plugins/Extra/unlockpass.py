@@ -211,4 +211,6 @@ async def add_password(client: Client, message: Message):
             await message.reply("⚠️ Only PDF and ZIP files are supported.")
 
     finally:
-        shutil.rmtree(base_dir
+        shutil.rmtree(base_dir, ignore_errors=True)
+        if os.path.exists(file_path):
+            os.remove(file_path)

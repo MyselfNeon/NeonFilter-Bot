@@ -1,4 +1,3 @@
-
 import os, logging, string, asyncio, time, re, ast, random, math, pytz, pyrogram
 from datetime import datetime, timedelta, date, time
 from Script import script
@@ -1929,14 +1928,14 @@ async def cb_handler(client: Client, query: CallbackQuery):
              InlineKeyboardButton('Cᴏɴɴᴇᴄᴛɪᴏɴꜱ 👥', callback_data='coct'), 
              InlineKeyboardButton('Fɪʟᴛᴇʀꜱ 🎭', callback_data='filters')
          ], [
-             InlineKeyboardButton('Yᴛ-Dʟ 🌐', callback_data='ytdl'), 
+             InlineKeyboardButton('Jꜱᴏɴ 👀', callback_data='json'), 
              InlineKeyboardButton('Sʜᴀʀᴇ Tᴇxᴛ ✏️', callback_data='share')
          ], [
              InlineKeyboardButton('Sᴏɴɢ 🎙️', callback_data='song'),
              InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ 💸', callback_data='shortlink_info')
          ], [
              InlineKeyboardButton('Sᴛɪᴄᴋᴇʀ-ID 🆔', callback_data='sticker'),
-             InlineKeyboardButton('Jꜱᴏɴ 👀', callback_data='json')
+             InlineKeyboardButton('Yᴛ-Dʟ 🌐', callback_data='ytdl')
          ], [             
              InlineKeyboardButton('🏠 Hᴏᴍᴇ 🏠', callback_data='start')
         ]]
@@ -3283,6 +3282,7 @@ async def global_filters(client, message, text=False):
                 break
     else:
         return False
+
 
 
 

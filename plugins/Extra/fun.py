@@ -61,17 +61,45 @@ async def reset_bal(_: Client, message: Message):
     await message.reply_text("♻️ All balances have been reset to defaults!")
 
 @Client.on_message(filters.command(["addbal"]))
-async def addmoney(_: Client, message: Message):
+async def addmoney(client: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in ADMINS:
         return await message.reply_text("🚫 Only admins can use this!")
+
     args = message.text.split()
-    if len(args) < 3:
-        return await message.reply_text("Usage: /addbal <user_id> <amount>")
-    target = int(args[1])
-    amount = int(args[2])
+
+    # Case 1: /addbal me <amount>
+    if len(args) == 3 and args[1].lower() == "me":
+        target = user_id
+        amount = int(args[2])
+
+    # Case 2: Reply to a user with /addbal <amount>
+    elif len(args) == 2 and message.reply_to_message:
+        target = message.reply_to_message.from_user.id
+        amount = int(args[1])
+
+    # Case 3: /addbal <user_id> <amount>
+    elif len(args) == 3:
+        target = int(args[1])
+        amount = int(args[2])
+
+    else:
+        return await message.reply_text(
+            "Usage:\n"
+            "`/addbal me <amount>`\n"
+            "`/addbal <user_id> <amount>`\n"
+            "Or reply to a user with `/addbal <amount>`"
+        )
+
     update_balance(target, amount)
-    await message.reply_text(f"✅ Added {amount} coins to user {target}")
+
+    try:
+        u = await client.get_users(target)
+        name = f"@{u.username}" if u.username else u.first_name
+    except:
+        name = f"User {target}"
+
+    await message.reply_text(f"✅ Added {amount} coins to {name} ({target})")
 
 # -----------------------
 # LEADERBOARD
@@ -173,9 +201,9 @@ async def chick_fight(_: Client, message: Message):
     if get_balance(user_id) < amount:
         return await message.reply_text("Not enough balance!")
 
-    fight_msg = await message.reply_text("🐔 Two chickens are fighting...")  # Store the message
+    fight_msg = await message.reply_text("🐔 Two chickens are fighting...")
     await asyncio.sleep(3)
-    await fight_msg.delete()  # Auto-delete after 2 seconds
+    await fight_msg.delete()
 
     winner = random.choice(["you", "bot"])
     if winner == "you":

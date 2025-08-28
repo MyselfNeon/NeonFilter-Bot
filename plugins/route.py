@@ -3,7 +3,7 @@ import re, math, logging, secrets, mimetypes, time
 from info import *
 from aiohttp import web
 from aiohttp.http_exceptions import BadStatusLine
-from Neon.bot import multi_clients, work_loads, TechVJBot
+from Neon.bot import multi_clients, work_loads, NeonBot
 from Neon.server.exceptions import FIleNotFound, InvalidHash
 from Neon import StartTime, __version__
 from Neon.util.custom_dl import ByteStreamer

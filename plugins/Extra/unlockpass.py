@@ -1,150 +1,188 @@
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
 import os
-import tempfile
 import shutil
+import pyzipper
+import pikepdf
 import asyncio
 import time
-import pikepdf
-import pyzipper
+from pyrogram import Client, filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
-# --- CONFIG ---
-BOT = Client("PasswordBot")
-user_waiting = {}  # {user_id: {"action": str, "file_msg": Message, "timeout_task": asyncio.Task}}
-cache_dir = tempfile.mkdtemp()  # temporary folder for caching files
+# Temporary storage for processed files
+PROCESSED_RESULTS = {}  # {chat_id: {"files": [paths], "force_zip": bool, "original_zip": str, "task": asyncio.Task}}
 
-# --- HELPERS ---
-def encrypt_pdf(input_path, output_path, password):
-    with pikepdf.open(input_path) as pdf:
-        pdf.save(output_path, encryption=pikepdf.Encryption(owner=password, user=password, R=4))
+# Telegram max upload size (2 GB)
+TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
+AUTO_DELETE_MINUTES = 10
+MAX_PDFS = 50  # max PDFs per ZIP
+MAX_FILE_SIZE_WARN = 500 * 1024 * 1024  # warn if PDF >500MB
 
-def decrypt_pdf(input_path, output_path, password):
-    with pikepdf.open(input_path, password=password) as pdf:
-        pdf.save(output_path)
+# Generate progress bar string
+def progress_bar(current, total, length=20):
+    filled = int(current / total * length)
+    empty = length - filled
+    return "▰" * filled + "▱" * empty
 
-def encrypt_zip(input_path, output_path, password):
-    with pyzipper.AESZipFile(output_path, 'w', compression=pyzipper.ZIP_DEFLATED, encryption=pyzipper.WZ_AES) as zf:
-        with pyzipper.AESZipFile(input_path, 'r') as old_zip:
-            for file in old_zip.namelist():
-                data = old_zip.read(file)
-                zf.writestr(file, data, compress_type=pyzipper.ZIP_DEFLATED)
-        zf.setpassword(password.encode())
+async def auto_cleanup(chat_id):
+    await asyncio.sleep(AUTO_DELETE_MINUTES * 60)
+    if chat_id in PROCESSED_RESULTS:
+        shutil.rmtree("temp_unlock", ignore_errors=True)
+        del PROCESSED_RESULTS[chat_id]
 
-def decrypt_zip(input_path, extract_path, password):
-    with pyzipper.AESZipFile(input_path) as zf:
-        zf.extractall(path=extract_path, pwd=password.encode())
+@Client.on_message(filters.command("unlock") & filters.reply)
+async def unlock_files(client: Client, message: Message):
+    if not message.reply_to_message or not message.reply_to_message.document:
+        return await message.reply("⚠️ Reply to a **PDF or ZIP file** with `/unlock <password>`")
 
-async def schedule_cleanup(file_path, delay=600):
-    await asyncio.sleep(delay)
-    if os.path.exists(file_path):
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-        else:
-            shutil.rmtree(file_path)
+    file_name = message.reply_to_message.document.file_name
+    args = message.text.split(" ", 1)
+    if len(args) < 2:
+        return await message.reply("❌ Usage: /unlock <password>")
 
-async def cancel_request_after_timeout(user_id, timeout, msg):
-    await asyncio.sleep(timeout)
-    if user_id in user_waiting:
-        await msg.reply_text("⏰ Time's up! Request cancelled.")
-        user_waiting.pop(user_id, None)
+    password = args[1]
 
-# --- HANDLERS ---
-@BOT.on_message(filters.command("killpdf") & filters.reply)
-async def killpdf(client, message):
-    if not message.reply_to_message.document:
-        await message.reply_text("Reply to a PDF or ZIP file!")
-        return
-    
-    file_name = message.reply_to_message.document.file_name.lower()
-    if not (file_name.endswith(".pdf") or file_name.endswith(".zip")):
-        await message.reply_text("Only PDF or ZIP files are supported!")
-        return
-
-    markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔒 Add Password", callback_data=f"add|{message.reply_to_message.message_id}"),
-         InlineKeyboardButton("🔓 Remove Password", callback_data=f"remove|{message.reply_to_message.message_id}")]
-    ])
-    await message.reply_text("Choose an action:", reply_markup=markup)
-
-@BOT.on_callback_query()
-async def callback(client, query):
-    action, msg_id = query.data.split("|")
-    msg = await client.get_messages(query.message.chat.id, int(msg_id))
-
-    # Cancel previous timeout if exists
-    if query.from_user.id in user_waiting:
-        user_waiting[query.from_user.id]["timeout_task"].cancel()
-
-    # Start timeout task
-    timeout_task = asyncio.create_task(cancel_request_after_timeout(query.from_user.id, 30, query.message))
-    user_waiting[query.from_user.id] = {"action": action, "file_msg": msg, "timeout_task": timeout_task}
-
-    if action == "add":
-        await query.message.reply_text("Send me the new password to set (30s to reply):", reply_markup=ForceReply())
-    else:
-        await query.message.reply_text("Send me the current password to remove (30s to reply):", reply_markup=ForceReply())
-
-@BOT.on_message(filters.reply & filters.private)
-async def handle_password(client, message):
-    user_data = user_waiting.get(message.from_user.id)
-    if not user_data:
-        return
-
-    # Cancel timeout task
-    user_data["timeout_task"].cancel()
-
-    action = user_data["action"]
-    file_msg = user_data["file_msg"]
-    password = message.text
-
-    # Download file to cache
-    file_path = await file_msg.download(file_name=os.path.join(cache_dir, file_msg.document.file_name))
-    output_file = os.path.join(cache_dir, f"{os.path.splitext(file_path)[0]}_modified{os.path.splitext(file_path)[1]}")
+    if message.chat.id in PROCESSED_RESULTS:
+        return await message.reply("⚠️ You already have a processing task. Wait until it finishes or times out.")
 
     try:
-        if file_path.lower().endswith(".pdf"):
-            if action == "add":
-                encrypt_pdf(file_path, output_file, password)
-            else:
-                decrypt_pdf(file_path, output_file, password)
-            await message.reply_document(output_file, caption="✅ Processed PDF")
+        file_path = await message.reply_to_message.download()
+        base_dir = "temp_unlock"
+        extracted_dir = os.path.join(base_dir, "extracted")
+        unlocked_dir = os.path.join(base_dir, "unlocked")
+        os.makedirs(extracted_dir, exist_ok=True)
+        os.makedirs(unlocked_dir, exist_ok=True)
 
-        elif file_path.lower().endswith(".zip"):
-            extract_path = os.path.join(cache_dir, f"{os.path.splitext(file_msg.document.file_name)[0]}_extracted")
-            os.makedirs(extract_path, exist_ok=True)
-            if action == "add":
-                encrypt_zip(file_path, output_file, password)
-                await message.reply_document(output_file, caption="✅ Password added to ZIP")
+        if file_name.endswith(".pdf"):
+            unlocked_path = os.path.join(unlocked_dir, "unlocked_" + file_name)
+            try:
+                with pikepdf.open(file_path, password=password) as pdf:
+                    pdf.save(unlocked_path)
+                if os.path.getsize(unlocked_path) > TG_MAX_FILE_SIZE:
+                    return await message.reply("❌ File too large for Telegram (2GB limit).")
+                await message.reply_document(unlocked_path, caption="✅ PDF unlocked successfully!")
+            except pikepdf._qpdf.PasswordError:
+                await message.reply("❌ Wrong PDF password or unable to unlock.")
+
+        elif file_name.endswith(".zip"):
+            unlocked_files = []
+            too_large = False
+
+            # Extract ZIP
+            try:
+                with pyzipper.AESZipFile(file_path) as zf:
+                    if zf.needs_password():
+                        zf.pwd = password.encode("utf-8")
+                    zf.extractall(extracted_dir)
+            except RuntimeError:
+                return await message.reply("❌ Wrong ZIP password or extraction failed.")
+            except Exception as e:
+                return await message.reply(f"❌ ZIP extraction error: {e}")
+
+            # Gather PDFs
+            pdf_list = []
+            for root, _, files in os.walk(extracted_dir):
+                for f in files:
+                    if f.endswith(".pdf"):
+                        pdf_list.append(os.path.join(root, f))
+
+            if len(pdf_list) == 0:
+                return await message.reply("⚠️ No PDFs found in this ZIP.")
+
+            if len(pdf_list) > MAX_PDFS:
+                return await message.reply(f"⚠️ Too many PDFs ({len(pdf_list)}) in ZIP. Max allowed: {MAX_PDFS}.")
+
+            total_pdfs = len(pdf_list)
+            start_time = time.time()
+            status_msg = await message.reply(f"🔓 Unlocking PDFs... 0/{total_pdfs} unlocked\nProgress: {progress_bar(0, total_pdfs)} 0%")
+
+            # Unlock PDFs with ETA
+            for idx, pdf_path in enumerate(pdf_list, start=1):
+                rel_path = os.path.relpath(pdf_path, extracted_dir)
+                dest_path = os.path.join(unlocked_dir, rel_path)
+                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                try:
+                    with pikepdf.open(pdf_path, password=password) as pdf:
+                        pdf.save(dest_path)
+                except Exception:
+                    shutil.copy(pdf_path, dest_path)
+
+                unlocked_files.append(dest_path)
+                if os.path.getsize(dest_path) > TG_MAX_FILE_SIZE:
+                    too_large = True
+
+                # Calculate ETA
+                elapsed = time.time() - start_time
+                avg_time = elapsed / idx
+                remaining = avg_time * (total_pdfs - idx)
+                percent = int(idx / total_pdfs * 100)
+
+                await status_msg.edit_text(
+                    f"🔓 Unlocking PDFs... {idx}/{total_pdfs} unlocked\n"
+                    f"Progress: {progress_bar(idx, total_pdfs)} {percent}%\n"
+                    f"⏳ ETA: {int(remaining)}s"
+                )
+
+            # Schedule auto-cleanup
+            task = asyncio.create_task(auto_cleanup(message.chat.id))
+            PROCESSED_RESULTS[message.chat.id] = {
+                "files": unlocked_files,
+                "force_zip": too_large,
+                "original_zip": file_name,
+                "task": task
+            }
+
+            # Inline buttons
+            buttons = []
+            if too_large:
+                buttons.append([InlineKeyboardButton("📂 Get Unlocked ZIP", callback_data="send_zip")])
             else:
-                decrypt_zip(file_path, extract_path, password)
-                # Post-decryption options
-                markup = InlineKeyboardMarkup([
-                    [InlineKeyboardButton("📦 Send full ZIP", callback_data=f"sendzip|{extract_path}"),
-                     InlineKeyboardButton("🗂 Send all files individually", callback_data=f"sendfiles|{extract_path}")]
+                buttons.append([
+                    InlineKeyboardButton("📂 Get Unlocked ZIP", callback_data="send_zip"),
+                    InlineKeyboardButton("📄 Get Unlocked PDFs", callback_data="send_files")
                 ])
-                await message.reply_text("Choose how to receive the files:", reply_markup=markup)
+            await status_msg.edit_text(f"✅ All PDFs processed! Choose how to receive:", reply_markup=InlineKeyboardMarkup(buttons))
 
-        # Schedule cleanup after 10 minutes
-        asyncio.create_task(schedule_cleanup(file_path))
-        asyncio.create_task(schedule_cleanup(output_file))
+        else:
+            await message.reply("⚠️ Only PDF and ZIP files are supported.")
+
     except Exception as e:
-        await message.reply_text(f"❌ Failed: {e}")
+        await message.reply(f"⚠️ Error: {e}")
+
     finally:
-        user_waiting.pop(message.from_user.id, None)
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
-@BOT.on_callback_query(filters.regex(r"send(zip|files)\|"))
-async def send_after_unzip(client, query):
-    action, path = query.data.split("|")
-    if action == "sendzip":
-        zip_path = shutil.make_archive(path, 'zip', path)
-        await query.message.reply_document(zip_path, caption="✅ Here is the ZIP file")
-        asyncio.create_task(schedule_cleanup(zip_path))
-    elif action == "sendfiles":
-        for file in os.listdir(path):
-            file_path = os.path.join(path, file)
-            if os.path.isfile(file_path):
-                await query.message.reply_document(file_path)
-    asyncio.create_task(schedule_cleanup(path))
+@Client.on_callback_query(filters.regex("send_zip|send_files"))
+async def handle_send_choice(client: Client, callback: CallbackQuery):
+    chat_id = callback.message.chat.id
+    if chat_id not in PROCESSED_RESULTS:
+        return await callback.answer("⚠️ No processed files found.", show_alert=True)
 
-# --- RUN BOT ---
-BOT.run()
+    choice = callback.data
+    results = PROCESSED_RESULTS[chat_id]
+
+    # Cancel auto-cleanup
+    if "task" in results and not results["task"].done():
+        results["task"].cancel()
+
+    if choice == "send_zip":
+        new_zip = f"unlocked_{results.get('original_zip', 'files')}"
+        with pyzipper.AESZipFile(new_zip, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
+            for f in results["files"]:
+                arcname = os.path.relpath(f, "temp_unlock/unlocked")
+                newzf.write(f, arcname=arcname)
+        await callback.message.reply_document(new_zip, caption="📂 Here’s your unlocked ZIP!")
+        os.remove(new_zip)
+
+    elif choice == "send_files":
+        if results.get("force_zip"):
+            return await callback.answer("⚠️ Some files exceed 2GB. ZIP is required.", show_alert=True)
+        for f in results["files"]:
+            try:
+                await callback.message.reply_document(f)
+            except:
+                pass
+
+    # Cleanup
+    shutil.rmtree("temp_unlock", ignore_errors=True)
+    del PROCESSED_RESULTS[chat_id]
+    await callback.answer()

@@ -139,7 +139,7 @@ async def add_password(client: Client, message: Message):
             await status.delete()
             await message.reply_document(
                 protected_path,
-                caption=f"🔐 **__File Protected Successfully !!\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
+                caption=f"🔐 **__File Protected Successfully !\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
             )
 
         # ZIP CASE
@@ -155,7 +155,7 @@ async def add_password(client: Client, message: Message):
             await status.delete()
             await message.reply_document(
                 protected_path,
-                caption=f"🔐 **__File Protected Successfully !!\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
+                caption=f"🔐 **__File Protected Successfully !\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
             )
 
         else:

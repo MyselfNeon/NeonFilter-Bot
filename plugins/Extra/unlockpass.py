@@ -66,12 +66,12 @@ async def unlock_files(client: Client, message: Message):
             unlocked_files = []
             too_large = False
 
-            # Extract ZIP
+            # Extract ZIP (fixed)
             try:
                 with pyzipper.AESZipFile(file_path) as zf:
-                    if zf.needs_password():
-                        zf.pwd = password.encode("utf-8")
-                    zf.extractall(extracted_dir)
+                    # Removed needs_password() check
+                    pwd_bytes = password.encode("utf-8") if password else None
+                    zf.extractall(extracted_dir, pwd=pwd_bytes)
             except RuntimeError:
                 return await message.reply("❌ Wrong ZIP password or extraction failed.")
             except Exception as e:

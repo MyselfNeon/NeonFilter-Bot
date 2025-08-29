@@ -223,7 +223,7 @@ async def chick_fight(_: Client, message: Message):
     args = message.text.split()
 
     if len(args) < 2:
-        return await message.reply_text("Usage: /chickfight <amount|all|half>")
+        return await message.reply_text("**__Usage:__**\n/chickfight `<amount|all|half>`")
     
     user_balance = get_balance(user_id)
     bet_arg = args[1].lower()
@@ -236,27 +236,27 @@ async def chick_fight(_: Client, message: Message):
         try:
             amount = int(bet_arg)
         except ValueError:
-            return await message.reply_text("❌ Invalid amount! Use a number, `all`, or `half`.")
+            return await message.reply_text("**__Invalid Amount ❌\nUse a Number, All, or Half__**")
     
     if amount <= 0:
-        return await message.reply_text("❌ You must bet more than 0 coins!")
+        return await message.reply_text("**❌ __You Must Bet More Than 0 Coins__**")
     if user_balance < amount:
-        return await message.reply_text("🚫 Not enough balance!")
+        return await message.reply_text("**🚫 __Not Enough Balance !__**")
 
-    fight_msg = await message.reply_text("🐔 Two chickens are fighting...")
+    fight_msg = await message.reply_text("**🐔 __Two Chickens Are Fighting...__**")
     await asyncio.sleep(3)
     await fight_msg.delete()
 
     winner = random.choice(["you", "bot"])
     if winner == "you":
         update_balance(user_id, amount)
-        result = f"🎉 Your chicken won! You earned {amount}."
+        result = f"**🎉 __Your Chicken Won !!\nYou earned {amount}.__**"
     else:
         update_balance(user_id, -amount)
-        result = f"💀 Your chicken lost! You lost {amount}."
+        result = f"**💀 __Your Chicken Lost !!\nYou lost {amount}.__**"
 
     await message.reply_text(
-        f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰"
+        f"🐓 **Chicken Fight Result**\n\n{result}\n\n**__Balance : {get_balance(user_id)}__🤑**"
     )
 
 # -----------------------

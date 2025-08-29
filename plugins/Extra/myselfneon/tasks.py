@@ -15,13 +15,13 @@ async def add_task(client: Client, message: Message):
     task_text = " ".join(message.command[1:])
 
     if not task_text:
-        return await message.reply("❌ Please provide a task to add.\nUsage: `/addtask Buy milk`")
+        return await message.reply("**❌ __Please Provide A Task To Add.\n\nUsage:__** `/addtask Buy milk`")
 
     tasks = get_user_tasks(user_id)
     tasks.append(task_text)
     todo_list[user_id] = tasks
 
-    await message.reply(f"✅ Task added:\n`{task_text}`")
+    await message.reply(f"**✅ __Tᴀsᴋ Aᴅᴅᴇᴅ:__**\n\n`{task_text}`")
 
 # Show all tasks
 @Client.on_message(filters.command("listtask") & filters.private)
@@ -30,9 +30,9 @@ async def list_tasks(client: Client, message: Message):
     tasks = get_user_tasks(user_id)
 
     if not tasks:
-        return await message.reply("📭 Your to-do list is empty.")
+        return await message.reply("**📭 __Your To-Do List Is Empty__**.")
 
-    reply_text = "📝 **Your To-Do List:**\n\n"
+    reply_text = "**📝 __Your To-Do List:__**\n\n"
     for i, task in enumerate(tasks, start=1):
         reply_text += f"{i}. {task}\n"
 
@@ -45,24 +45,24 @@ async def delete_task(client: Client, message: Message):
     tasks = get_user_tasks(user_id)
 
     if not tasks:
-        return await message.reply("❌ You don't have any tasks to delete.")
+        return await message.reply("**❌ __You Don't Have Any Tasks To Delete.__**")
 
     try:
         index = int(message.command[1]) - 1
         if index < 0 or index >= len(tasks):
-            return await message.reply("⚠️ Invalid task number.")
+            return await message.reply("**🚫 __Iɴᴠᴀʟɪᴅ Tᴀsᴋ Nᴜᴍʙᴇʀ__**.")
 
         removed = tasks.pop(index)
         todo_list[user_id] = tasks
         await message.reply(f"🗑️ Removed task:\n`{removed}`")
     except (IndexError, ValueError):
-        await message.reply("❌ Please provide a valid task number.\nUsage: `/deltask 2`")
+        await message.reply("**❌ __Please provide a valid task number.\n\nUsage__**: `/deltask 2`")
 
 # Help menu
 @Client.on_message(filters.command(["taskhelp"]) & filters.private)
 async def todo_help(client: Client, message: Message):
     help_text = (
-        "📝 **To-Do Bot Commands:**\n\n"
+        "**📝 __To-Do Bot Commands__:**\n\n"
         "/addtask <task> - Add a new task\n"
         "/listtask - Show all your tasks\n"
         "/deltask <number> - Delete a task by its number\n"

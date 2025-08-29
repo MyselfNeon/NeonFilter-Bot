@@ -22,7 +22,7 @@ async def remove_password(client: Client, message: Message):
     args = message.text.split(" ", 1)
     password = args[1] if len(args) > 1 else None
 
-    status = await message.reply("⏳ **__Rᴇᴍᴏᴠɪɴɢ Pᴀssᴡᴏʀᴅ__...**")
+    status = await message.reply("⏳ **__Rᴇᴍᴏᴠɪɴɢ Pᴀssᴡᴏʀᴅ__ 🔓 ...**")
 
     try:
         # DOWNLOAD FILE
@@ -124,7 +124,7 @@ async def add_password(client: Client, message: Message):
     if not password:
         return await message.reply("⚠️ **__Please Provide A Password.\n\nUsage__**: `/addpass yourpassword`")
 
-    status = await message.reply("**⏳ __Aᴅᴅɪɴɢ Pᴀssᴡᴏʀᴅ__...**")
+    status = await message.reply("**⏳ __Aᴅᴅɪɴɢ Pᴀssᴡᴏʀᴅ__ 🔐 ...**")
 
     try:
         file_path = await message.reply_to_message.download()
@@ -151,7 +151,7 @@ async def add_password(client: Client, message: Message):
                 with pyzipper.AESZipFile(file_path) as original_zip:
                     for f in original_zip.namelist():
                         data = original_zip.read(f)
-                        zf.writestr(f, data)  # no pwd arg here
+                        zf.writestr(f, data)  # NO PWD ARG HERE
             await status.delete()
             await message.reply_document(
                 protected_path,
@@ -181,7 +181,7 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
     choice = callback.data
 
     if choice == "send_zip":
-        new_zip = "Unlocked_Files.zip"
+        new_zip = "Unlocked Files.zip"
         with pyzipper.AESZipFile(new_zip, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
             for f in results["files"]:
                 arcname = os.path.relpath(f, "temp_unlock/unlocked")

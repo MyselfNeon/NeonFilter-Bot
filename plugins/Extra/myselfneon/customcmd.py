@@ -1,12 +1,11 @@
-# PLUGINS/CUSTOM_COMMANDS.PY
 import json
+import os
 from pyrogram import Client, filters
 from pyrogram.types import Message
-import os
 
 COMMANDS_FILE = "custom_commands.json"
 
-# LOAD EXISTING COMMANDS FROM FILE
+# Load existing commands from file
 if os.path.exists(COMMANDS_FILE):
     with open(COMMANDS_FILE, "r") as f:
         custom_commands = json.load(f)
@@ -18,53 +17,57 @@ def save_commands():
         json.dump(custom_commands, f, indent=2)
 
 
+# ─────────────────────────────
+# Add a new custom command
+# ─────────────────────────────
 @Client.on_message(filters.command("addcommand") & filters.private)
 async def add_command(client: Client, message: Message):
-    """Usage: /addcommand command_name Response text"""
-    try:
-        parts = message.text.split(" ", 2)
-        if len(parts) < 3:
-            return await message.reply("❌ Usage: `/addcommand command_name response`", quote=True)
+    if not message.text:
+        return
 
-        cmd, response = parts[1], parts[2]
-        if not cmd.startswith("/"):
-            cmd = "/" + cmd
+    parts = message.text.split(" ", 2)
+    if len(parts) < 3:
+        return await message.reply("❌ Usage: `/addcommand command_name response`", quote=True)
 
-        custom_commands[cmd] = response
-        save_commands()
+    cmd, response = parts[1], parts[2]
+    if not cmd.startswith("/"):
+        cmd = "/" + cmd
 
-        await message.reply(f"✅ Command `{cmd}` added with response:\n\n{response}", quote=True)
+    custom_commands[cmd] = response
+    save_commands()
 
-    except Exception as e:
-        await message.reply(f"⚠️ Error: {e}")
+    await message.reply(f"✅ Command `{cmd}` added with response:\n\n{response}", quote=True)
 
 
+# ─────────────────────────────
+# Delete an existing custom command
+# ─────────────────────────────
 @Client.on_message(filters.command("delcommand") & filters.private)
 async def delete_command(client: Client, message: Message):
-    """Usage: /delcommand command_name"""
-    try:
-        parts = message.text.split(" ", 1)
-        if len(parts) < 2:
-            return await message.reply("❌ Usage: `/delcommand command_name`", quote=True)
+    if not message.text:
+        return
 
-        cmd = parts[1]
-        if not cmd.startswith("/"):
-            cmd = "/" + cmd
+    parts = message.text.split(" ", 1)
+    if len(parts) < 2:
+        return await message.reply("❌ Usage: `/delcommand command_name`", quote=True)
 
-        if cmd in custom_commands:
-            del custom_commands[cmd]
-            save_commands()
-            await message.reply(f"🗑 Deleted command `{cmd}`", quote=True)
-        else:
-            await message.reply("❌ Command not found.", quote=True)
+    cmd = parts[1]
+    if not cmd.startswith("/"):
+        cmd = "/" + cmd
 
-    except Exception as e:
-        await message.reply(f"⚠️ Error: {e}")
+    if cmd in custom_commands:
+        del custom_commands[cmd]
+        save_commands()
+        await message.reply(f"🗑 Deleted command `{cmd}`", quote=True)
+    else:
+        await message.reply("❌ Command not found.", quote=True)
 
 
+# ─────────────────────────────
+# List all saved custom commands
+# ─────────────────────────────
 @Client.on_message(filters.command("listcommands") & filters.private)
 async def list_commands(client: Client, message: Message):
-    """List all custom commands"""
     if not custom_commands:
         return await message.reply("ℹ️ No custom commands yet.", quote=True)
 
@@ -74,9 +77,14 @@ async def list_commands(client: Client, message: Message):
     await message.reply(text, quote=True)
 
 
+# ─────────────────────────────
+# Handle custom commands dynamically
+# ─────────────────────────────
 @Client.on_message(filters.text & filters.private)
 async def handle_custom(client: Client, message: Message):
-    """Handle custom commands dynamically"""
+    if not message.text:
+        return
+
     if message.text in custom_commands:
         await message.reply(custom_commands[message.text], quote=True)
-      
+        

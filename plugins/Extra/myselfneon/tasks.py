@@ -1,14 +1,14 @@
-# plugins/todo.py
+# ====================== PLUGINS/TODO.PY ======================
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-# In-memory storage (per user basis)
+# ====================== IN-MEMORY STORAGE (per user basis) ======================
 todo_list = {}
 
 def get_user_tasks(user_id: int):
     return todo_list.get(user_id, [])
 
-# Add task directly with /addtask <task>
+# ====================== ADD TASK /addtask <task> ======================
 @Client.on_message(filters.command("addtask") & filters.private)
 async def add_task(client: Client, message: Message):
     user_id = message.from_user.id
@@ -23,7 +23,7 @@ async def add_task(client: Client, message: Message):
 
     await message.reply(f"**✅ __Tᴀsᴋ Aᴅᴅᴇᴅ:__**\n\n`{task_text}`")
 
-# Show all tasks
+# ====================== SHOW ALL TASKS ======================
 @Client.on_message(filters.command("listtask") & filters.private)
 async def list_tasks(client: Client, message: Message):
     user_id = message.from_user.id
@@ -38,7 +38,7 @@ async def list_tasks(client: Client, message: Message):
 
     await message.reply(reply_text)
 
-# Delete task by number
+# ====================== DELETE TASK BY NUMBER ======================
 @Client.on_message(filters.command("deltask") & filters.private)
 async def delete_task(client: Client, message: Message):
     user_id = message.from_user.id
@@ -50,26 +50,26 @@ async def delete_task(client: Client, message: Message):
     try:
         index = int(message.command[1]) - 1
         if index < 0 or index >= len(tasks):
-            return await message.reply("**🚫 __Iɴᴠᴀʟɪᴅ Tᴀsᴋ Nᴜᴍʙᴇʀ__**.")
+            return await message.reply("**🚫 __Invalid Task Number__**.")
 
         removed = tasks.pop(index)
         todo_list[user_id] = tasks
         await message.reply(f"🗑️ Removed task:\n`{removed}`")
     except (IndexError, ValueError):
-        await message.reply("**❌ __Please provide a valid task number.\n\nUsage__**: `/deltask 2`")
+        await message.reply("**❌ __Please Provide a Valid Task Number.\n\nUsage__**: `/deltask 2`")
 
-# Help menu
+# ====================== HELP MENU ======================
 @Client.on_message(filters.command(["taskhelp"]) & filters.private)
 async def todo_help(client: Client, message: Message):
     help_text = (
-        "**📝 __To-Do Bot Commands__:**\n\n"
-        "/addtask <task> - Add a new task\n"
-        "/listtask - Show all your tasks\n"
-        "/deltask <number> - Delete a task by its number\n"
-        "/todohelp - Show this help menu\n\n"
+        "<blockquote>**📝 __To-Do Bot Commands__:</blockquote>**\n\n"
+        "/addtask <task> - **__Add a New Task__**\n"
+        "/listtask - **__Show All Your Tasks__**\n"
+        "/deltask <number> - **__Delete a Task By Its Number__**\n"
+        "/taskhelp - **__Show This Help Menu__**\n\n"
         "Example:\n"
-        "`/addtask Finish homework`\n"
-        "`/deltask 2`\n"
+        "`/addtask Finish Homework`\n"
+        "`/deltask 3`\n"
         "`/listtask`"
     )
     await message.reply(help_text)

@@ -62,15 +62,7 @@ async def delete_task(client: Client, message: Message):
 @Client.on_message(filters.command(["taskhelp"]) & filters.private)
 async def todo_help(client: Client, message: Message):
     help_text = (
-    "<blockquote>**𝐁𝐎𝐓 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒**</blockquote>**\n\n"
-    "**__/addtask - Aᴅᴅ ᴀ Nᴇᴡ Tᴀsᴋ__**\n"
-    "**__/deltask__** - **__Dᴇʟᴇᴛᴇ ᴀ Tᴀsᴋ__**\n"
-    "**__/listtask - Sʜᴏᴡ Aʟʟ Yᴏᴜʀ Tᴀsᴋs__**\n\n"
-    "**__/taskhelp - Sʜᴏᴡ Tʜɪs Hᴇʟᴘ Mᴇɴᴜ__**\n\n"
-    "Example:\n\n"
-    "**`/addtask Finish Homework`**\n"
-    "**`/deltask 3`**\n"
-    "**`/listtask`**"
+    "<blockquote>**𝐁𝐎𝐓 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒**</blockquote>\n\n**__/addtask - Aᴅᴅ ᴀ Nᴇᴡ Tᴀsᴋ\n/deltask - Dᴇʟᴇᴛᴇ ᴀ Tᴀsᴋ\n/listtask - Sʜᴏᴡ Aʟʟ Yᴏᴜʀ Tᴀsᴋs\n\n/taskhelp - Sʜᴏᴡ Tʜɪs Hᴇʟᴘ Mᴇɴᴜ__**\n\n<blockquote>**__Example\n\n`/addtask Finish Homework`\n`/deltask 3`\n`/listtask`__**"
 )
     await message.reply(help_text)
     

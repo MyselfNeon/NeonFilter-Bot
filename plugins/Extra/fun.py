@@ -22,7 +22,7 @@ if not DATABASE_URI:
 
 mongo_client = MongoClient(DATABASE_URI)
 db = mongo_client[DATABASE_NAME]
-balances_col = db["balances"]  # or any collection you want
+balances_col = db["balances"]
 
 # -----------------------
 # BALANCE HELPERS
@@ -169,15 +169,36 @@ async def rps_play(client: Client, cq: CallbackQuery):
 # -----------------------
 # ROULETTE
 # -----------------------
-@Client.on_message(filters.command(["roulette","rlt"]))
+@Client.on_message(filters.command(["roulette", "rlt"]))
 async def roulette(_: Client, message: Message):
     user_id = message.from_user.id
     args = message.text.split()
+
     if len(args) < 3:
-        return await message.reply_text("Usage: /roulette <red/black> <amount>")
-    choice, amount = args[1].lower(), int(args[2])
-    if get_balance(user_id) < amount:
-        return await message.reply_text("Not enough balance!")
+        return await message.reply_text("Usage: /roulette <red/black> <amount|all|half>")
+
+    choice = args[1].lower()
+    if choice not in ["red", "black"]:
+        return await message.reply_text("❌ Invalid choice! Use `red` or `black`.")
+
+    user_balance = get_balance(user_id)
+    bet_arg = args[2].lower()
+
+    if bet_arg == "all":
+        amount = user_balance
+    elif bet_arg == "half":
+        amount = user_balance // 2
+    else:
+        try:
+            amount = int(bet_arg)
+        except ValueError:
+            return await message.reply_text("❌ Invalid amount! Use a number, `all`, or `half`.")
+
+    if amount <= 0:
+        return await message.reply_text("❌ You must bet more than 0 coins!")
+    if user_balance < amount:
+        return await message.reply_text("🚫 Not enough balance!")
+
     outcome = random.choice(["red", "black"])
     if outcome == choice:
         update_balance(user_id, amount)
@@ -185,21 +206,42 @@ async def roulette(_: Client, message: Message):
     else:
         update_balance(user_id, -amount)
         result = f"💀 You lost {amount}!"
-    await message.reply_text(f"🎰 **Roulette Result**\nLanded: {outcome.upper()}\n{result}\nBalance: {get_balance(user_id)} 💰")
+
+    await message.reply_text(
+        f"🎰 **Roulette Result**\n"
+        f"Landed: {outcome.upper()}\n"
+        f"{result}\n"
+        f"Balance: {get_balance(user_id)} 💰"
+    )
 
 # -----------------------
 # CHICKEN FIGHT
 # -----------------------
-@Client.on_message(filters.command(["chickfight","cf"]))
+@Client.on_message(filters.command(["chickfight", "cf"]))
 async def chick_fight(_: Client, message: Message):
     user_id = message.from_user.id
     args = message.text.split()
+
     if len(args) < 2:
-        return await message.reply_text("Usage: /chickfight <amount>")
+        return await message.reply_text("Usage: /chickfight <amount|all|half>")
     
-    amount = int(args[1])
-    if get_balance(user_id) < amount:
-        return await message.reply_text("Not enough balance!")
+    user_balance = get_balance(user_id)
+    bet_arg = args[1].lower()
+
+    if bet_arg == "all":
+        amount = user_balance
+    elif bet_arg == "half":
+        amount = user_balance // 2
+    else:
+        try:
+            amount = int(bet_arg)
+        except ValueError:
+            return await message.reply_text("❌ Invalid amount! Use a number, `all`, or `half`.")
+    
+    if amount <= 0:
+        return await message.reply_text("❌ You must bet more than 0 coins!")
+    if user_balance < amount:
+        return await message.reply_text("🚫 Not enough balance!")
 
     fight_msg = await message.reply_text("🐔 Two chickens are fighting...")
     await asyncio.sleep(3)
@@ -213,7 +255,9 @@ async def chick_fight(_: Client, message: Message):
         update_balance(user_id, -amount)
         result = f"💀 Your chicken lost! You lost {amount}."
 
-    await message.reply_text(f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰")
+    await message.reply_text(
+        f"🐓 **Chicken Fight Result**\n{result}\nBalance: {get_balance(user_id)} 💰"
+    )
 
 # -----------------------
 # FUN HELP MENU
@@ -230,8 +274,8 @@ async def fun_help(_: Client, message: Message):
         
         "🎲 Games:\n"
         "• `/rps` → Rock-Paper-Scissors (Win: +2000 | Lose: -1000)\n"
-        "• `/roulette <red/black> <amount>` → Bet on roulette colors\n"
-        "• `/chickfight <amount>` → Bet on a chicken fight 🐔\n\n"
+        "• `/roulette <red/black> <amount|all|half>` → Bet on roulette colors\n"
+        "• `/chickfight <amount|all|half>` → Bet on a chicken fight 🐔\n\n"
         
         "✨ Enjoy the games and try to climb the leaderboard!"
     )

@@ -21,7 +21,7 @@ async def add_task(client: Client, message: Message):
     tasks.append(task_text)
     todo_list[user_id] = tasks
 
-    await message.reply(f"**✅ __Tᴀsᴋ Aᴅᴅᴇᴅ:__**\n\n`{task_text}`")
+    await message.reply(f"**Tᴀsᴋ Aᴅᴅᴇᴅ ✅**\n\n`{task_text}`")
 
 # ====================== SHOW ALL TASKS ======================
 @Client.on_message(filters.command("listtask") & filters.private)
@@ -32,7 +32,7 @@ async def list_tasks(client: Client, message: Message):
     if not tasks:
         return await message.reply("**📭 __Your To-Do List Is Empty__**.")
 
-    reply_text = "**📝 __Your To-Do List:__**\n\n"
+    reply_text = "**Yᴏᴜʀ Tᴏ-Dᴏ Lɪsᴛ 📝**\n\n"
     for i, task in enumerate(tasks, start=1):
         reply_text += f"{i}. {task}\n"
 
@@ -50,11 +50,11 @@ async def delete_task(client: Client, message: Message):
     try:
         index = int(message.command[1]) - 1
         if index < 0 or index >= len(tasks):
-            return await message.reply("**🚫 __Invalid Task Number__**.")
+            return await message.reply("**__Invalid Task Number__ 🚫**.")
 
         removed = tasks.pop(index)
         todo_list[user_id] = tasks
-        await message.reply(f"🗑️ Removed task:\n`{removed}`")
+        await message.reply(f"**Rᴇᴍᴏᴠᴇᴅ Tᴀsᴋ** 🗑️\n`{removed}`")
     except (IndexError, ValueError):
         await message.reply("**❌ __Please Provide a Valid Task Number.\n\nUsage__**: `/deltask 2`")
 
@@ -62,7 +62,7 @@ async def delete_task(client: Client, message: Message):
 @Client.on_message(filters.command(["taskhelp"]) & filters.private)
 async def todo_help(client: Client, message: Message):
     help_text = (
-        "<blockquote>**📝 __To-Do Bot Commands__:</blockquote>**\n\n"
+        "<blockquote>**𝐁𝐎𝐓 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 📝**</blockquote>**\n\n"
         "/addtask <task> - **__Add a New Task__**\n"
         "/listtask - **__Show All Your Tasks__**\n"
         "/deltask <number> - **__Delete a Task By Its Number__**\n"

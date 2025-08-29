@@ -57,4 +57,20 @@ async def delete_task(client: Client, message: Message):
         await message.reply(f"🗑️ Removed task:\n`{removed}`")
     except (IndexError, ValueError):
         await message.reply("❌ Please provide a valid task number.\nUsage: `/deltask 2`")
-        
+
+# Help menu
+@Client.on_message(filters.command(["taskhelp"]) & filters.private)
+async def todo_help(client: Client, message: Message):
+    help_text = (
+        "📝 **To-Do Bot Commands:**\n\n"
+        "/addtask <task> - Add a new task\n"
+        "/listtask - Show all your tasks\n"
+        "/deltask <number> - Delete a task by its number\n"
+        "/todohelp - Show this help menu\n\n"
+        "Example:\n"
+        "`/addtask Finish homework`\n"
+        "`/deltask 2`\n"
+        "`/listtask`"
+    )
+    await message.reply(help_text)
+    

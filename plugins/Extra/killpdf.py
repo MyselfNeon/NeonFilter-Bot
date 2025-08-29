@@ -139,7 +139,7 @@ async def add_password(client: Client, message: Message):
             await status.delete()
             await message.reply_document(
                 protected_path,
-                caption=f"🔐 **__File Protected Successfully !\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
+                caption=f"🔐 **__File Protected Successfully\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
             )
 
         # ZIP CASE
@@ -155,7 +155,7 @@ async def add_password(client: Client, message: Message):
             await status.delete()
             await message.reply_document(
                 protected_path,
-                caption=f"🔐 **__File Protected Successfully !\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
+                caption=f"🔐 **__File Protected Successfully\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
             )
 
         else:
@@ -186,7 +186,7 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
             for f in results["files"]:
                 arcname = os.path.relpath(f, "temp_unlock/unlocked")
                 newzf.write(f, arcname=arcname)
-        await callback.message.reply_document(new_zip, caption="📂 **__Here’s Your Unlocked ZIP__ !!\n\n🔥 __Powered By @NeonFiles__**")
+        await callback.message.reply_document(new_zip, caption="📂 **__Here’s Your Unlocked ZIP !!__\n\n🔥 __Powered By @NeonFiles__**")
         os.remove(new_zip)
 
     elif choice == "send_files":

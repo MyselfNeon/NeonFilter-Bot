@@ -45,7 +45,7 @@ async def delete_task(client: Client, message: Message):
     tasks = get_user_tasks(user_id)
 
     if not tasks:
-        return await message.reply("**❌ __You Don't Have Any Tasks To Delete.__**")
+        return await message.reply("**❌ __Don't Have Any Tasks To Delete.__**")
 
     try:
         index = int(message.command[1]) - 1
@@ -54,9 +54,9 @@ async def delete_task(client: Client, message: Message):
 
         removed = tasks.pop(index)
         todo_list[user_id] = tasks
-        await message.reply(f"**Rᴇᴍᴏᴠᴇᴅ Tᴀsᴋ** 🗑️\n`{removed}`")
+        await message.reply(f"**Rᴇᴍᴏᴠᴇᴅ Tᴀsᴋ** 🗑️\n\n`{removed}`")
     except (IndexError, ValueError):
-        await message.reply("**❌ __Please Provide a Valid Task Number.\n\nUsage__**: `/deltask 2`")
+        await message.reply("**😏 __Provide a Valid Task Number.\n\nUsage__**: `/deltask 2`")
 
 # ====================== HELP MENU ======================
 @Client.on_message(filters.command(["taskhelp"]) & filters.private)

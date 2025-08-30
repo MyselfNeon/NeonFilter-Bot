@@ -126,14 +126,14 @@ RPS_EMOJI = {"rock": "🪨", "paper": "📄", "scissors": "✂️"}
 
 def rps_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[
-        InlineKeyboardButton("🪨 Rock", callback_data="rps:rock"),
-        InlineKeyboardButton("📄 Paper", callback_data="rps:paper"),
-        InlineKeyboardButton("✂️ Scissors", callback_data="rps:scissors")
+        InlineKeyboardButton("🪨 Rᴏᴄᴋ", callback_data="rps:rock"),
+        InlineKeyboardButton("📄 Pᴀᴘᴇʀ", callback_data="rps:paper"),
+        InlineKeyboardButton("✂️ Sᴄɪssᴏʀs", callback_data="rps:scissors")
     ]])
 
 @Client.on_message(filters.command(["rps"]))
 async def rps_start(_: Client, message: Message):
-    await message.reply_text("Choose your move:", reply_markup=rps_keyboard(), quote=True)
+    await message.reply_text("**__Lets Start This Game 😁\n\nChoose Your Ultimate Move__**", reply_markup=rps_keyboard(), quote=True)
 
 def _rps_result(user: str, bot: str) -> str:
     if user == bot:
@@ -157,11 +157,11 @@ async def rps_play(client: Client, cq: CallbackQuery):
         update_balance(user_id, reward)
 
     txt = (
-        f"**Rock-Paper-Scissors**\n"
-        f"You: {RPS_EMOJI[user_choice]}  vs  Bot: {RPS_EMOJI[bot_choice]}\n\n"
-        f"Result: **{'You Win 🎉' if outcome=='win' else 'Draw 😐' if outcome=='draw' else 'You Lose 💀'}**\n"
-        f"Balance Change: {reward}\n"
-        f"Your Balance: {get_balance(user_id)} 💰"
+        f"**__Rock-Paper-Scissors__**\n\n"
+        f"**__You:__  {RPS_EMOJI[user_choice]}  __vs  Bot:__  {RPS_EMOJI[bot_choice]}**\n\n"
+        f"**__🎲 Result: {'You Win 🎉' if outcome=='win' else 'Draw 😐' if outcome=='draw' else 'You Lose 💀'}__**\n"
+        f"**__💰 Balance Change: {reward}__**\n\n"
+        f"**__🏧 Your Balance: {get_balance(user_id)} ₹__**"
     )
     await cq.message.edit_text(txt, reply_markup=rps_keyboard())
     await cq.answer()

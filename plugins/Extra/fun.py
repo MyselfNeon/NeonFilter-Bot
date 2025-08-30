@@ -175,11 +175,11 @@ async def roulette(_: Client, message: Message):
     args = message.text.split()
 
     if len(args) < 3:
-        return await message.reply_text("Usage: /roulette <red/black> <amount|all|half>")
+        return await message.reply_text("**__Usage: /roulette Red/Black Amount|All|Half__**")
 
     choice = args[1].lower()
     if choice not in ["red", "black"]:
-        return await message.reply_text("❌ Invalid choice! Use `red` or `black`.")
+        return await message.reply_text("**❌ __Invalid Choice !! Use Red Or Black__**")
 
     user_balance = get_balance(user_id)
     bet_arg = args[2].lower()
@@ -195,23 +195,23 @@ async def roulette(_: Client, message: Message):
             return await message.reply_text("❌ Invalid amount! Use a number, `all`, or `half`.")
 
     if amount <= 0:
-        return await message.reply_text("❌ You must bet more than 0 coins!")
+        return await message.reply_text("**❌ __You Must Bet More Than 0 ₹__**")
     if user_balance < amount:
-        return await message.reply_text("🚫 Not enough balance!")
+        return await message.reply_text("**🚫 __Not Enough Balance !!__**")
 
     outcome = random.choice(["red", "black"])
     if outcome == choice:
         update_balance(user_id, amount)
-        result = f"🎉 You won {amount}!"
+        result = f"**🎉 __You Won {amount} ₹__**"
     else:
         update_balance(user_id, -amount)
-        result = f"💀 You lost {amount}!"
+        result = f"**💀 __You Lost {amount} ₹__**"
 
     await message.reply_text(
-        f"🎰 **Roulette Result**\n"
-        f"Landed: {outcome.upper()}\n"
-        f"{result}\n"
-        f"Balance: {get_balance(user_id)} 💰"
+        f"**🎰 Roulette Result**\n\n"
+        f"**🎯 __Landed: {outcome.upper()}__**\n"
+        f"{result}\n\n"
+        f"**🏧 __Balance: {get_balance(user_id)} ₹__**"
     )
 
 # -----------------------
@@ -223,7 +223,7 @@ async def chick_fight(_: Client, message: Message):
     args = message.text.split()
 
     if len(args) < 2:
-        return await message.reply_text("**⁉️ __Usage :__**\n/chickfight amount|all|half")
+        return await message.reply_text("** __Usage 🤔\n\n/chickfight Amount|All|Half__**")
     
     user_balance = get_balance(user_id)
     bet_arg = args[1].lower()
@@ -236,10 +236,10 @@ async def chick_fight(_: Client, message: Message):
         try:
             amount = int(bet_arg)
         except ValueError:
-            return await message.reply_text("**__Invalid Amount ❌\nUse a Number, All, or Half__**")
+            return await message.reply_text("**__Invalid Amount ❌\n\nUse a Number, All, or Half__**")
     
     if amount <= 0:
-        return await message.reply_text("**❌ __You Must Bet More Than 0 Coins__**")
+        return await message.reply_text("**❌ __You Must Bet More Than 0 ₹__**")
     if user_balance < amount:
         return await message.reply_text("**🚫 __Not Enough Balance !!__**")
 
@@ -256,7 +256,7 @@ async def chick_fight(_: Client, message: Message):
         result = f"**💀 __Your Chicken Lost !!\n🥹 You lost {amount} ₹__**"
 
     await message.reply_text(
-        f"🐓 **<u>Chicken Fight Result</u>**\n\n{result}\n\n**🏧 __Balance : {get_balance(user_id)} ₹__**"
+        f"🐓 **Chicken Fight Result**\n\n{result}\n\n**🏧 __Balance : {get_balance(user_id)} ₹__**"
     )
 
 # -----------------------

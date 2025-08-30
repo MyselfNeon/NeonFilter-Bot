@@ -10,8 +10,8 @@ from info import DATABASE_NAME  # your existing config
 # CONFIG
 # -----------------------
 ADMINS = [841851780]  # replace with your Telegram ID(s)
-START_BALANCE_USER = 5000
-START_BALANCE_ADMIN = 10000
+START_BALANCE_USER = 25000
+START_BALANCE_ADMIN = 50000
 
 # -----------------------
 # MONGODB SETUP

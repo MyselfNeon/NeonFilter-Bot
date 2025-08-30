@@ -46,20 +46,6 @@ def reset_all_balances():
 # -----------------------
 # BALANCE COMMANDS
 # -----------------------
-@Client.on_message(filters.command(["bal", "balance"]))
-async def balance_check(_: Client, message: Message):
-    user_id = message.from_user.id
-    bal = get_balance(user_id)
-    await message.reply_text(f"💰 Your balance: {bal} coins")
-
-@Client.on_message(filters.command("resetbal"))
-async def reset_bal(_: Client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in ADMINS:
-        return await message.reply_text("🚫 Only admins can use this!")
-    reset_all_balances()
-    await message.reply_text("♻️ All balances have been reset to defaults!")
-
 @Client.on_message(filters.command(["addbal"]))
 async def addmoney(client: Client, message: Message):
     user_id = message.from_user.id
@@ -68,22 +54,32 @@ async def addmoney(client: Client, message: Message):
 
     args = message.text.split()
 
-    # Case 1: /addbal me <amount>
-    if len(args) == 3 and args[1].lower() == "me":
-        target = user_id
-        amount = int(args[2])
+    try:
+        # Case 1: /addbal me <amount>
+        if len(args) == 3 and args[1].lower() == "me":
+            target = user_id
+            amount = int(args[2])
 
-    # Case 2: Reply to a user with /addbal <amount>
-    elif len(args) == 2 and message.reply_to_message:
-        target = message.reply_to_message.from_user.id
-        amount = int(args[1])
+        # Case 2: Reply to a user with /addbal <amount>
+        elif len(args) == 2 and message.reply_to_message:
+            target = message.reply_to_message.from_user.id
+            amount = int(args[1])
 
-    # Case 3: /addbal <user_id> <amount>
-    elif len(args) == 3:
-        target = int(args[1])
-        amount = int(args[2])
+        # Case 3: /addbal <user_id> <amount>
+        elif len(args) == 3:
+            target = int(args[1])
+            amount = int(args[2])
 
-    else:
+        # Anything else → invalid usage
+        else:
+            raise ValueError
+
+        # Optional: check for negative or zero amounts
+        if amount <= 0:
+            return await message.reply_text("❌ Amount must be greater than 0!")
+
+    except (ValueError, TypeError):
+        # This triggers on non-numeric input or wrong format
         return await message.reply_text(
             "Usage:\n"
             "`/addbal me <amount>`\n"
@@ -91,6 +87,7 @@ async def addmoney(client: Client, message: Message):
             "Or reply to a user with `/addbal <amount>`"
         )
 
+    # Update the balance
     update_balance(target, amount)
 
     try:

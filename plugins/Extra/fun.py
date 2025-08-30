@@ -175,7 +175,7 @@ async def roulette(_: Client, message: Message):
     args = message.text.split()
 
     if len(args) < 3:
-        return await message.reply_text("**__Usage: /roulette Red/Black Amount|All|Half__**")
+        return await message.reply_text("**__How To Use Me__ 🫠\n\n__/roulette Red/Black Amount|All|Half__**")
 
     choice = args[1].lower()
     if choice not in ["red", "black"]:
@@ -192,7 +192,7 @@ async def roulette(_: Client, message: Message):
         try:
             amount = int(bet_arg)
         except ValueError:
-            return await message.reply_text("❌ Invalid amount! Use a number, `all`, or `half`.")
+            return await message.reply_text("**__Invalid Amount ❌\n\nUse a Number, All, Or Half__**")
 
     if amount <= 0:
         return await message.reply_text("**❌ __You Must Bet More Than 0 ₹__**")

@@ -126,9 +126,9 @@ RPS_EMOJI = {"rock": "🪨", "paper": "📄", "scissors": "✂️"}
 
 def rps_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[
-        InlineKeyboardButton("🪨 Rᴏᴄᴋ", callback_data="rps:rock"),
-        InlineKeyboardButton("📄 Pᴀᴘᴇʀ", callback_data="rps:paper"),
-        InlineKeyboardButton("✂️ Sᴄɪssᴏʀs", callback_data="rps:scissors")
+        InlineKeyboardButton("🪨", callback_data="rps:rock"),
+        InlineKeyboardButton("📄", callback_data="rps:paper"),
+        InlineKeyboardButton("✂️", callback_data="rps:scissors")
     ]])
 
 @Client.on_message(filters.command(["rps"]))

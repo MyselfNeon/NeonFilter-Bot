@@ -107,7 +107,7 @@ async def addmoney(client: Client, message: Message):
 @Client.on_message(filters.command(["lb"]))
 async def leaderboard(client: Client, message: Message):
     top_users = list(balances_col.find().sort("balance", -1).limit(10))
-    text = "🏆 **Top 10 Richest Users**\n\n"
+    text = "🏆 **__Top 10 Richest Users__**\n\n"
     for i, user in enumerate(top_users, start=1):
         uid = user["_id"]
         bal = user["balance"]
@@ -116,7 +116,7 @@ async def leaderboard(client: Client, message: Message):
             name = f"@{u.username}" if u.username else u.first_name
         except:
             name = f"User {uid}"
-        text += f"{i}. {name} → {bal} 💰\n"
+        text += f"**__{i}. {name} - {bal} ₹__**\n"
     await message.reply_text(text)
 
 # -----------------------

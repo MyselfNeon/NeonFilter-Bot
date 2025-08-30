@@ -49,9 +49,11 @@ AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 # 🔹 CHANNELS AND GROUPS
 # ============================================================
 LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001889915480'))
+# This Channel Is For When User Start Your Bot Then Bot Send That User Name And Id In This Log Channel, Same For Group Also.
 
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch
             for ch in environ.get('CHANNELS', '-1002627138181 -1002487845241').split()]
+# This Is File Channel Where You Upload Your File Then Bot Automatically Save It In Database
 
 REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', False))  # True → request to join FSUB
 TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', False))                # Retry button for FSUB
@@ -89,9 +91,9 @@ COLLECTION_NAME = environ.get('COLLECTION_NAME', 'neoncollection')
 MULTIPLE_DATABASE = bool(environ.get('MULTIPLE_DATABASE', False))
 
 # Separate DBs if MULTIPLE_DATABASE = True
-O_DB_URI = environ.get('O_DB_URI', "")
-F_DB_URI = environ.get('F_DB_URI', "")
-S_DB_URI = environ.get('S_DB_URI', "")
+O_DB_URI = environ.get('O_DB_URI', "")  # This Db Is For Other Data Store
+F_DB_URI = environ.get('F_DB_URI', "")  # This Db Is For File Data Store
+S_DB_URI = environ.get('S_DB_URI', "")  # This Db is for File Data Store When First Db Is Going To Be Full
 
 if not MULTIPLE_DATABASE:
     USER_DB_URI = OTHER_DB_URI = FILE_DB_URI = SEC_FILE_DB_URI = DATABASE_URI
@@ -107,7 +109,7 @@ else:
 # ============================================================
 PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True)) # Set Ture Or False
 
-# If PREMIUM_AND_REFERAL_MODE is True Then Fill Below Variable, If Flase Then No Need To Fill.
+# If PREMIUM_AND_REFERAL_MODE is True Then Fill Below Variable, If False Then No Need To Fill.
 PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True))
 
 REFERAL_COUNT = int(environ.get('REFERAL_COUNT', '5'))
@@ -222,24 +224,27 @@ YEARS = [str(year) for year in range(1900, 2026)]
 # ============================================================
 STREAM_MODE = bool(environ.get('STREAM_MODE', False))
 
+# If Stream Mode Is True Then Fill All Required Variable, If False Then Don't Fill.
 MULTI_CLIENT = False
 SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '60'))
 PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))  # 20 min
 
 ON_HEROKU = 'DYNO' in environ
-URL = environ.get("URL", "https://testofvjfilter-1fa60b1b8498.herokuapp.com/")
+URL = environ.get("URL", "")
 
 
 # ============================================================
 # 🔹 RENAME
 # ============================================================
-RENAME_MODE = bool(environ.get('RENAME_MODE', True))
+RENAME_MODE = bool(environ.get('RENAME_MODE', True)) # Set True or False
+# Rename Info : If True Then Bot Rename File Else Not
 
 
 # ============================================================
 # 🔹 AUTO APPROVE
 # ============================================================
-AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))
+AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))  # Set True or False
+# Auto Approve Info : If True Then Bot Approve New Upcoming Join Request Else Not
 
 
 # ============================================================

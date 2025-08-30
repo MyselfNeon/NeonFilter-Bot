@@ -3,35 +3,29 @@ from os import environ
 from Script import script 
 
 # ============================================================
-# 🔹 Regex Pattern
+# 🔹 REGEX PATTERN
 # ============================================================
 id_pattern = re.compile(r'^.\d+$')
 
 
 # ============================================================
-# 🔹 Bot Information
+# 🔹 BOT INFORMATION
 # ============================================================
 SESSION = environ.get('SESSION', 'MyselfNeon')
 API_ID = int(environ.get('API_ID', ''))
 API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
-# Start message pictures (separate multiple URLs with space)
-PICS = (
-    environ.get(
-        'PICS',
-        'https://files.catbox.moe/ybg6gw.jpg '
-        'https://files.catbox.moe/b5a3dz.jpg '
-        'https://files.catbox.moe/n0xw7h.jpg '
-        'https://files.catbox.moe/fhexii.jpg '
-        'https://files.catbox.moe/v7w8co.jpg '
-        'https://files.catbox.moe/r946bu.jpg'
-    )
-).split()
+
+# ============================================================
+# 🔹 START PICTURES
+# ============================================================
+# (Add Multiple By Giving One Space Between Each)
+PICS = (environ.get('PICS', 'https://files.catbox.moe/ybg6gw.jpg https://files.catbox.moe/b5a3dz.jpg https://files.catbox.moe/n0xw7h.jpg https://files.catbox.moe/fhexii.jpg https://files.catbox.moe/v7w8co.jpg https://files.catbox.moe/r946bu.jpg')).split()
 
 
 # ============================================================
-# 🔹 Admins & Users
+# 🔹 ADMINS & USERS
 # ============================================================
 ADMINS = [int(admin) if id_pattern.search(admin) else admin
           for admin in environ.get('ADMINS', '841851780').split()]  # Multiple IDs separated by space
@@ -43,7 +37,7 @@ AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 
 
 # ============================================================
-# 🔹 Channels & Groups
+# 🔹 CHANNELS AND GROUPS
 # ============================================================
 LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001889915480'))
 
@@ -77,7 +71,7 @@ DELETE_CHANNELS = [int(dch) if id_pattern.search(dch) else dch
 
 
 # ============================================================
-# 🔹 Database
+# 🔹 DATABASE
 # ============================================================
 DATABASE_URI = environ.get('DATABASE_URI', "")
 DATABASE_NAME = environ.get('DATABASE_NAME', "MyselfNeon")
@@ -100,8 +94,11 @@ else:
 
 
 # ============================================================
-# 🔹 Premium & Referral
+# 🔹 PREMIUM AND REFERAL 
 # ============================================================
+PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True)) # Set Ture Or False
+
+# If PREMIUM_AND_REFERAL_MODE is True Then Fill Below Variable, If Flase Then No Need To Fill.
 PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True))
 
 REFERAL_COUNT = int(environ.get('REFERAL_COUNT', '5'))
@@ -120,26 +117,26 @@ PAYMENT_TEXT = environ.get(
     '• After Sending Screenshot Give Us Some Time To Add You In Premium</i></b>'
 )
 
+# ============================================================
+# 🔹 CLONE SETTINGS
+# ============================================================
+# Clone Information : If Clone Mode Is True Then Bot Clone Other Bots.
+CLONE_MODE = bool(environ.get('CLONE_MODE', False)) # Set True or False
+CLONE_DATABASE_URI = environ.get('CLONE_DATABASE_URI', "") # Necessary If clone mode is true
+PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', '') # Public Channel Username Without @ or without https://t.me/ and Bot Is Admin With Full Right.
+
 
 # ============================================================
-# 🔹 Clone Settings
-# ============================================================
-CLONE_MODE = bool(environ.get('CLONE_MODE', False))
-CLONE_DATABASE_URI = environ.get('CLONE_DATABASE_URI', "")
-PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', '')
-
-
-# ============================================================
-# 🔹 Links
+# 🔹 LINKS
 # ============================================================
 GRP_LNK = environ.get('GRP_LNK', 'https://t.me/+o1s-8MppL2syYTI9')
 CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/neonfiles')
-SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'Talk2NeonBot')  # without @ / https://
+SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'Talk2NeonBot') # Support Chat Link Without https:// or @
 OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/MyselfNeon')
 
 
 # ============================================================
-# 🔹 Features (True/False switches)
+# 🔹 FEATURES (True/False Switches)
 # ============================================================
 AI_SPELL_CHECK = bool(environ.get('AI_SPELL_CHECK', True))
 PM_SEARCH = bool(environ.get('PM_SEARCH', True))
@@ -159,20 +156,22 @@ USE_CAPTION_FILTER = bool(environ.get('USE_CAPTION_FILTER', True))
 
 
 # ============================================================
-# 🔹 Token Verification
+# 🔹 TOKEN VERIFICATIONS
 # ============================================================
 VERIFY = bool(environ.get('VERIFY', False))
 VERIFY_SHORTLINK_URL = environ.get('VERIFY_SHORTLINK_URL', '')
 VERIFY_SHORTLINK_API = environ.get('VERIFY_SHORTLINK_API', '')
 VERIFY_TUTORIAL = environ.get('VERIFY_TUTORIAL', '')
 
+# If You Fill Second Shortner Then Bot Attach Both First And Second Shortner And Use It For Verify.
 VERIFY_SECOND_SHORTNER = bool(environ.get('VERIFY_SECOND_SHORTNER', False))
+# if verify second shortner is True then fill below url and api
 VERIFY_SND_SHORTLINK_URL = environ.get('VERIFY_SND_SHORTLINK_URL', '')
 VERIFY_SND_SHORTLINK_API = environ.get('VERIFY_SND_SHORTLINK_API', '')
 
 
 # ============================================================
-# 🔹 Shortlink
+# 🔹 SHORTLINK SETTINGS
 # ============================================================
 SHORTLINK_MODE = bool(environ.get('SHORTLINK_MODE', False))
 SHORTLINK_URL = environ.get('SHORTLINK_URL', '')
@@ -181,7 +180,7 @@ TUTORIAL = environ.get('TUTORIAL', '')
 
 
 # ============================================================
-# 🔹 Miscellaneous Settings
+# 🔹 MISCELLANEOUS SETTINGS
 # ============================================================
 CACHE_TIME = int(environ.get('CACHE_TIME', 1800))
 MAX_B_TN = environ.get("MAX_B_TN", "5")
@@ -195,7 +194,7 @@ MAX_LIST_ELM = environ.get("MAX_LIST_ELM", None)
 
 
 # ============================================================
-# 🔹 Filter Options
+# 🔹 FILTER OPTIONS
 # ============================================================
 LANGUAGES = ["malayalam", "mal", "tamil", "tam", "english", "eng", "hindi", "hin",
              "telugu", "tel", "kannada", "kan"]
@@ -210,7 +209,7 @@ YEARS = [str(year) for year in range(1900, 2026)]
 
 
 # ============================================================
-# 🔹 Streaming & Download
+# 🔹 STREAMING & DOWNLOAD
 # ============================================================
 STREAM_MODE = bool(environ.get('STREAM_MODE', False))
 
@@ -223,21 +222,25 @@ URL = environ.get("URL", "https://testofvjfilter-1fa60b1b8498.herokuapp.com/")
 
 
 # ============================================================
-# 🔹 Rename
+# 🔹 RENAME
 # ============================================================
 RENAME_MODE = bool(environ.get('RENAME_MODE', True))
 
 
 # ============================================================
-# 🔹 Auto Approve
+# 🔹 AUTO APPROVE
 # ============================================================
 AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))
 
 
 # ============================================================
-# 🔹 Start Command Reactions
+# 🔹 START COMMAND REACTIONS
 # ============================================================
-REACTIONS = [
-    "🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩", "😱", "🤣", "😘", "👏", "😛", "😈",
-    "🎉", "⚡️", "🫡", "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"
-]  # use only emojis supported by Telegram
+REACTIONS = ["🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩", "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡", "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"] 
+#don't add any emoji because tg not support all emoji reactions
+
+
+
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

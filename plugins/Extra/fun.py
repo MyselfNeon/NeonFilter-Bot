@@ -50,21 +50,21 @@ def reset_all_balances():
 async def balance_check(_: Client, message: Message):
     user_id = message.from_user.id
     bal = get_balance(user_id)
-    await message.reply_text(f"💰 Your balance: {bal} coins")
+    await message.reply_text(f"**🏧 __Your balance:\n\n💸 {bal} ₹__**")
 
 @Client.on_message(filters.command("resetbal"))
 async def reset_bal(_: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in ADMINS:
-        return await message.reply_text("🚫 Only admins can use this!")
+        return await message.reply_text("**🚫 __Only Admins Can Use This !__**")
     reset_all_balances()
-    await message.reply_text("♻️ All balances have been reset to defaults!")
+    await message.reply_text("**__Amigo Samigo 🖐️ \n\nAll Balances Have Been Reset To Defaults !!__ ♻️♻️**")
 
 @Client.on_message(filters.command(["addbal"]))
 async def addmoney(client: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in ADMINS:
-        return await message.reply_text("🚫 Only admins can use this!")
+        return await message.reply_text("**🚫 __Only Admins Can Use This !__**")
 
     args = message.text.split()
 
@@ -99,7 +99,7 @@ async def addmoney(client: Client, message: Message):
     except:
         name = f"User {target}"
 
-    await message.reply_text(f"✅ Added {amount} coins to {name} ({target})")
+    await message.reply_text(f"**__Added {amount} ₹ to {name} ({target})__ ✅**")
 
 # -----------------------
 # LEADERBOARD

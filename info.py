@@ -245,12 +245,14 @@ AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))
 # ============================================================
 # 🔹 START COMMAND REACTIONS
 # ============================================================
-REACTIONS = ["🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩", "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡", "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"] 
-#don't add any emoji because tg not support all emoji reactions
+REACTIONS = [
+    "🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩",
+    "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡",
+    "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"]
+# Don't add unsupported emojis because Telegram reactions have limits
 
 
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-

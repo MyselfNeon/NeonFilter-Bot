@@ -12,8 +12,8 @@ async def isolated_deeplink(client: Client, message: Message):
         param = message.text.split(" ", 1)[1]
 
         # Example: Only handle "Anurag"
-        if param.lower() == "anurag":
-            await message.reply_text("Neo Anurah")
+        if param.lower() == "repolink":
+            await message.reply_text("<b><i>🍀 Rᴇᴘᴏsɪᴛᴏʀʏ Lɪɴᴋ 🍀\n\nTʜᴇ Rᴇᴘᴏsɪᴛᴏʀʏ Is Cᴜʀʀᴇɴᴛʟʏ Pʀɪᴠᴀᴛᴇ Dᴜᴇ Tᴏ Sᴏᴍᴇ Oɴɢᴏɪɴɢ Wᴏʀᴋ. Hᴏᴡᴇᴠᴇʀ, Iғ Yᴏᴜ Aʀᴇ Iɴᴛᴇʀᴇsᴛᴇᴅ Iɴ Oᴜʀ Bᴏᴛ Aɴᴅ Iᴛs Fᴇᴀᴛᴜʀᴇs, I Wᴏᴜʟᴅ Bᴇ Hᴀᴘᴘʏ Tᴏ Gʀᴀɴᴛ Yᴏᴜ Aᴄᴄᴇss.\n\nCᴏɴᴛᴀᴄᴛ : <a href='https://t.me/Talk2NeonBot'>@Tᴀʟᴋ𝟸NᴇᴏɴBᴏᴛ</a></i></b>")
             
         # Else: do nothing, totally isolated
     except Exception:

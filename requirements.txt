@@ -42,4 +42,5 @@ git+https://github.com/Joelkb/cinemagoer
 pikepdf
 rarfile
 pyzipper
+pyromod
 

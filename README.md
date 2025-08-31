@@ -2,7 +2,7 @@
     <i>NeonFilter-Bot</i>
 </h2>
 
-<img src="https://files.catbox.moe/ybg6gw.jpg" alt="logo" target="/blank">
+<img src="https://files.catbox.moe/tc8drk.jpg" alt="logo" target="/blank">
 
 _**Watch on Telegram as [ZeroFilter-Bot](https://t.me/zerofilterbot)**_
 
@@ -186,5 +186,6 @@ Selling The Codes To Other People For Money Is *Strictly Prohibited*.</b>
 </pre>
 </p>
 </details>
+
 
 

@@ -1,11 +1,12 @@
 import os
 import requests
 import aiohttp
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
+from info import LOG_CHANNEL, MAX_SIZE  # Import from your config file
 
 CATBOX_API = "https://catbox.moe/user/api.php"
-MAX_SIZE = 200 * 1024 * 1024  # 200 MB
 ENVS_UPLOAD_URL = "https://envs.sh"
 
 # Track active uploads per user (only for /telegraph)
@@ -19,7 +20,7 @@ def upload_to_envs(file_path: str):
     try:
         with open(file_path, 'rb') as f:
             files = {'file': f}
-            response = requests.post(ENVS_UPLOAD_URL, files=files)
+            response = requests.post(ENVS_UPLOAD_URL, files=files, timeout=60)  # 1 min timeout
             if response.status_code == 200:
                 return response.text.strip()
             return None
@@ -28,13 +29,17 @@ def upload_to_envs(file_path: str):
         return None
 
 async def upload_to_catbox(file_path: str):
-    async with aiohttp.ClientSession() as session:
-        with open(file_path, "rb") as f:
-            data = aiohttp.FormData()
-            data.add_field("reqtype", "fileupload")
-            data.add_field("fileToUpload", f, filename=os.path.basename(file_path))
-            async with session.post(CATBOX_API, data=data) as resp:
-                return await resp.text()
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:  # 1 min timeout
+            with open(file_path, "rb") as f:
+                data = aiohttp.FormData()
+                data.add_field("reqtype", "fileupload")
+                data.add_field("fileToUpload", f, filename=os.path.basename(file_path))
+                async with session.post(CATBOX_API, data=data) as resp:
+                    return await resp.text()
+    except Exception as e:
+        print(f"**__Error Uploading to Catbox :\n{e}__**")
+        return None
 
 # -------------------
 # /telegraph command
@@ -45,12 +50,14 @@ async def telegraph_start(bot: Client, message: Message):
     user_id = message.from_user.id
 
     if user_id in active_uploads:
-        return await message.reply_text("**__You Already have an Active Upload.\nFinish or Cancel it with /tcancel__**")
+        return await message.reply_text(
+            "**__You Already have an Active Upload.\nFinish or Cancel it with /tcancel__**"
+        )
 
     keyboard = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs")],
-            [InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")],
+            [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs"),
+             InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")]
         ]
     )
     await message.reply_text(
@@ -74,6 +81,12 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     await query.answer()
     await query.message.edit_text("**__Now Send me your File (Photo, Video, Document, Audio)\n\n/tcancel to Abort the Process__**")
 
+    # 30-second timeout for user inactivity
+    await asyncio.sleep(30)
+    if user_id in active_uploads and "file_sent" not in active_uploads[user_id]:
+        active_uploads.pop(user_id, None)
+        await query.message.edit_text("**⏰ __Timeout: You did not send any file within 30 seconds.__**")
+
 # -------------------
 # File handler scoped to active /telegraph users
 # -------------------
@@ -84,10 +97,40 @@ async def telegraph_file_handler(bot: Client, message: Message):
     if user_id not in active_uploads:
         return  # Ignore files not related to /telegraph
 
+    active_uploads[user_id]["file_sent"] = True
     site = active_uploads[user_id]["site"]
+
     status_msg = await message.reply_text("**__Downloading Your File...__ ⬇️**")
     file_path = await message.download()
 
+    # -----------------------------
+    # Log Upload to LOG_CHANNEL
+    # -----------------------------
+    try:
+        caption_text = (
+            f"**New Upload Detected**\n"
+            f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
+            f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}\n"
+            f"🌐 Target Site: {site.upper()}\n"
+            f"📄 File Name: {getattr(message.document, 'file_name', 'Media')}\n"
+            f"💾 Size: {os.path.getsize(file_path) / 1024 / 1024:.2f} MB"
+        )
+
+        # Send the actual file to log channel
+        if message.photo:
+            await bot.send_photo(LOG_CHANNEL, file_path, caption=caption_text)
+        elif message.video:
+            await bot.send_video(LOG_CHANNEL, file_path, caption=caption_text)
+        elif message.audio:
+            await bot.send_audio(LOG_CHANNEL, file_path, caption=caption_text)
+        else:  # document or other
+            await bot.send_document(LOG_CHANNEL, file_path, caption=caption_text)
+    except Exception as e:
+        print(f"Failed to log upload: {e}")
+
+    # -----------------------------
+    # Continue with normal upload
+    # -----------------------------
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
         await status_msg.edit_text(f"**❌ __File Too Large (>{MAX_SIZE/1024/1024} MB).\n\nUpload Canceled__ ❌**")
         os.remove(file_path)
@@ -109,9 +152,8 @@ async def telegraph_file_handler(bot: Client, message: Message):
                 [
                     [
                         InlineKeyboardButton("Oᴘᴇɴ Lɪɴᴋ 🔓", url=link),
-                        InlineKeyboardButton("Sʜᴀʀᴇ Lɪɴᴋ 🖇️", url=f"https://telegram.me/share/url?url={link}")
-                    ],
-                    [InlineKeyboardButton("❌ Cᴀɴᴄᴇʟ ❌", callback_data="close")]
+                        InlineKeyboardButton("❌ Cᴀɴᴄᴇʟ ❌", callback_data="close")
+                    ]
                 ]
             )
         )
@@ -135,7 +177,3 @@ async def telegraph_cancel(bot: Client, message: Message):
     else:
         await message.reply_text("**🤷 __There Are No Active Uploads to Cancel. Use /telegraph to Create an Upload__**")
         
-
-# Dont remove Credits
-# Developer Telegram @MyselfNeon
-# Update channel - @NeonFiles

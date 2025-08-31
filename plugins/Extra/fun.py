@@ -265,19 +265,19 @@ async def chick_fight(_: Client, message: Message):
 @Client.on_message(filters.command(["funhelp"]))
 async def fun_help(_: Client, message: Message):
     text = (
-        "🎮 **Fun & Games Menu** 🎮\n\n"
-        "💰 Balance System:\n"
-        "• `/bal` or `/balance` → Check your balance\n"
-        "• `/lb` → Show Top 10 richest users\n"
-        "• `/addbal` → (Admin only) Add coins\n"
-        "• `/resetbal` → (Admin only) Reset all balances\n\n"
+        "<blockquote>**‣ 𝐆𝐀𝐌𝐄𝐒 𝐌𝐄𝐍𝐔**</blockquote>\n\n"
+        "**🏧 __Balance System__**\n\n"
+        "• __/bal **Or** /balance - **Check Your Balance__**\n"
+        "• __/lb - **Show LeaderBoard__**\n"
+        "• __/addbal - **Add Money (Admin only)__**\n"
+        "• __/resetbal - **Reset All (Admin only)__**\n\n"
         
-        "🎲 Games:\n"
-        "• `/rps` → Rock-Paper-Scissors (Win: +2000 | Lose: -1000)\n"
-        "• `/roulette <red/black> <amount|all|half>` → Bet on roulette colors\n"
-        "• `/chickfight <amount|all|half>` → Bet on a chicken fight 🐔\n\n"
+        "**🎲 __Games__**\n\n"
+        "• __/rps - **Rock-Paper-Scissors__**\n"
+        "• __/roulette - **Bet On Roulette Colors__**\n"
+        "• __/chickfight - **Chicken Fight__ 🐔**\n\n"
         
-        "✨ Enjoy the games and try to climb the leaderboard!"
+        "**__Enjoy The Games And Try To Climb The Leaderboard !!__ 😄😇**"
     )
     await message.reply_text(text)
     

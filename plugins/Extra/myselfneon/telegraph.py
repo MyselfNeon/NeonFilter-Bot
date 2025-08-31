@@ -7,6 +7,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, 
 CATBOX_API = "https://catbox.moe/user/api.php"
 MAX_SIZE = 200 * 1024 * 1024  # 200 MB
 ENVS_UPLOAD_URL = "https://envs.sh"
+ZEROX0_URL = "https://0x0.st"
 
 # Track active uploads per user (only for /telegraph)
 active_uploads = {}
@@ -36,6 +37,17 @@ async def upload_to_catbox(file_path: str):
             async with session.post(CATBOX_API, data=data) as resp:
                 return await resp.text()
 
+async def upload_to_0x0(file_path: str):
+    try:
+        async with aiohttp.ClientSession() as session:
+            with open(file_path, "rb") as f:
+                data = {"file": f}
+                async with session.post(ZEROX0_URL, data=data) as resp:
+                    return (await resp.text()).strip()
+    except Exception as e:
+        print(f"**__Error Uploading to 0x0.st :\n{e}__**")
+        return None
+
 # -------------------
 # /telegraph command
 # -------------------
@@ -51,6 +63,7 @@ async def telegraph_start(bot: Client, message: Message):
         [
             [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs")],
             [InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")],
+            [InlineKeyboardButton("0x0.sᴛ ⚡", callback_data="telegraph_0x0")],
         ]
     )
     await message.reply_text(
@@ -68,7 +81,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_uploads:
         return await query.answer("Finish or Cancel your Current Upload First.", show_alert=True)
 
-    site = query.data.split("_")[1]  # envs or catbox
+    site = query.data.split("_")[1]  # envs, catbox, or 0x0
     active_uploads[user_id] = {"site": site, "message": query.message}
 
     await query.answer()
@@ -97,7 +110,15 @@ async def telegraph_file_handler(bot: Client, message: Message):
     await status_msg.edit_text("**__Uploading Now...__ ⬆️**")
 
     try:
-        link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
+        if site == "envs":
+            link = upload_to_envs(file_path)
+        elif site == "catbox":
+            link = await upload_to_catbox(file_path)
+        elif site == "0x0":
+            link = await upload_to_0x0(file_path)
+        else:
+            link = None
+
         if not link:
             await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
             return

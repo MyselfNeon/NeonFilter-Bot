@@ -35,7 +35,10 @@ async def upload_to_catbox(file_path: str):
             data.add_field("reqtype", "fileupload")
             data.add_field("fileToUpload", f, filename=os.path.basename(file_path))
             async with session.post(CATBOX_API, data=data) as resp:
-                return await resp.text()
+                link = (await resp.text()).strip()
+                if link.startswith("http"):
+                    return link
+                return None
 
 async def upload_to_0x0(file_path: str):
     try:
@@ -43,7 +46,10 @@ async def upload_to_0x0(file_path: str):
             with open(file_path, "rb") as f:
                 data = {"file": f}
                 async with session.post(ZEROX0_URL, data=data) as resp:
-                    return (await resp.text()).strip()
+                    link = (await resp.text()).strip()
+                    if link.startswith("http"):
+                        return link
+                    return None
     except Exception as e:
         print(f"**__Error Uploading to 0x0.st :\n{e}__**")
         return None
@@ -119,7 +125,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
         else:
             link = None
 
-        if not link:
+        if not link or not link.startswith("http"):
             await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
             return
 

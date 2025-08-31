@@ -6,9 +6,9 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, 
 
 CATBOX_API = "https://catbox.moe/user/api.php"
 MAX_SIZE = 200 * 1024 * 1024  # 200 MB
-ENVS_UPLOAD_URL = "https://envs.sh"  # Replace with your envs.sh upload URL
+ENVS_UPLOAD_URL = "https://envs.sh"
 
-# Track active uploads per user
+# Track active uploads per user (only for /telegraph)
 active_uploads = {}
 
 # -------------------
@@ -45,12 +45,12 @@ async def telegraph_start(bot: Client, message: Message):
     user_id = message.from_user.id
 
     if user_id in active_uploads:
-        return await message.reply_text("⚠️ You already have an active upload. Please finish or cancel it with /cancel.")
+        return await message.reply_text("⚠️ You already have an active upload. Finish or cancel it with /cancel.")
 
     keyboard = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("envs.sh 🌐", callback_data="upload_envs")],
-            [InlineKeyboardButton("Catbox 📦", callback_data="upload_catbox")],
+            [InlineKeyboardButton("envs.sh 🌐", callback_data="telegraph_envs")],
+            [InlineKeyboardButton("Catbox 📦", callback_data="telegraph_catbox")],
         ]
     )
     await message.reply_text(
@@ -59,56 +59,45 @@ async def telegraph_start(bot: Client, message: Message):
     )
 
 # -------------------
-# Callback handler for site selection
+# Callback handler for /telegraph buttons
 # -------------------
 
-@Client.on_callback_query()
+@Client.on_callback_query(filters.regex(r"^telegraph_"))
 async def telegraph_callback(bot: Client, query: CallbackQuery):
     user_id = query.from_user.id
-
-    if query.data == "close":
-        await query.message.delete()
-        return await query.answer()
-
     if user_id in active_uploads:
         return await query.answer("⚠️ Finish or cancel your current upload first.", show_alert=True)
 
-    site = query.data
+    site = query.data.split("_")[1]  # envs or catbox
     active_uploads[user_id] = {"site": site, "message": query.message}
 
     await query.answer()
     await query.message.edit_text("📤 Now send me your file (photo, video, document, audio) or /cancel to abort:")
 
 # -------------------
-# File handler
+# File handler scoped to active /telegraph users
 # -------------------
 
 @Client.on_message(filters.private & (filters.document | filters.photo | filters.video | filters.audio))
-async def handle_file(bot: Client, message: Message):
+async def telegraph_file_handler(bot: Client, message: Message):
     user_id = message.from_user.id
-
     if user_id not in active_uploads:
-        return  # Ignore files if user didn't select a site
+        return  # Ignore files not related to /telegraph
 
     site = active_uploads[user_id]["site"]
     status_msg = await message.reply_text("⬇️ Downloading your file...")
     file_path = await message.download()
 
-    # Check Catbox file size
-    if site == "upload_catbox" and os.path.getsize(file_path) > MAX_SIZE:
+    if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
         await status_msg.edit_text(f"❌ File too large (>{MAX_SIZE/1024/1024} MB). Upload canceled.")
         os.remove(file_path)
-        active_uploads.pop(user_id, None)
+        active_uploads.pop(user_id)
         return
 
     await status_msg.edit_text("⬆️ Uploading now...")
 
     try:
-        if site == "upload_envs":
-            link = upload_to_envs(file_path)
-        else:
-            link = await upload_to_catbox(file_path)
-
+        link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
         if not link:
             await status_msg.edit_text("❌ Upload failed.")
             return
@@ -138,11 +127,11 @@ async def handle_file(bot: Client, message: Message):
 # -------------------
 
 @Client.on_message(filters.command("cancel") & filters.private)
-async def cancel_upload(bot: Client, message: Message):
+async def telegraph_cancel(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id in active_uploads:
         active_uploads.pop(user_id)
         await message.reply_text("❌ Upload canceled successfully.")
     else:
-        await message.reply_text("⚠️ You have no active upload to cancel.")
+        await message.reply_text("⚠️ You have no active /telegraph upload to cancel.")
         

@@ -38,18 +38,20 @@ async def upload_to_catbox(file_path: str):
                 link = (await resp.text()).strip()
                 if link.startswith("http"):
                     return link
+                print("Catbox response:", link)
                 return None
 
 async def upload_to_0x0(file_path: str):
     try:
         async with aiohttp.ClientSession() as session:
-            with open(file_path, "rb") as f:
-                data = {"file": f}
-                async with session.post(ZEROX0_URL, data=data) as resp:
-                    link = (await resp.text()).strip()
-                    if link.startswith("http"):
-                        return link
-                    return None
+            data = aiohttp.FormData()
+            data.add_field("file", open(file_path, "rb"), filename=os.path.basename(file_path))
+            async with session.post(ZEROX0_URL, data=data) as resp:
+                link = (await resp.text()).strip()
+                if link.startswith("http"):
+                    return link
+                print("0x0.st response:", link)  # Debug output if not a link
+                return None
     except Exception as e:
         print(f"**__Error Uploading to 0x0.st :\n{e}__**")
         return None

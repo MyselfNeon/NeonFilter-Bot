@@ -50,7 +50,7 @@ def reset_all_balances():
 async def balance_check(_: Client, message: Message):
     user_id = message.from_user.id
     bal = get_balance(user_id)
-    await message.reply_text(f"**🏧 __Your balance:\n\n💸 {bal} ₹__**")
+    await message.reply_text(f"**🏧 __Your Balance:\n\n💸 {bal} ₹__**")
 
 @Client.on_message(filters.command("resetbal"))
 async def reset_bal(_: Client, message: Message):

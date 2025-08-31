@@ -271,7 +271,7 @@ Requested by : {message.from_user.mention}</b></i>"""
  • ᴍʟ = ᴍᴀʟᴀyᴀʟᴀᴍ 
  • ʜɪ = ʜɪɴᴅɪ</b>""" 
   
-    TELE_TXT = """<b><i><blockquote>‣ Telegraph Module 🌁</blockquote>\nTwo Upload site options are Available in this Module. Select the one that Best suits your needs -\n\n01 - Envs.sh\nCatbox.moe
+    TELE_TXT = """<b><i><blockquote>‣ Telegraph Module 🌁</blockquote>\nTwo Upload site options are Available in this Module. Select the one that Best suits your needs -\n\n01 - Envs.sh\n02 - Catbox.moe
   
 <blockquote>‣ Usage 📄</blockquote>Use /telegraph and send any image or video under 5MB (for envs.sh) and 200MB (for catbox.moe)⏳
   
@@ -664,5 +664,6 @@ Get Streamable and Downloadable link of any file by using /stream</b></i>"""
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 

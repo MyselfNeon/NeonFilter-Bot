@@ -4,23 +4,26 @@ import aiohttp
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
-from info import LOG_CHANNEL, MAX_SIZE  # Import from your config file
+from info import LOG_CHANNEL  # only import LOG_CHANNEL
 
+# -------------------
+# Constants
+# -------------------
+MAX_SIZE = 200 * 1024 * 1024  # Local max file size 200 MB
 CATBOX_API = "https://catbox.moe/user/api.php"
 ENVS_UPLOAD_URL = "https://envs.sh"
 
-# Track active uploads per user (only for /telegraph)
+# Track active uploads per user
 active_uploads = {}
 
 # -------------------
 # Helper functions
 # -------------------
-
 def upload_to_envs(file_path: str):
     try:
         with open(file_path, 'rb') as f:
             files = {'file': f}
-            response = requests.post(ENVS_UPLOAD_URL, files=files, timeout=60)  # 1 min timeout
+            response = requests.post(ENVS_UPLOAD_URL, files=files, timeout=60)
             if response.status_code == 200:
                 return response.text.strip()
             return None
@@ -30,7 +33,7 @@ def upload_to_envs(file_path: str):
 
 async def upload_to_catbox(file_path: str):
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:  # 1 min timeout
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
             with open(file_path, "rb") as f:
                 data = aiohttp.FormData()
                 data.add_field("reqtype", "fileupload")
@@ -44,7 +47,6 @@ async def upload_to_catbox(file_path: str):
 # -------------------
 # /telegraph command
 # -------------------
-
 @Client.on_message(filters.command("telegraph") & filters.private)
 async def telegraph_start(bot: Client, message: Message):
     user_id = message.from_user.id
@@ -68,7 +70,6 @@ async def telegraph_start(bot: Client, message: Message):
 # -------------------
 # Callback handler for /telegraph buttons
 # -------------------
-
 @Client.on_callback_query(filters.regex(r"^telegraph_"))
 async def telegraph_callback(bot: Client, query: CallbackQuery):
     user_id = query.from_user.id
@@ -90,12 +91,11 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
 # -------------------
 # File handler scoped to active /telegraph users
 # -------------------
-
 @Client.on_message(filters.private & (filters.document | filters.photo | filters.video | filters.audio))
 async def telegraph_file_handler(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in active_uploads:
-        return  # Ignore files not related to /telegraph
+        return
 
     active_uploads[user_id]["file_sent"] = True
     site = active_uploads[user_id]["site"]
@@ -116,20 +116,19 @@ async def telegraph_file_handler(bot: Client, message: Message):
             f"💾 Size: {os.path.getsize(file_path) / 1024 / 1024:.2f} MB"
         )
 
-        # Send the actual file to log channel
         if message.photo:
             await bot.send_photo(LOG_CHANNEL, file_path, caption=caption_text)
         elif message.video:
             await bot.send_video(LOG_CHANNEL, file_path, caption=caption_text)
         elif message.audio:
             await bot.send_audio(LOG_CHANNEL, file_path, caption=caption_text)
-        else:  # document or other
+        else:
             await bot.send_document(LOG_CHANNEL, file_path, caption=caption_text)
     except Exception as e:
         print(f"Failed to log upload: {e}")
 
     # -----------------------------
-    # Continue with normal upload
+    # Continue normal upload
     # -----------------------------
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
         await status_msg.edit_text(f"**❌ __File Too Large (>{MAX_SIZE/1024/1024} MB).\n\nUpload Canceled__ ❌**")
@@ -167,7 +166,6 @@ async def telegraph_file_handler(bot: Client, message: Message):
 # -------------------
 # /cancel command
 # -------------------
-
 @Client.on_message(filters.command("tcancel") & filters.private)
 async def telegraph_cancel(bot: Client, message: Message):
     user_id = message.from_user.id

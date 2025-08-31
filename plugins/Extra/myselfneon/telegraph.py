@@ -24,7 +24,7 @@ def upload_to_envs(file_path: str):
                 return response.text.strip()
             return None
     except Exception as e:
-        print(f"Error uploading to envs: {e}")
+        print(f"**__Error Uploading to envs: {e}__**")
         return None
 
 async def upload_to_catbox(file_path: str):
@@ -45,7 +45,7 @@ async def telegraph_start(bot: Client, message: Message):
     user_id = message.from_user.id
 
     if user_id in active_uploads:
-        return await message.reply_text("⚠️ You already have an active upload. Finish or cancel it with /cancel.")
+        return await message.reply_text("**⚠️ __You already have an Active Upload. Finish or Cancel it with /tcancel__**")
 
     keyboard = InlineKeyboardMarkup(
         [
@@ -54,7 +54,7 @@ async def telegraph_start(bot: Client, message: Message):
         ]
     )
     await message.reply_text(
-        "**Choose the site to upload your file:**",
+        "**__Choose The Site To Upload Your File__**",
         reply_markup=keyboard
     )
 
@@ -66,13 +66,13 @@ async def telegraph_start(bot: Client, message: Message):
 async def telegraph_callback(bot: Client, query: CallbackQuery):
     user_id = query.from_user.id
     if user_id in active_uploads:
-        return await query.answer("⚠️ Finish or cancel your current upload first.", show_alert=True)
+        return await query.answer("⚠️ Finish or Cancel your Current Upload First.", show_alert=True)
 
     site = query.data.split("_")[1]  # envs or catbox
     active_uploads[user_id] = {"site": site, "message": query.message}
 
     await query.answer()
-    await query.message.edit_text("📤 Now send me your file (photo, video, document, audio) or /cancel to abort:")
+    await query.message.edit_text("**📤 __Now send me your File (Photo, Video, Document, Audio)\n\n/tcancel to Abort the Process__**")
 
 # -------------------
 # File handler scoped to active /telegraph users
@@ -85,21 +85,21 @@ async def telegraph_file_handler(bot: Client, message: Message):
         return  # Ignore files not related to /telegraph
 
     site = active_uploads[user_id]["site"]
-    status_msg = await message.reply_text("⬇️ Downloading your file...")
+    status_msg = await message.reply_text("**__⬇️ Downloading Your File...__**")
     file_path = await message.download()
 
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
-        await status_msg.edit_text(f"❌ File too large (>{MAX_SIZE/1024/1024} MB). Upload canceled.")
+        await status_msg.edit_text(f"**❌ __File Too Large (>{MAX_SIZE/1024/1024} MB).\n\nUpload Canceled__ ❌**")
         os.remove(file_path)
         active_uploads.pop(user_id)
         return
 
-    await status_msg.edit_text("⬆️ Uploading now...")
+    await status_msg.edit_text("**__⬆️ Uploading Now...__**")
 
     try:
         link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
         if not link:
-            await status_msg.edit_text("❌ Upload failed.")
+            await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
             return
 
         await status_msg.edit_text(
@@ -116,7 +116,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
             )
         )
     except Exception as e:
-        await status_msg.edit_text(f"❌ Upload failed:\n`{e}`")
+        await status_msg.edit_text(f"**❌ __Upload Failed:\n`{e}`__**")
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -126,12 +126,16 @@ async def telegraph_file_handler(bot: Client, message: Message):
 # /cancel command
 # -------------------
 
-@Client.on_message(filters.command("cancel") & filters.private)
+@Client.on_message(filters.command("tcancel") & filters.private)
 async def telegraph_cancel(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id in active_uploads:
         active_uploads.pop(user_id)
-        await message.reply_text("❌ Upload canceled successfully.")
+        await message.reply_text("**❌ __Upload Canceled Successfully__ 🤧**")
     else:
         await message.reply_text("⚠️ You have no active /telegraph upload to cancel.")
         
+
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

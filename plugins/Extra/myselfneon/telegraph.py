@@ -87,8 +87,8 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_uploads and "file_sent" not in active_uploads[user_id]:
         active_uploads.pop(user_id, None)
         timeout_msg = await query.message.edit_text(
-            "**⏰ Time's Up! You did not send any file within 30 seconds.**\n\n"
-            "Use /telegraph to start a new upload."
+            "**⏰ __Time's Up !!\nYou did not Send any File in 30 sec.__**\n"
+            "**__Start a New Upload /telegraph__**"
         )
         # Auto-delete timeout message after 20 seconds
         await asyncio.sleep(20)

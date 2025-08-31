@@ -24,7 +24,7 @@ def upload_to_envs(file_path: str):
                 return response.text.strip()
             return None
     except Exception as e:
-        print(f"**__Error Uploading to envs: {e}__**")
+        print(f"**__Error Uploading to Envs :\n{e}__**")
         return None
 
 async def upload_to_catbox(file_path: str):
@@ -45,12 +45,12 @@ async def telegraph_start(bot: Client, message: Message):
     user_id = message.from_user.id
 
     if user_id in active_uploads:
-        return await message.reply_text("**⚠️ __You already have an Active Upload. Finish or Cancel it with /tcancel__**")
+        return await message.reply_text("**__You Already have an Active Upload.\nFinish or Cancel it with /tcancel__**")
 
     keyboard = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("envs.sh 🌐", callback_data="telegraph_envs")],
-            [InlineKeyboardButton("Catbox 📦", callback_data="telegraph_catbox")],
+            [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs")],
+            [InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")],
         ]
     )
     await message.reply_text(
@@ -66,13 +66,13 @@ async def telegraph_start(bot: Client, message: Message):
 async def telegraph_callback(bot: Client, query: CallbackQuery):
     user_id = query.from_user.id
     if user_id in active_uploads:
-        return await query.answer("⚠️ Finish or Cancel your Current Upload First.", show_alert=True)
+        return await query.answer("Finish or Cancel your Current Upload First.", show_alert=True)
 
     site = query.data.split("_")[1]  # envs or catbox
     active_uploads[user_id] = {"site": site, "message": query.message}
 
     await query.answer()
-    await query.message.edit_text("**📤 __Now send me your File (Photo, Video, Document, Audio)\n\n/tcancel to Abort the Process__**")
+    await query.message.edit_text("**__Now Send me your File (Photo, Video, Document, Audio)\n\n/tcancel to Abort the Process__**")
 
 # -------------------
 # File handler scoped to active /telegraph users
@@ -85,7 +85,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
         return  # Ignore files not related to /telegraph
 
     site = active_uploads[user_id]["site"]
-    status_msg = await message.reply_text("**__⬇️ Downloading Your File...__**")
+    status_msg = await message.reply_text("**__Downloading Your File...__ ⬇️**")
     file_path = await message.download()
 
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
@@ -94,7 +94,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
         active_uploads.pop(user_id)
         return
 
-    await status_msg.edit_text("**__⬆️ Uploading Now...__**")
+    await status_msg.edit_text("**__Uploading Now...__ ⬆️**")
 
     try:
         link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
@@ -103,20 +103,20 @@ async def telegraph_file_handler(bot: Client, message: Message):
             return
 
         await status_msg.edit_text(
-            text=f"✅ Upload complete!\n\n🔗 {link}",
+            text=f"**✅ __Upload Completed !!\n\nYour Link 🖇️\n{link}__**",
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("Open Link 🔓", url=link),
-                        InlineKeyboardButton("Share Link 🖇️", url=f"https://telegram.me/share/url?url={link}")
+                        InlineKeyboardButton("Oᴘᴇɴ Lɪɴᴋ 🔓", url=link),
+                        InlineKeyboardButton("Sʜᴀʀᴇ Lɪɴᴋ 🖇️", url=f"https://telegram.me/share/url?url={link}")
                     ],
-                    [InlineKeyboardButton("❌ Close ❌", callback_data="close")]
+                    [InlineKeyboardButton("❌ Cᴀɴᴄᴇʟ ❌", callback_data="close")]
                 ]
             )
         )
     except Exception as e:
-        await status_msg.edit_text(f"**❌ __Upload Failed:\n`{e}`__**")
+        await status_msg.edit_text(f"**❌ __Upload Failed :\n`{e}`__**")
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -133,7 +133,7 @@ async def telegraph_cancel(bot: Client, message: Message):
         active_uploads.pop(user_id)
         await message.reply_text("**❌ __Upload Canceled Successfully__ 🤧**")
     else:
-        await message.reply_text("⚠️ You have no active /telegraph upload to cancel.")
+        await message.reply_text("**🤷 __There Are No Active Uploads to Cancel At The Use /telegraph to Create an Upload__**")
         
 
 # Dont remove Credits

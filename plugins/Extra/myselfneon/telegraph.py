@@ -86,7 +86,16 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     await asyncio.sleep(30)
     if user_id in active_uploads and "file_sent" not in active_uploads[user_id]:
         active_uploads.pop(user_id, None)
-        await query.message.edit_text("**⏰ __Timeout: You did not send any file within 30 seconds.__**")
+        timeout_msg = await query.message.edit_text(
+            "**⏰ Time's Up! You did not send any file within 30 seconds.**\n\n"
+            "Use /telegraph to start a new upload."
+        )
+        # Auto-delete timeout message after 20 seconds
+        await asyncio.sleep(20)
+        try:
+            await timeout_msg.delete()
+        except:
+            pass
 
 # -------------------
 # File handler scoped to active /telegraph users
@@ -165,6 +174,17 @@ async def telegraph_file_handler(bot: Client, message: Message):
         active_uploads.pop(user_id, None)
 
 # -------------------
+# Close button handler
+# -------------------
+@Client.on_callback_query(filters.regex(r"^close$"))
+async def close_callback(bot: Client, query: CallbackQuery):
+    try:
+        await query.message.delete()
+        await query.answer("Message closed ❌", show_alert=False)
+    except Exception as e:
+        await query.answer(f"Failed to close: {e}", show_alert=True)
+
+# -------------------
 # /cancel command
 # -------------------
 @Client.on_message(filters.command("tcancel") & filters.private)
@@ -175,7 +195,7 @@ async def telegraph_cancel(bot: Client, message: Message):
         await message.reply_text("**❌ __Upload Canceled Successfully__ 🤧**")
     else:
         await message.reply_text("**🤷 __There Are No Active Uploads to Cancel. Use /telegraph to Create an Upload__**")
-        
+
 
 
 # Dont remove Credits

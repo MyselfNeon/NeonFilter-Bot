@@ -176,3 +176,8 @@ async def telegraph_cancel(bot: Client, message: Message):
     else:
         await message.reply_text("**🤷 __There Are No Active Uploads to Cancel. Use /telegraph to Create an Upload__**")
         
+
+
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

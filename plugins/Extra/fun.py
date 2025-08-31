@@ -267,7 +267,7 @@ async def fun_help(_: Client, message: Message):
     text = (
         "<blockquote>**‣ 𝐆𝐀𝐌𝐄𝐒 𝐌𝐄𝐍𝐔**</blockquote>\n\n"
         "**🏧 __Balance System__**\n\n"
-        "• __/bal **Or** /balance - **Check Your Balance__**\n"
+        "• __/bal **Or** /balance - **Check Balance__**\n"
         "• __/lb - **Show LeaderBoard__**\n"
         "• __/addbal - **Add Money (Admin only)__**\n"
         "• __/resetbal - **Reset All (Admin only)__**\n\n"

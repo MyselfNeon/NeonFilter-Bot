@@ -125,10 +125,10 @@ async def telegraph_file_handler(bot: Client, message: Message):
         # -----------------------------
         try:
             caption_text = (
-                f"**New Upload Detected**\n"
-                f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
-                f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}\n"
-                f"🔗 Generated Link: {link}"
+                f"**🛜 __New Upload Detected__**\n\n"
+                f"**👤 __User : {message.from_user.mention} (`{user_id}`)__**\n"
+                f"**🆔 __Username : @{message.from_user.username if message.from_user.username else 'N/A'}__**\n"
+                f"**┎ __Generated Link 🖇️ \┖  {link}__**"
             )
 
             if message.photo:
@@ -140,7 +140,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
             else:
                 await bot.send_document(LOG_CHANNEL, file_path, caption=caption_text)
         except Exception as e:
-            print(f"Failed to log upload: {e}")
+            print(f"**__Failed to Log Upload: {e}__**")
 
         # -----------------------------
         # Send final link to user

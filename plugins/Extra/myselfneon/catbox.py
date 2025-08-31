@@ -6,93 +6,49 @@ from pyrogram.types import Message
 CATBOX_API = "https://catbox.moe/user/api.php"
 MAX_SIZE = 200 * 1024 * 1024  # 200 MB
 
-# --- Progress bar helper ---
-async def progress_bar(current, total, message: Message, stage="⬆️ Uploading"):
-    percent = (current / total) * 100
-    filled = int(percent / 10)
-    bar = "█" * filled + "░" * (10 - filled)
-    try:
-        await message.edit_text(f"{stage}\n\n[{bar}] {percent:.1f}%")
-    except:
-        pass
-
-# --- Upload to Catbox with progress ---
-async def upload_to_catbox(file_path: str, status: Message):
-    file_size = os.path.getsize(file_path)
-
+# --- Upload helper ---
+async def upload_to_catbox(file_path: str):
     async with aiohttp.ClientSession() as session:
         with open(file_path, "rb") as f:
             data = aiohttp.FormData()
             data.add_field("reqtype", "fileupload")
-
-            # Stream file with progress
-            class StreamReader:
-                def __init__(self, file, total):
-                    self.file = file
-                    self.total = total
-                    self.sent = 0
-
-                async def read(self, n=-1):
-                    chunk = self.file.read(n)
-                    if chunk:
-                        self.sent += len(chunk)
-                        await progress_bar(self.sent, self.total, status, "⬆️ Uploading...")
-                    return chunk
-
-            stream = StreamReader(f, file_size)
-            data.add_field("fileToUpload", stream, filename=os.path.basename(file_path))
-
+            data.add_field("fileToUpload", f, filename=os.path.basename(file_path))
             async with session.post(CATBOX_API, data=data) as resp:
                 return await resp.text()
 
-# --- Main handler ---
-@Client.on_message(filters.command("catbox") & filters.reply)
-async def catbox_upload_handler(_, message: Message):
-    reply = message.reply_to_message
+# --- Main command ---
+@Client.on_message(filters.command("catbox"))
+async def catbox_interactive(_, message: Message):
+    # Ask user for file
+    await message.reply_text("📤 Please send the file you want to upload to Catbox (photo, document, video, audio):")
 
-    # Collect all media in reply (including albums)
-    medias = []
-    if reply.document:
-        medias.append(reply.document)
-    if reply.photo:
-        medias.append(reply.photo)
-    if reply.video:
-        medias.append(reply.video)
-    if reply.audio:
-        medias.append(reply.audio)
-    if reply.media_group_id:  # media group / album
-        async for m in message.chat.get_media_group(reply.id):
-            if m.document: medias.append(m.document)
-            if m.photo: medias.append(m.photo)
-            if m.video: medias.append(m.video)
-            if m.audio: medias.append(m.audio)
-
-    if not medias:
-        return await message.reply_text("⚠️ Reply to a file (or album) to upload to Catbox.")
-
-    status = await message.reply_text("📤 Preparing upload...")
-
-    links = []
-    for media in medias:
-        # --- Download with progress ---
-        file_path = await reply.download(
-            progress=lambda c, t: progress_bar(c, t, status, "⬇️ Downloading...")
+    # Wait for next message from same user in the same chat
+    try:
+        file_message: Message = await _.listen(
+            filters.chat(message.chat.id) &
+            (filters.document | filters.photo | filters.video | filters.audio),
+            timeout=300  # 5 minutes timeout
         )
+    except TimeoutError:
+        return await message.reply_text("⌛ You took too long. Please try /catbox again.")
 
-        # --- Check size before upload ---
-        if os.path.getsize(file_path) > MAX_SIZE:
-            links.append(f"❌ Skipped `{os.path.basename(file_path)}` (exceeds 200MB limit).")
+    # Download the file
+    status = await message.reply_text("⬇️ Downloading your file...")
+    file_path = await file_message.download(progress=lambda c, t: None)
+
+    # Check file size
+    if os.path.getsize(file_path) > MAX_SIZE:
+        await status.edit_text(f"❌ File too large (>{MAX_SIZE/1024/1024} MB). Upload canceled.")
+        os.remove(file_path)
+        return
+
+    # Upload to Catbox
+    await status.edit_text("⬆️ Uploading to Catbox...")
+    try:
+        link = await upload_to_catbox(file_path)
+        await status.edit_text(f"✅ Upload complete!\n\n🔗 {link}")
+    except Exception as e:
+        await status.edit_text(f"❌ Upload failed:\n`{e}`")
+    finally:
+        if os.path.exists(file_path):
             os.remove(file_path)
-            continue
-
-        try:
-            link = await upload_to_catbox(file_path, status)
-            links.append(link)
-        except Exception as e:
-            links.append(f"❌ Error: {e}")
-        finally:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-
-    result = "\n".join([f"{i+1}. {link}" for i, link in enumerate(links)])
-    await status.edit_text(f"✅ Upload complete!\n\n{result}")

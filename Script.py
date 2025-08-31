@@ -1,4 +1,3 @@
-
 class script(object):
     START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</blockquote>\n<blockquote>I ᴀᴍ Lᴀᴛᴇsᴛ Aᴅᴠᴀɴᴄᴇᴅ Fɪʟᴛᴇʀ Bᴏᴛ.\nCᴏᴅᴇᴅ & Dᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ <a href='https://t.me/MyselfNeon'>NᴇᴏɴAɴᴜʀᴀɢ</a>.\nI ᴄᴀɴ Fɪʟᴛᴇʀ & Sᴇɴᴅ Mᴏᴠɪᴇs / Aɴɪᴍᴇs Fɪʟᴇs Aᴅᴅᴇᴅ ᴛᴏ ᴍʏ Dᴀᴛᴀʙᴀsᴇ !!</blockquote></i></b>"""
 
@@ -403,12 +402,12 @@ Requested by : {message.from_user.mention}</b></i>"""
 
  
     RESTART_TXT = """
-<b>Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ !
+**🛜 __<a href="t.me/ZeroFilterBot">Auto Filter</a> Bot Restarted !!__**
 
-📅 Dᴀᴛᴇ : <code>{}</code>
-⏰ Tɪᴍᴇ : <code>{}</code>
-🌐 Tɪᴍᴇᴢᴏɴᴇ : <code>Asia/Kolkata</code>
-🛠️ Bᴜɪʟᴅ Sᴛᴀᴛᴜs: <code>v2.7.1 [ Sᴛᴀʙʟᴇ ]</code></b>"""
+**📅 __Dᴀᴛᴇ : {}__**
+**⏰ __Tɪᴍᴇ : {}__**
+**🌐 __Tɪᴍᴇᴢᴏɴᴇ : Asia/Kolkata__**
+**🛠️ __Bᴜɪʟᴅ Sᴛᴀᴛᴜs : v2.7.1 [ Sᴛᴀʙʟᴇ ]__**"""
 
     LOGO = """
 ███╗   ██╗ ███████╗ ██████╗  ███╗   ██╗
@@ -438,7 +437,7 @@ Requested by : {message.from_user.mention}</b></i>"""
 
  வீடியோவைச் சேர்க்கவும்
 
- 👇 எப்படி சேர்ப்பது 👇
+ �D எப்படி சேர்ப்பது 👇
 
  Exp: /set_tutorial video link
 
@@ -661,16 +660,7 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 Get Streamable and Downloadable link of any file by using /stream</b></i>"""
 
 
-# Don't Remove Credit @NeonFiles
-# Ask Doubt on telegram @MyselfNeon
 
-
-    
-
-
-
-
-
-
-
-
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

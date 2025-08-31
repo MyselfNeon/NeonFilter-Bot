@@ -3284,3 +3284,7 @@ async def global_filters(client, message, text=False):
         return False
 
 
+
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

@@ -9,7 +9,7 @@ MAX_SIZE = 200 * 1024 * 1024  # 200 MB
 ENVS_UPLOAD_URL = "https://envs.sh"  # Replace with your envs.sh upload URL
 
 # Track active uploads per user
-active_uploads = set()
+active_uploads = {}
 
 # -------------------
 # Helper functions
@@ -45,7 +45,7 @@ async def telegraph_start(bot: Client, message: Message):
     user_id = message.from_user.id
 
     if user_id in active_uploads:
-        return await message.reply_text("⚠️ You already have an active upload. Please finish it first.")
+        return await message.reply_text("⚠️ You already have an active upload. Please finish or cancel it with /cancel.")
 
     keyboard = InlineKeyboardMarkup(
         [
@@ -71,32 +71,34 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
         return await query.answer()
 
     if user_id in active_uploads:
-        return await query.answer("⚠️ Finish your current upload first.", show_alert=True)
+        return await query.answer("⚠️ Finish or cancel your current upload first.", show_alert=True)
 
-    active_uploads.add(user_id)
     site = query.data
+    active_uploads[user_id] = {"site": site, "message": query.message}
+
     await query.answer()
+    await query.message.edit_text("📤 Now send me your file (photo, video, document, audio) or /cancel to abort:")
 
-    await query.message.edit_text("📤 Now send me your file (photo, video, document, audio):")
+# -------------------
+# File handler
+# -------------------
 
-    try:
-        file_msg: Message = await bot.listen(
-            filters.chat(user_id) &
-            (filters.document | filters.photo | filters.video | filters.audio),
-            timeout=300
-        )
-    except TimeoutError:
-        active_uploads.remove(user_id)
-        return await query.message.edit_text("⌛ You took too long. Please try /telegraph again.")
+@Client.on_message(filters.private & (filters.document | filters.photo | filters.video | filters.audio))
+async def handle_file(bot: Client, message: Message):
+    user_id = message.from_user.id
 
-    status_msg = await query.message.reply_text("⬇️ Downloading your file...")
-    file_path = await file_msg.download()
+    if user_id not in active_uploads:
+        return  # Ignore files if user didn't select a site
+
+    site = active_uploads[user_id]["site"]
+    status_msg = await message.reply_text("⬇️ Downloading your file...")
+    file_path = await message.download()
 
     # Check Catbox file size
     if site == "upload_catbox" and os.path.getsize(file_path) > MAX_SIZE:
         await status_msg.edit_text(f"❌ File too large (>{MAX_SIZE/1024/1024} MB). Upload canceled.")
         os.remove(file_path)
-        active_uploads.remove(user_id)
+        active_uploads.pop(user_id, None)
         return
 
     await status_msg.edit_text("⬆️ Uploading now...")
@@ -129,5 +131,18 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)
-        active_uploads.discard(user_id)
+        active_uploads.pop(user_id, None)
+
+# -------------------
+# /cancel command
+# -------------------
+
+@Client.on_message(filters.command("cancel") & filters.private)
+async def cancel_upload(bot: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id in active_uploads:
+        active_uploads.pop(user_id)
+        await message.reply_text("❌ Upload canceled successfully.")
+    else:
+        await message.reply_text("⚠️ You have no active upload to cancel.")
         

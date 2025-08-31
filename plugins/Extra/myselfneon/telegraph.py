@@ -104,30 +104,6 @@ async def telegraph_file_handler(bot: Client, message: Message):
     file_path = await message.download()
 
     # -----------------------------
-    # Log Upload to LOG_CHANNEL
-    # -----------------------------
-    try:
-        caption_text = (
-            f"**New Upload Detected**\n"
-            f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
-            f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}\n"
-            f"🌐 Target Site: {site.upper()}\n"
-            f"📄 File Name: {getattr(message.document, 'file_name', 'Media')}\n"
-            f"💾 Size: {os.path.getsize(file_path) / 1024 / 1024:.2f} MB"
-        )
-
-        if message.photo:
-            await bot.send_photo(LOG_CHANNEL, file_path, caption=caption_text)
-        elif message.video:
-            await bot.send_video(LOG_CHANNEL, file_path, caption=caption_text)
-        elif message.audio:
-            await bot.send_audio(LOG_CHANNEL, file_path, caption=caption_text)
-        else:
-            await bot.send_document(LOG_CHANNEL, file_path, caption=caption_text)
-    except Exception as e:
-        print(f"Failed to log upload: {e}")
-
-    # -----------------------------
     # Continue normal upload
     # -----------------------------
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
@@ -144,14 +120,39 @@ async def telegraph_file_handler(bot: Client, message: Message):
             await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
             return
 
+        # -----------------------------
+        # Log Upload to LOG_CHANNEL with actual generated link
+        # -----------------------------
+        try:
+            caption_text = (
+                f"**New Upload Detected**\n"
+                f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
+                f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}\n"
+                f"🔗 Generated Link: {link}"
+            )
+
+            if message.photo:
+                await bot.send_photo(LOG_CHANNEL, file_path, caption=caption_text)
+            elif message.video:
+                await bot.send_video(LOG_CHANNEL, file_path, caption=caption_text)
+            elif message.audio:
+                await bot.send_audio(LOG_CHANNEL, file_path, caption=caption_text)
+            else:
+                await bot.send_document(LOG_CHANNEL, file_path, caption=caption_text)
+        except Exception as e:
+            print(f"Failed to log upload: {e}")
+
+        # -----------------------------
+        # Send final link to user
+        # -----------------------------
         await status_msg.edit_text(
             text=f"**✅ __Upload Completed !!\n\nYour Link 🖇️\n{link}__**",
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("Oᴘᴇɴ Lɪɴᴋ 🔓", url=link),
-                        InlineKeyboardButton("❌ Cᴀɴᴄᴇʟ ❌", callback_data="close")
+                        InlineKeyboardButton("Oᴘᴇɴ 👀", url=link),
+                        InlineKeyboardButton("Cʟᴏsᴇ ❌", callback_data="close")
                     ]
                 ]
             )

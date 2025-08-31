@@ -1,4 +1,3 @@
-
 import os, string, logging, random, asyncio, time, datetime, re, sys, json, base64
 from Script import script
 from pyrogram import Client, filters, enums
@@ -770,7 +769,7 @@ async def settings(client, message):
         buttons = [
             [
                 InlineKeyboardButton(
-                    'Rᴇsᴜʟᴛ Pᴀɢᴇ',
+                    'Rᴇsᴜʟᴛ Pᴀɢᴇ 📊',
                     callback_data=f'setgs#button#{settings["button"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -780,7 +779,7 @@ async def settings(client, message):
             ],
             [
                 InlineKeyboardButton(
-                    'Pʀᴏᴛᴇᴄᴛ Cᴏɴᴛᴇɴᴛ',
+                    'Pʀᴏᴛᴇᴄᴛ Cᴏɴᴛᴇɴᴛ 🔐',
                     callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -790,7 +789,7 @@ async def settings(client, message):
             ],
             [
                 InlineKeyboardButton(
-                    'Iᴍᴅʙ',
+                    'Iᴍᴅʙ 🌐',
                     callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -800,7 +799,7 @@ async def settings(client, message):
             ],
             [
                 InlineKeyboardButton(
-                    'Sᴘᴇʟʟ Cʜᴇᴄᴋ',
+                    'Sᴘᴇʟʟ Cʜᴇᴄᴋ 🛂',
                     callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -810,7 +809,7 @@ async def settings(client, message):
             ],
             [
                 InlineKeyboardButton(
-                    'Wᴇʟᴄᴏᴍᴇ Msɢ',
+                    'Wᴇʟᴄᴏᴍᴇ Msɢ 😍',
                     callback_data=f'setgs#welcome#{settings["welcome"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -820,7 +819,7 @@ async def settings(client, message):
             ],
             [
                 InlineKeyboardButton(
-                    'Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ',
+                    'Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ 🚮',
                     callback_data=f'setgs#auto_delete#{settings["auto_delete"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -830,7 +829,7 @@ async def settings(client, message):
             ],
             [
                 InlineKeyboardButton(
-                    'Aᴜᴛᴏ-Fɪʟᴛᴇʀ',
+                    'Aᴜᴛᴏ-Fɪʟᴛᴇʀ 🕵️‍♀️',
                     callback_data=f'setgs#auto_ffilter#{settings["auto_ffilter"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -840,7 +839,7 @@ async def settings(client, message):
             ],
             [
                 InlineKeyboardButton(
-                    'Mᴀx Bᴜᴛᴛᴏɴs',
+                    'Mᴀx Bᴜᴛᴛᴏɴs 📶',
                     callback_data=f'setgs#max_btn#{settings["max_btn"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -850,7 +849,7 @@ async def settings(client, message):
             ],
             [
                 InlineKeyboardButton(
-                    'ShortLink',
+                    'SʜᴏʀᴛLɪɴᴋ 💰',
                     callback_data=f'setgs#is_shortlink#{settings["is_shortlink"]}#{grp_id}',
                 ),
                 InlineKeyboardButton(
@@ -1404,5 +1403,6 @@ async def purge_requests(client, message):
 
 
 
-
-
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

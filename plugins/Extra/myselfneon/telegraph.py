@@ -7,7 +7,6 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, 
 CATBOX_API = "https://catbox.moe/user/api.php"
 MAX_SIZE = 200 * 1024 * 1024  # 200 MB
 ENVS_UPLOAD_URL = "https://envs.sh"
-ZEROX0_URL = "https://0x0.st"
 
 # Track active uploads per user (only for /telegraph)
 active_uploads = {}
@@ -35,26 +34,7 @@ async def upload_to_catbox(file_path: str):
             data.add_field("reqtype", "fileupload")
             data.add_field("fileToUpload", f, filename=os.path.basename(file_path))
             async with session.post(CATBOX_API, data=data) as resp:
-                link = (await resp.text()).strip()
-                if link.startswith("http"):
-                    return link
-                print("Catbox response:", link)
-                return None
-
-async def upload_to_0x0(file_path: str):
-    try:
-        async with aiohttp.ClientSession() as session:
-            data = aiohttp.FormData()
-            data.add_field("file", open(file_path, "rb"), filename=os.path.basename(file_path))
-            async with session.post(ZEROX0_URL, data=data) as resp:
-                link = (await resp.text()).strip()
-                if link.startswith("http"):
-                    return link
-                print("0x0.st response:", link)  # Debug output if not a link
-                return None
-    except Exception as e:
-        print(f"**__Error Uploading to 0x0.st :\n{e}__**")
-        return None
+                return await resp.text()
 
 # -------------------
 # /telegraph command
@@ -71,7 +51,6 @@ async def telegraph_start(bot: Client, message: Message):
         [
             [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs")],
             [InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")],
-            [InlineKeyboardButton("0x0.sᴛ ⚡", callback_data="telegraph_0x0")],
         ]
     )
     await message.reply_text(
@@ -89,7 +68,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_uploads:
         return await query.answer("Finish or Cancel your Current Upload First.", show_alert=True)
 
-    site = query.data.split("_")[1]  # envs, catbox, or 0x0
+    site = query.data.split("_")[1]  # envs or catbox
     active_uploads[user_id] = {"site": site, "message": query.message}
 
     await query.answer()
@@ -118,16 +97,8 @@ async def telegraph_file_handler(bot: Client, message: Message):
     await status_msg.edit_text("**__Uploading Now...__ ⬆️**")
 
     try:
-        if site == "envs":
-            link = upload_to_envs(file_path)
-        elif site == "catbox":
-            link = await upload_to_catbox(file_path)
-        elif site == "0x0":
-            link = await upload_to_0x0(file_path)
-        else:
-            link = None
-
-        if not link or not link.startswith("http"):
+        link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
+        if not link:
             await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
             return
 

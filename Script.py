@@ -1,9 +1,16 @@
 class script(object):
-    START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</blockquote>\n<blockquote>I ᴀᴍ Lᴀᴛᴇsᴛ Aᴅᴠᴀɴᴄᴇᴅ Fɪʟᴛᴇʀ Bᴏᴛ.\nCᴏᴅᴇᴅ & Dᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ <a href='https://t.me/MyselfNeon'>NᴇᴏɴAɴᴜʀᴀɢ</a>.\nI ᴄᴀɴ Fɪʟᴛᴇʀ & Sᴇɴᴅ Mᴏᴠɪᴇs / Aɴɪᴍᴇs Fɪʟᴇs Aᴅᴅᴇᴅ ᴛᴏ ᴍʏ Dᴀᴛᴀʙᴀsᴇ !!</blockquote></i></b>"""
+    START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</i></blockquote>
+<i>I ᴀᴍ Lᴀᴛᴇsᴛ Aᴅᴠᴀɴᴄᴇᴅ Fɪʟᴛᴇʀ Bᴏᴛ.
+Cᴏᴅᴇᴅ & Dᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ <a href='https://t.me/MyselfNeon'>NᴇᴏɴAɴᴜʀᴀɢ</a>.
+I ᴄᴀɴ Fɪʟᴛᴇʀ & Sᴇɴᴅ Mᴏᴠɪᴇs / Aɴɪᴍᴇs Fɪʟᴇs Aᴅᴅᴇᴅ ᴛᴏ ᴍʏ Dᴀᴛᴀʙᴀsᴇ !!</i></b>"""
 
-    CLONE_START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</blockquote>\n<blockquote>I am Latest Advanced Filter Bot.\nCoded & Developed by <a href='https://t.me/MyselfNeon'>NeonAnurag</a>.\nYou can create you own Clone Bot and use it in your own channel. It will Filter and Send Movies/Animes files added to its Database !!</blockquote></i></b>"""
+    CLONE_START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</i></blockquote>
+<i>I am Latest Advanced Filter Bot.
+Coded & Developed by <a href='https://t.me/MyselfNeon'>NeonAnurag</a>.
+You can create you own Clone Bot and use it in your own channel. It will Filter and Send Movies/Animes files added to its Database !!</i></b>"""
     
-    HELP_TXT = """<b><i>Hello {} \nHere are all my useful features.</i></b>"""
+    HELP_TXT = """<b><i>Hello {} 
+Here are all my useful features.</i></b>"""
 
     ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>
     
@@ -24,44 +31,51 @@ class script(object):
 ⪼ Library : <a href='https://docs.pyrogram.org/'>Pyrogram</a> 
 ⪼ Language : <a href='https://www.python.org/download/releases/3.0/'>Python 3</a> 
 ⪼ Data Base : <a href='https://www.mongodb.com/'>Mongo DB</a> 
-⪼ Build Status : ᴠ2.7.1 [Stable]></i></b>"""
+⪼ Build Status : ᴠ2.7.1 [Stable]</i></b>"""
 
-    CLONE_TXT = """<blockquote><b><i>‣ 👥 CLONE MODE</blockquote>
-
+    CLONE_TXT = """<blockquote><b><i>‣ 👥 CLONE MODE</i></b>
+<b><i>
 - You can create your own clone Bot by /clone Command
 - You can Broadcast in your clone Bots
 - Already added thousands of Files Index
 
-👨‍💻 Command : /clone</i></b>"""
+👨‍💻 Command : /clone
+</i></b></blockquote>"""
 
-    SUBSCRIPTION_TXT = """<blockquote><b>‣ Referal Plans ⚡</blockquote>
+    SUBSCRIPTION_TXT = """<blockquote><b>‣ Referal Plans ⚡</b></blockquote>
 <blockquote><i>Refer your link to your Friends, Family, Channel and Groups to get free Premium for {}
 
-Referal Link - \nhttps://telegram.me/{}?start=Neon-{}  ✨
+Referal Link - 
+https://telegram.me/{}?start=Neon-{}  ✨
 
-If {} unique user start the Bot with your referal link then you will Automatically added in Premium List.\n\nBuy paid plan by - /plan\n\n@NeonFiles</b></i></blockquote>"""
+If {} unique user start the Bot with your referal link then you will Automatically added in Premium List.
 
-    MANUELFILTER_TXT = """<blockquote><b><i>‣ Filters</blockquote>\nFilter is a feature where users can set Automated replies for a perticular keyword and i will respond whenever a keyword is found in Message.
-\n<blockquote>‣ Note</blockquote>
-1. Bot should have Admin privilege
+Buy paid plan by - /plan
+
+@NeonFiles</i></blockquote>"""
+
+    MANUELFILTER_TXT = """<blockquote><b><i>‣ Filters</i></b></blockquote>
+<b><i>Filter is a feature where users can set Automated replies for a perticular keyword and i will respond whenever a keyword is found in Message.</i></b>
+<blockquote><b><i>‣ Note</i></b></blockquote>
+<b><i>1. Bot should have Admin privilege
 2. Only Admins can add filters in a chat
-3. Alert buttons have a limit of 64 characters
-\n<blockquote>‣ Commands And Usage</blockquote>
-• /filter - Add a Filter in a chat
+3. Alert buttons have a limit of 64 characters</i></b>
+<blockquote><b><i>‣ Commands And Usage</i></b></blockquote>
+<b><i>• /filter - Add a Filter in a chat
 • /filters - List of all filters
 • /del - Delete a specific filter
-• /delall - Delete all available filters (Admin Only)</b></i>"""
+• /delall - Delete all available filters (Admin Only)</i></b>"""
 
-    BUTTON_TXT = """<blockquote><b><i>‣ Buttons</blockquote>
-This Bot support both URL and alert inline buttons.
-\n<blockquote>‣ Note</blockquote>
-1. Telegram will not allows you to send Buttons without any content so content is mandatory.
+    BUTTON_TXT = """<blockquote><b><i>‣ Buttons</i></b></blockquote>
+<b><i>This Bot support both URL and alert inline buttons.</i></b>
+<blockquote><b><i>‣ Note</i></b></blockquote>
+<b><i>1. Telegram will not allows you to send Buttons without any content so content is mandatory.
 2. This Bot supports buttons with any telegram media type
-3. Buttons should be properly parsed as Markdown format
-\n<blockquote>‣ URL Buttons
-[Button Text](buttonurl:https://t.me/NeonFiles)
-‣ Alert Buttons
-[Button Text](buttonalert:This is an Alert Message)</blockquote></b></i>"""
+3. Buttons should be properly parsed as Markdown format</i></b>
+<blockquote><b><i>‣ URL Buttons</i></b></blockquote>
+<b><i>[Button Text](buttonurl:https://t.me/NeonFiles)</i></b>
+<blockquote><b><i>‣ Alert Buttons</i></b></blockquote>
+<b><i>[Button Text](buttonalert:This is an Alert Message)</i></b>"""
 
     AUTOFILTER_TXT = """<b><i><blockquote>‣ File Index</blockquote>
 1. Make me Admin of your Channel if it's Private
@@ -71,22 +85,24 @@ This Bot support both URL and alert inline buttons.
 <blockquote>‣ Auto Filter</blockquote>
 1. Add Bot as Admin on your Group
 2. Use /connect and connect your Group to the Bot
-3. Use /settings on Bot's PM and turn AutoFilter on the settings menu</b></i>"""
+3. Use /settings on Bot's PM and turn AutoFilter on the settings menu</i></b>"""
 
     CONNECTION_TXT = """<b><i><blockquote>Connections</blockquote>
 • Connect Bot to PM
 • It helps to avoid spamming in Groups
-\n<blockquote>Note</blockquote>
+
+<blockquote>Note</blockquote>
 1. Only Admins can add connections
 2. Send <code>/connect</code> for connecting me to PM
-\n<blockquote>Commands and Usage</blockquote>
+
+<blockquote>Commands and Usage</blockquote>
 • /connect  - Connect any chat to PM
 • /disconnect  - Disconnect from chat
-• /connections - List of all connections</b></i>"""
+• /connections - List of all connections</i></b>"""
 
     EXTRAMOD_TXT = """<blockquote><i><b>‣ Extra Modules</b></i></blockquote>
-<blockquote> <b>⪼ Maintained by : <a href={}>Owner</a></b> 
- <b>⪼ Join here : <a href={}>Update Channel</a></b> </blockquote>
+<blockquote><b>⪼ Maintained by : <a href={}>Owner</a></b> 
+<b>⪼ Join here : <a href={}>Update Channel</a></b></blockquote>
   
 <b><i>/id - Get ID of specified User 
 /info  - Get information about a user
@@ -96,10 +112,9 @@ This Bot support both URL and alert inline buttons.
 /video - YouTube video downloader
 /font - Stylish and cool Font generator</i></b>"""
 
-
     ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐬 🛐</blockquote>
-<i><blockquote>Tʜᴇsᴇ Cᴏᴍᴍᴀɴᴅs ᴀʀᴇ Mᴀᴅᴇ Jᴜsᴛ Fᴏʀ Aᴅᴍɪɴs Aɴᴅ Wɪʟʟ Wᴏʀᴋ Oɴʟʏ Fᴏʀ Aᴅᴍɪɴs 🥰</i></blockquote>
-\n<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 & 𝐔𝐒𝐀𝐆𝐄</blockquote>
+<i><blockquote>Tʜᴇsᴇ Cᴏᴍᴍᴀɴᴅs ᴀʀᴇ Mᴀᴅᴇ Jᴜsᴛ Fᴏʀ Aᴅᴍɪɴs Aɴᴅ Wɪʟʟ Wᴏʀᴋ Oɴʟʏ Fᴏʀ Aᴅᴍɪɴs 🥰</blockquote></i>
+<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 & 𝐔𝐒𝐀𝐆𝐄</blockquote>
 <i>• /logs - Tᴏ Gᴇᴛ Rᴇᴄᴇɴᴛ Eʀʀᴏʀs
 • /stats - Gᴇᴛ Sᴛᴀᴛᴜs ᴏғ Fɪʟᴇs ɪɴ DB
 • /delete - Dᴇʟᴇᴛᴇ ᴀ Fɪʟᴇ Fʀᴏᴍ DB
@@ -154,11 +169,16 @@ Aᴅᴅᴇᴅ Bʏ - {}"""
 ID - <code>{}</code>
 Nᴀᴍᴇ - {}"""
 
-    ALRT_TXT = """<b><i>Hello {}\n\nThis is not your Movie/Series request.\nRequest yours...😏</i></b>"""
+    ALRT_TXT = """<b><i>Hello {}
+This is not your Movie/Series request.
+Request yours...😏</i></b>"""
 
-    OLD_ALRT_TXT = """<i><b>Hey {}\n\nYou are using one of my old messages.\nPlease send the request again...</i></b>"""
+    OLD_ALRT_TXT = """<i><b>Hey {}
+You are using one of my old messages.
+Please send the request again...</b></i>"""
 
-    CUDNT_FND = """<i><b>I couldn't find anything related to {}\nDid you mean any of these?</i></b>"""
+    CUDNT_FND = """<i><b>I couldn't find anything related to {}
+Did you mean any of these?</b></i>"""
 
     I_CUDNT = """<b><i>Sorry no files were found for your request {} 😕
 
@@ -174,23 +194,26 @@ Example : Loki S01 or Loki S01E04 or Lucifer S03E24</blockquote>
 
 🚯 Dont use ➠ ':(!,./)</i></b>"""
 
-    I_CUD_NT = """<b><i>I couldn't find any movie related to {}.\nPlease check the Spelling on Google or IMBD...</b></i>"""
+    I_CUD_NT = """<b><i>I couldn't find any movie related to {}.
+Please check the Spelling on Google or IMBD...</i></b>"""
 
-    MVE_NT_FND = """<b><i>Movie not found in Database...</b></i>"""
+    MVE_NT_FND = """<b><i>Movie not found in Database...</i></b>"""
 
     TOP_ALRT_MSG = """Checking for Movie in Database..."""
 
-    MELCOW_ENG = """<b><i>Hello {} 😍 \nWelcome to {} Group ❤️</b></i>"""
+    MELCOW_ENG = """<b><i>Hello {} 😍 
+Welcome to {} Group ❤️</i></b>"""
 
-    SHORTLINK_INFO = """<b><i><blockquote>Select Your Language 🌐</blockquote></b></i>"""
+    SHORTLINK_INFO = """<b><i><blockquote>Select Your Language 🌐</blockquote></i></b>"""
 
-    REQINFO = """<b><i><blockquote>‣ 🍿 Information 🍿</blockquote>\n\nAfter 5 minutes this message will be Automatically deleted
+    REQINFO = """<b><i><blockquote>‣ 🍿 Information 🍿</blockquote>
+After 5 minutes this message will be Automatically deleted
 
-If you do not see the Requested Movie/Series file, look at the next page...</b></i>"""
+If you do not see the Requested Movie/Series file, look at the next page...</i></b>"""
 
-    SELECT = """<b><i>Select your preferred Language, Quality, Season and Episode</b></i>"""
+    SELECT = """<b><i>Select your preferred Language, Quality, Season and Episode</i></b>"""
 
-    SINFO = """<b><i>For Movie Join First Then Click On Try Again Button</b></i>"""
+    SINFO = """<b><i>For Movie Join First Then Click On Try Again Button</i></b>"""
 
     NORSLTS = """ 
 ★ #𝗡𝗼𝗥𝗲𝘀𝘂𝗹𝘁𝘀 ★
@@ -201,10 +224,10 @@ If you do not see the Requested Movie/Series file, look at the next page...</b><
 
 𝗠𝗲𝘀𝘀𝗮𝗴𝗲 <b>: {}</b>"""
 
-    CAPTION = """""" 
+    CAPTION = """"""
 
     IMDB_TEMPLATE_TXT = """
-<b><i>Query: {qurey}
+<b><i>Query: {query}
 
 <blockquote>‣ IMDb Data</blockquote>
 
@@ -217,61 +240,69 @@ If you do not see the Requested Movie/Series file, look at the next page...</b><
 📆 Release Info : {release_date}
 🎛 Countries : <code>{countries}</code>
 
-
 ⏰Result Shown in: {remaining_seconds} <i>seconds</i> 🔥
 
-Requested by : {message.from_user.mention}</b></i>"""
+Requested by : {message.from_user.mention}</i></b>"""
     
     ALL_FILTERS = """
-<blockquote><b><i>Hey {} \nHere are my three types of Filters.</i></b></blockquote>"""
+<blockquote><b><i>Hey {} 
+Here are my three types of Filters.</i></b></blockquote>"""
     
     GFILTER_TXT = """
-<b><i><blockquote>‣ Global Filters 🌐</blockquote>\nGlobal filters are set by Bot Admins which will work on all Groups.
+<b><i><blockquote>‣ Global Filters 🌐</blockquote>
+Global filters are set by Bot Admins which will work on all Groups.
     
 <blockquote>‣ Available Commands</blockquote>
 • /gfilter - Create a global filter
 • /gfilters - View all global filters
 • /delg - Delete a global filter
-• /delallg - Delete all global filters</b></i>"""
+• /delallg - Delete all global filters</i></b>"""
     
     FILE_STORE_TXT = """
-<b><i><blockquote>‣ File Store 📚</blockquote>\nFile Store is a feature which will create a Shareable link of a Single or Multiple Files.
+<b><i><blockquote>‣ File Store 📚</blockquote>
+File Store is a feature which will create a Shareable link of a Single or Multiple Files.
 
 <blockquote>‣ Available Commands</blockquote>
 • /batch - Link for multiple files
 • /link - Link for single file
 • /plink - Just like <code>/link </code>but the files will be send with forward restrictions
-• /pbatch - Just like <code>/batch </code>but the files will be send with forward restrictions</b></i>"""
+• /pbatch - Just like <code>/batch </code>but the files will be send with forward restrictions</i></b>"""
 
     SONG_TXT = """<b><i><blockquote>‣ Song Download Module 🥁</blockquote>
-      
-<blockquote>For those who love music.\nYou can use this feature to download any song with super fast speed. Works Bot and Groups only...</blockquote>
+<blockquote>For those who love music.
+You can use this feature to download any song with super fast speed. Works Bot and Groups only...</blockquote>
+Commands : /song Song name.</i></b>""" 
   
- Commands : /song Song name.</i></b>""" 
-  
-    YTDL_TXT = """<b><i><blockquote>‣ Youtube Video Downloader 📽️</blockquote>\n\nUsage : You can download any video from Youtube
-  
- How to use : Type - /video or /mp4 
- <blockquote>Example :<code>/mp4 https://youtu.be/example...</code></i></b></blockquote>""" 
+    YTDL_TXT = """<b><i><blockquote>‣ Youtube Video Downloader 📽️</blockquote>
+
+Usage : You can download any video from Youtube
+
+How to use : Type - /video or /mp4 
+
+<blockquote>Example : <code>/mp4 https://youtu.be/example...</code></blockquote></i></b>""" 
   
     TTS_TXT = """<b><i>TTS module 🎤 : Translate text to Speech 
   
- Commands and Usage : /tts</b></i>""" 
+Commands and Usage : /tts</i></b>""" 
   
     GTRANS_TXT = """<b>ʜᴇʟᴩ:ɢᴏᴏɢʟᴇ ᴛʀᴀɴꜱʟᴀᴛᴇʀ 
   
- ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʟᴩꜱ yᴏᴜ ᴛᴏ ᴛʀᴀɴꜱʟᴀᴛᴇ ᴀ ᴛᴇxᴛ ᴛᴏ ᴀɴy ʟᴀɴɢᴜᴀɢᴇꜱ yᴏᴜ ᴡᴀɴᴛ. ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴡᴏʀᴋꜱ ᴏɴ ʙᴏᴛʜ ᴩᴍ ᴀɴᴅ ɢʀᴏᴜᴏ  
+ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʟᴩꜱ yᴏᴜ ᴛᴏ ᴛʀᴀɴꜱʟᴀᴛᴇ ᴀ ᴛᴇxᴛ ᴛᴏ ᴀɴy ʟᴀɴɢᴜᴀɢᴇꜱ yᴏᴜ ᴡᴀɴᴛ. ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴡᴏʀᴋꜱ ᴏɴ ʙᴏᴛʜ ᴩᴍ ᴀɴᴅ ɢʀᴏᴜᴏ  
   
- ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ : /tr - ᴛᴏ ᴛʀᴀɴꜱʟᴀᴛᴇʀ ᴛᴇxᴛꜱ ᴛᴏ ᴀ ꜱᴩᴇᴄɪꜰᴄ ʟᴀɴɢᴜᴀɢᴇ 
+ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ : /tr - ᴛᴏ ᴛʀᴀɴꜱʟᴀᴛᴇʀ ᴛᴇxᴛꜱ ᴛᴏ ᴀ ꜱᴩᴇᴄɪғɪᴄ ʟᴀɴɢᴜᴀɢᴇ 
   
- ɴᴏᴛᴇ: ᴡʜɪʟᴇ ᴜꜱɪɴɢ /tr yᴏᴜ ꜱʜᴏᴜʟᴅ ꜱᴩᴇᴄɪꜰy ᴛʜᴇ ʟᴀɴɢᴜᴀɢᴇ ᴄᴏᴅᴇ 
+ɴᴏᴛᴇ: ᴡʜɪʟᴇ ᴜꜱɪɴɢ /tr yᴏᴜ ꜱʜᴏᴜʟᴅ ꜱᴩᴇᴄɪfy ᴛʜᴇ ʟᴀɴɢᴜᴀɢᴇ ᴄᴏᴅᴇ 
   
- ᴇxᴀᴍᴩʟᴇ: /𝗍𝗋 ᴍʟ 
+ᴇxᴀᴍᴩʟᴇ: /𝗍𝗋 ᴍʟ 
  • ᴇɴ = ᴇɴɢʟɪꜱʜ 
  • ᴍʟ = ᴍᴀʟᴀyᴀʟᴀᴍ 
  • ʜɪ = ʜɪɴᴅɪ</b>""" 
   
-    TELE_TXT = """<b><i><blockquote>‣ Telegraph Module 🌁</blockquote>\nTwo Upload site options are Available in this Module. Select the one that Best suits your needs -\n\n01 - Envs.sh\n02 - Catbox.moe
+    TELE_TXT = """<b><i><blockquote>‣ Telegraph Module 🌁</blockquote>
+Two Upload site options are Available in this Module. Select the one that Best suits your needs -
+
+01 - Envs.sh
+02 - Catbox.moe
   
 <blockquote>‣ Usage 📄</blockquote>Use /telegraph and send any image or video under 5MB (for envs.sh) and 200MB (for catbox.moe)⏳
   
@@ -281,16 +312,14 @@ Requested by : {message.from_user.mention}</b></i>"""
   
     CORONA_TXT = """<b>ʜᴇʟᴩ: ᴄᴏᴠɪᴅ 
   
- ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʟᴩꜱ yᴏᴜ ᴛᴏ ᴋɴᴏᴡ ᴅᴀɪʟy ɪɴꜰᴏʀᴍᴀᴛɪᴏɴ ᴀʙᴏᴜᴛ ᴄᴏᴠɪᴅ 
+ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʟᴩꜱ yᴏᴜ ᴛᴏ ᴋɴᴏᴡ ᴅᴀɪʟy ɪɴꜰᴏʀᴍᴀᴛɪᴏɴ ᴀʙᴏᴜᴛ ᴄᴏᴠɪᴅ 
   
- ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ: 
+ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ: 
   
- /covid - ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴡɪᴛʜ yᴏᴜʀ ᴄᴏᴜɴᴛʀy ɴᴀᴍᴇ ᴛᴏ ɢᴇᴛ ᴄᴏᴠɪᴅᴇ ɪɴꜰᴏʀᴍᴀᴛɪᴏɴ 
- ᴇxᴀᴍᴩʟᴇ:<code>/covid 𝖨𝗇𝖽𝗂𝖺</code> 
+/covid - ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴡɪᴛʜ yᴏᴜʀ ᴄᴏᴜɴᴛʀy ɴᴀᴍᴇ ᴛᴏ ɢᴇᴛ ᴄᴏᴠɪᴅᴇ ɪɴꜰᴏʀᴍᴀɴᴛɪᴏɴ 
+ᴇxᴀᴍᴩʟᴇ:<code>/covid 𝖨𝗇𝖽𝗂𝖺</code> 
   
- ⚠️ ᴛʜɪꜱ ꜱᴇʀᴠɪᴄᴇ ʜᴀꜱ ʙᴇᴇɴ ꜱᴛᴏᴩᴩᴇᴅ 
-  
- </b>""" 
+⚠️ ᴛʜɪꜱ ꜱᴇʀᴠɪᴄᴇ ʜᴀꜱ ʙᴇᴇɴ ꜱᴛᴏʩʩᴇᴅ </b>""" 
 
     PROGRESS_BAR = """\n
 ╭━━━━❰ File Is Renaming... ❱━➣
@@ -302,105 +331,110 @@ Requested by : {message.from_user.mention}</b></i>"""
   
     ABOOK_TXT = """<b>ʜᴇʟᴩ : ᴀᴜᴅɪᴏʙᴏᴏᴋ 
   
- yᴏᴜ ᴄᴀɴ ᴄᴏɴᴠᴇʀᴛ ᴀ ᴩᴅꜰ ꜰɪʟᴇ ᴛᴏ ᴀ ᴀᴜᴅɪᴏ ꜰɪʟᴇ ᴡɪᴛʜ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ✯ 
+yᴏᴜ ᴄᴀɴ ᴄᴏɴᴠᴇʀᴛ ᴀ ᴀᴜᴅɪᴏ ꜰɪʟᴇ ꜰʀᴏᴍ ᴀ ᴩᴅꜰ ᴡɪᴛʜ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ✯ 
   
- ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ: 
- /audiobook: ʀᴇᴩʟy ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴛᴏ ᴀɴy ᴩᴅꜰ ᴛᴏ ɢᴇɴᴇʀᴀᴛᴇ ᴛʜᴇ ᴀᴜᴅɪᴏ 
+ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ: 
+/audiobook: ʀᴇᴩʟy ᴛᴏ ᴀɴy ᴩᴅꜰ ᴛᴏ ɢᴇɴᴇʀᴀᴛᴇ ᴛʜᴇ ᴀᴜᴅɪᴏ 
 </b>""" 
   
- 
-    PINGS_TXT = """<b>ᴘɪɴɢ ᴛᴇꜱᴛɪɴɢ:ʜᴇʟᴘꜱ ʏᴏᴜ ᴛᴏ ᴋɴᴏᴡ ʏᴏᴜʀ ᴘɪɴɢ🪄 
+    PINGS_TXT = """<b>ᴘɪɴɢ ᴛᴇꜱᴛɪɴɢ: ʜᴇʟᴘꜱ ʏᴏᴜ ᴛᴏ ᴋɴᴏᴡ ʏᴏᴜʀ ᴘɪɴɢ🪄 
   
- ᴄᴏᴍᴍᴀɴᴅꜱ: 
- • /alive - ᴛᴏ ᴄʜᴇᴄᴋ ʏᴏᴜ ᴀʀᴇ ᴀʟɪᴠᴇ. 
- • /help - To get help. 
- • /ping - <b>ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴘɪɴɢ. 
+ᴄᴏᴍᴍᴀɴᴅꜱ: 
+• /alive - ᴛᴏ ᴄʜᴇᴄᴋ ʏᴏᴜ ᴀʀᴇ ᴀʟɪᴠᴇ. 
+• /help - To get help. 
+• /ping - ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴘɪɴɢ. 
   
- ᴜꜱᴀɢᴇ : 
- • ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ɪɴ ᴘᴍ ᴀɴᴅ ɢʀᴏᴜᴘꜱ 
- • ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ʙᴜʏ ᴇᴠᴇʀʏᴏɴᴇ ɪɴ ᴛʜᴇ ɢʀᴏᴜᴘꜱ ᴀɴᴅ ʙᴏᴛꜱ ᴘᴍ 
- • ꜱʜᴀʀᴇ ᴜꜱ ꜰᴏʀ ᴍᴏʀᴇ ꜰᴇᴀᴛᴜʀᴇꜱ 
-  </b>""" 
+ᴜꜱᴀɢᴇ : 
+• ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ɪɴ ᴘᴍ ᴀɴᴅ ɢʀᴏᴜᴘꜱ 
+• ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ʙʏ ᴇᴠᴇʀʏᴏɴᴇ ɪɴ ᴛʜᴇ ɢʀᴏᴜᴘꜱ ᴀɴᴅ ʙᴏᴛꜱ ᴘᴍ 
+• ꜱʜᴀʀᴇ ᴜꜱ ꜰᴏʀ ᴍᴏʀᴇ ꜰᴇᴀᴛᴜʀᴇꜱ 
+</b>""" 
   
-    STICKER_TXT = """<b><i><blockquote>‣ Sticker ID Module</blockquote>\nYou can use this module to find and stickerid. \nTap /stickerid to know how to use me.</i></b>""" 
+    STICKER_TXT = """<b><i><blockquote>‣ Sticker ID Module</blockquote>
+You can use this module to find and stickerid. 
+Tap /stickerid to know how to use me.</i></b>""" 
   
     FONT_TXT= """<b>ᴜꜱᴀɢᴇ 
   
- yᴏᴜ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴍᴏᴅᴜʟᴇ ᴛᴏ ᴄʜᴀɴɢᴇ ꜰᴏɴᴛ ꜱᴛyʟᴇ   
+yᴏᴜ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴍᴏᴅᴜʟᴇ ᴛᴏ ᴄʜᴀɴɢᴇ ꜰᴏɴᴛ ꜱᴛyʟᴇ   
   
- ᴄᴏᴍᴍᴀɴᴅ : /font yᴏᴜʀ ᴛᴇxᴛ (ᴏᴩᴛɪᴏɴᴀʟ) 
- ᴇɢ:- /font ʜᴇʟʟᴏ 
+ᴄᴏᴍᴍᴀɴᴅ : /font yᴏᴜʀ ᴛᴇxᴛ (ᴏᴩᴛɪᴏɴᴀʟ) 
+ᴇɢ:- /font ʜᴇʟʟᴏ 
   
- </b>""" 
+</b>""" 
   
     PURGE_TXT = """<b>ᴘᴜʀɢᴇ 
       
- ᴅᴇʟᴇᴛᴇ ᴀ ʟᴏᴛ ᴏꜰ ᴍᴇssᴀɢᴇs ꜰʀᴏᴍ ɢʀᴏᴜᴘs!  
+ᴅᴇʟᴇᴛᴇ ᴀ ʟᴏᴛ ᴏғ ᴍᴇssᴀɢᴇs ꜰʀᴏᴍ ɢʀᴏᴜᴘs!  
       
-  ᴀᴅᴍɪɴ  
+ᴀᴅᴍɪɴ  
   
- ◉ /purge :- ᴅᴇʟᴇᴛᴇ ᴀʟʟ ᴍᴇssᴀɢᴇs ꜰʀᴏᴍ ᴛʜᴇ ʀᴇᴘʟɪᴇᴅ ᴛᴏ ᴍᴇssᴀɢᴇ, ᴛᴏ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴍᴇssᴀɢᴇ</b>""" 
+◉ /purge :- ᴅᴇʟᴇᴛᴇ ᴀʟʟ ᴍᴇssᴀɢᴇs ꜰʀᴏᴍ ᴛʜᴇ ʀᴇᴘʟɪᴇᴅ ᴛᴏ ᴍᴇssᴀɢᴇ, ᴛᴏ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴍᴇssᴀɢᴇ</b>""" 
   
     WHOIS_TXT = """<b>ᴡʜᴏɪꜱ ᴍᴏᴅᴜʟᴇ 
   
- ɴᴏᴛᴇ:- ɢɪᴠᴇ ᴀ ᴜꜱᴇʀ ᴅᴇᴛᴀɪʟꜱ 
- /whois :- ɢɪᴠᴇ ᴀ ᴜꜱᴇʀ ꜰᴜʟʟ ᴅᴇᴛᴀɪʟꜱ 📑 
- </b>""" 
+ɴᴏᴛᴇ:- ɢɪᴠᴇ ᴀ ᴜꜱᴇʀ ᴅᴇᴛᴀɪʟꜱ 
+/whois :- ɢɪᴠᴇ ᴀ ᴜꜱᴇʀ ꜰᴜʟʟ ᴅᴇᴛᴀɪʟꜱ 📑 
+</b>""" 
   
-    JSON_TXT = """<b><i><blockquote>‣ Json 📝</blockquote>\nBot returns json file for all replied messages with /json
+    JSON_TXT = """<b><i><blockquote>‣ Json 📝</blockquote>
+Bot returns json file for all replied messages with /json
   
-<blockquote>‣ Features</blockquote>\n• Message editing json\n• PM support\n• Group support 
+<blockquote>‣ Features</blockquote>
+• Message editing json
+• PM support
+• Group support 
   
-<blockquote>‣ Note</blockquote>\nAnyone can use this command, if spamming happens Bot will automatically Ban you from the Group</i></b>""" 
+<blockquote>‣ Note</blockquote>
+Anyone can use this command, if spamming happens Bot will automatically Ban you from the Group</i></b>""" 
   
     URLSHORT_TXT = """<b>ʜᴇʟᴩ: ᴜʀʟ ꜱʜᴏʀᴛɴᴇʀ 
   
- <i><b>𝚃𝚑𝚒𝚜ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʟᴩꜱ yᴏᴜ ᴛᴏ ꜱʜᴏʀᴛ ᴛᴏ ᴜʀʟ </i></b> 
+<i><b>𝚃𝚑𝚒𝚜ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʟᴩꜱ yᴏᴜ ᴛᴏ ꜱʜᴏʀᴛ ᴛᴏ ᴜʀʟ </b></i> 
   
- ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ: 
+ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ: 
   
- /short: <b>ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴡɪᴛʜ yᴏᴜʀ ʟɪɴᴋ ᴛᴏ ɢᴇᴛ ꜱʜᴏʀᴛ ʟɪɴᴋꜱ</b> 
- ᴇxᴀᴍᴩʟᴇ:<code>/short https://youtu.be/example...</code> 
+/short: <b>ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴡɪᴛʜ yᴏᴜʀ ʟɪɴᴋ ᴛᴏ ɢᴇᴛ ꜱʜᴏʀᴛ ʟɪɴᴋꜱ</b> 
+ᴇxᴀᴍᴩʟᴇ:<code>/short https://youtu.be/example...</code> 
 </b>""" 
   
     CARB_TXT = """<b>ʜᴇʟᴩ ꜰᴏʀ ᴄᴀʀʙᴏɴ 
   
- ᴄᴀʀʙᴏɴ ɪꜱ ᴀ ꜰᴇᴜᴛᴜʀᴇ ᴛᴏ ᴍᴀᴋᴇ ᴛʜᴇ ɪᴍᴀɢᴇ ᴀꜱ ꜱʜᴏᴡɴ ɪɴ ᴛʜᴇ ᴛᴏᴩ ᴡɪᴛʜ ʏᴏᴜʀ ᴛᴇxᴛꜱ. 
- ꜰᴏʀ ᴜꜱɪɴɢ ᴛʜᴇ ᴍᴏᴅᴜʟᴇ ᴊᴜꜱᴛ ꜱᴇɴᴅ ᴛʜᴇ ᴛᴇxᴛ ᴀɴᴅ ᴏᴇᴩʟᴀʏ ᴛɪ ɪᴛ ᴡɪᴛʜ  /carbon ᴄᴏᴍᴍᴀɴᴅ ᴛʜᴇ ʙᴏᴛ ᴡɪʟʟ ᴩᴇᴩᴀʏ ᴡɪᴛʜ ᴛʜᴇ ᴄᴀʀʙᴏɴ ɪᴍᴀɢᴇ 
+ᴄᴀʀʙᴏɴ ɪꜱ ᴀ ꜰᴇᴜᴛᴜʀᴇ ᴛᴏ ᴍᴀᴋᴇ ᴛʜᴇ ɪᴍᴀɢᴇ ᴀꜱ ꜱʜᴏᴡɴ ɪɴ ᴛʜᴇ ᴛᴏᴩ ᴡɪᴛʜ ʏᴏᴜʀ ᴛᴇxᴛꜱ. 
+ꜰᴏʀ ᴜꜱɪɴɢ ᴛʜᴇ ᴍᴏᴅᴜʟᴇ ᴊᴜꜱᴛ ꜱᴇɴᴅ ᴛʜᴇ ᴛᴇxᴛ ᴀɴᴅ ᴏᴇᴩʟᴀʏ ᴛɪ ɪᴛ ᴡɪᴛʜ  /carbon ᴄᴏᴍᴍᴀɴᴅ ᴛʜᴇ ʙᴏᴛ ᴡɪʟʟ ᴩᴇᴩᴀʏ ᴡɪᴛʜ ᴛʜᴇ ᴄᴀʀʙᴏɴ ɪᴍᴇᴊ 
 </b>""" 
+
     GEN_PASS = """<b>Hᴇʟᴘ: Pᴀꜱꜱᴡᴏʀᴅ Gᴇɴᴇʀᴀᴛᴏʀ 
   
- Tʜᴇʀᴇ Iꜱ Nᴏᴛʜɪɴɢ Tᴏ Kɴᴏᴡ Mᴏʀᴇ. Sᴇɴᴅ Mᴇ Tʜᴇ Lɪᴍɪᴛ Oғ Yᴏᴜʀ Pᴀꜱꜱᴡᴏʀᴅ. 
- - I Wɪʟʟ Gɪᴠᴇ Tʜᴇ Pᴀꜱꜱᴡᴏʀᴅ Oғ Tʜᴀᴛ Lɪᴍɪᴛ. 
+Tʜᴇʀᴇ Iꜱ Nᴏᴛʜɪɴɢ Tᴏ Kɴᴏᴡ Mᴏʀᴇ. Sᴇɴᴅ Mᴇ Tʜᴇ Lɪᴍɪᴛ Oғ Yᴏᴜʀ Pᴀꜱꜱᴡᴏʀᴅ. 
+- I Wɪʟʟ Gɪᴠᴇ Tʜᴇ Pᴀꜱꜱᴡᴏʀᴅ Oғ Tʜᴀᴛ Lɪᴍɪᴛ. 
   
- Cᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ Uꜱᴀɢᴇ: 
- • /genpassword ᴏʀ /genpw 𝟸𝟶 
+Cᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ Uꜱᴀɢᴇ: 
+• /genpassword ᴏʀ /genpw 𝟸𝟶 
   
- NOTE: 
- • Oɴʟʏ Dɪɢɪᴛꜱ Aʀᴇ Aʟʟᴏᴡᴇᴅ 
- • Mᴀxɪᴍᴜᴍ Aʟʟᴏᴡᴇᴅ Dɪɢɪᴛꜱ Tɪʟʟ 𝟾𝟺  
- (I Cᴀɴ'ᴛ Gᴇɴᴇʀᴀᴛᴇ Pᴀꜱꜱᴡᴏʀᴅꜱ Aʙᴏᴠᴇ Tʜᴇ Lᴇɴɢᴛʜ 𝟾𝟺) 
- • IMDʙ ꜱʜᴏᴜʟᴅ ʜᴀᴠᴇ ᴀᴅᴍɪɴ ᴘʀɪᴠɪʟʟᴀɢᴇ. 
- • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴡᴏʀᴋꜱ ᴏɴ ʙᴏᴛʜ ᴘᴍ ᴀɴᴅ ɢʀᴏᴜᴘ. 
- • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ʙʏ ᴀɴʏ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀ.</b>""" 
+NOTE: 
+• Oɴʟʏ Dɪɢɪᴛꜱ Aʀᴇ Aʟʟᴏᴡᴇᴅ 
+• Mᴀxɪᴍᴜᴍ Aʟʟᴏᴡᴇᴅ Dɪɢɪᴛꜱ Tɪʟʟ 𝟾𝟺  
+(I Cᴀɴ'ᴛ Gᴇɴᴇʀᴀᴛᴇ Pᴀꜱꜱᴡᴏʀᴅꜱ Aʙᴏᴠᴇ Tʜᴇ Lᴇɴɢᴛʜ 𝟾𝟺) 
+• IMDʙ ꜱʜᴏᴜʟᴅ ʜᴀᴠᴇ ᴀᴅᴍɪɴ ᴘʀɪᴠɪʟʟᴀɢᴇ. 
+• Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴡᴏʀᴋꜱ ᴏɴ ʙᴏᴛʜ ᴘᴍ ᴀɴᴅ ɢʀᴏᴜᴘ. 
+• Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ʙʏ ᴀɴʏ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀ.</b>""" 
   
-    SHARE_TXT = """<b><i><blockquote>‣ Text Share URL</blockquote>\nGet your text share url. 
+    SHARE_TXT = """<b><i><blockquote>‣ Text Share URL</blockquote>
+Get your text share url. 
   
- - Example :- /share
-  
- </i></b>""" 
+- Example :- /share
+</i></b>""" 
   
     PIN_TXT = """<b>ᴩɪɴ ᴍᴏᴅᴜʟᴇ 
- ᴩɪɴ ᴀ ᴍᴇꜱꜱᴀɢᴇ... 
+ᴩɪɴ ᴀ ᴍᴇꜱꜱᴀɢᴇ... 
   
- ᴀʟʟ ᴛʜᴇ ᴩɪɴ ʀᴇᴩʟᴀᴛᴇᴅ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ꜰᴏᴜɴᴅ ʜᴇʀᴇ: 
+ᴀʟʟ ᴛʜᴇ ᴩɪɴ ʀᴇᴩʟᴀᴛᴇᴅ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ꜰᴏʀᴍᴅ ʜᴇʀᴇ: 
   
- 📌ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ📌 
-  
- /pin :- ᴛᴏ ᴩɪɴ ᴛʜᴇ ᴍᴇꜱꜱᴀɢᴇ ᴏɴ ʏᴏᴜʀ ᴄʜᴀᴛꜱ 
- /unpin :- ᴛᴏ ᴜɴᴩɪɴ ᴛʜᴇ ᴄᴜʀʀᴇᴇɴᴛ ᴩɪɴɴᴇᴅ ᴍᴇꜱꜱᴀɢᴇ</b>"""
+📌 ᴄᴏᴍᴍᴀɴᴅꜱ ᴀɴᴅ ᴜꜱᴀɢᴇ 📌
+/pin :- ᴛᴏ ᴩɪɴ ᴛʜᴇ ᴍᴇꜱꜱᴀɢᴇ ᴏɴ ʏᴏᴜʀ ᴄʜᴀᴛꜱ 
+/unpin :- ᴛᴏ ᴜɴᴩɪɴ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴩɪɴɴᴇᴅ ᴍᴇssᴀɢᴇ</b>"""
 
- 
     RESTART_TXT = """
 **🛜 __<a href="t.me/ZeroFilterBot">Auto Filter</a> Bot Restarted !!__**
 
@@ -437,16 +471,18 @@ Requested by : {message.from_user.mention}</b></i>"""
 
  வீடியோவைச் சேர்க்கவும்
 
- �D எப்படி சேர்ப்பது 👇
+ 👇 எப்படி சேர்ப்பது 👇
 
  Exp: /set_tutorial video link
 
-மேலும் உங்கள் குழுவில் பயிற்சி வீடியோ தொகுப்பு ஆகிடும்...</b></i></blockquote>"""
+மேலும் உங்கள் குழுவில் பயிற்சி வீடியோ தொகுப்பு ஆகிடும்...</i></b></blockquote>"""
 
     ENGLISH_INFO = """
 <b><i><blockquote>‣ Hey <a href='tg://settings'>Dear User 🤌❤️</a></blockquote>
 
-<blockquote expandable>Now you can earn money on Telegram too.\n\nYou must have 1 group to earn money by telegram.If you have a group, you can earn money by adding our bot to your group.
+<blockquote expandable>Now you can earn money on Telegram too.
+
+You must have 1 group to earn money by telegram. If you have a group, you can earn money by adding our bot to your group.
 
 The more members you have in your group, the higher your income will be.</blockquote>
 
@@ -461,7 +497,7 @@ Exp: /shortlink <code>xtz.in</code> 4b39dfbe58
 
 Exp: /set_tutorial video link
 
-Also your given tutorial will be Added inside Your specified Group...</b></i>"""
+Also your given tutorial will be Added inside Your specified Group...</i></b>"""
 
     TELUGU_INFO = """
 <b><i><blockquote>‣ హే <a href='tg://settings'>Dear User 🤌❤️</a></blockquote>
@@ -487,7 +523,7 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
  గడువు: /set_tutorial వీడియో లింక్
 
-అలాగే మీ బృందం వీడియో సేకరణకు శిక్షణ ఇస్తుంది...</b></i></blockquote>"""
+అలాగే మీ బృందం వీడియో సేకరణకు శిక్షణ ఇస్తుంది...</i></b></blockquote>"""
 
     HINDI_INFO = """
 <b><i><blockquote>‣ प्रिय <a href='tg://settings'>प्यारे उपयोगकर्ता</a></blockquote> 
@@ -513,7 +549,7 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
  ऍक्स्प: /set_tutorial वीडियो लिंक
 
-साथ ही आपकी टीम वीडियो संग्रह का प्रशिक्षण भी देगी...</blockquote></b></i>"""
+साथ ही आपकी टीम वीडियो संग्रह का प्रशिक्षण भी देगी...</i></b></blockquote>"""
 
     MALAYALAM_INFO = """
 <b><i><blockquote>ഹേയ് <a href='tg://settings'>Dear User 🤌❤️</a></blockquote>
@@ -539,7 +575,7 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
  കാലഹരണപ്പെടൽ: /set_tutorial വീഡിയോ ലിങ്ക്
 
-നിങ്ങളുടെ ടീം വീഡിയോ ശേഖരണവും പരിശീലിപ്പിക്കും...</b></i></blockquote>"""
+നിങ്ങളുടെ ടീം വീഡിയോ ശേഖരണവും പരിശീലിപ്പിക്കും...</i></b></blockquote>"""
 
     URTU_INFO = """
 <b><i><blockquote>Hii <a href='tg://settings'>Dear User 🤌❤️</a></blockquote> 
@@ -565,7 +601,7 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
  Exp: /set_tutorial ویڈیو لنک
 
-نیز آپ کی ٹیم ویڈیو جمع کرنے کی تربیت دے گی...</b></i></blockquote>"""
+نیز آپ کی ٹیم ویڈیو جمع کرنے کی تربیت دے گی...</i></b></blockquote>"""
 
     GUJARATI_INFO = """
 <b><i><blockquote>અરે <a href='tg://settings'>Dear User 🤌❤️</a></blockquote>
@@ -591,12 +627,12 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
  સમાપ્તિ: /set_tutorial વિડિઓ લિંક
 
-તેમજ તમારી ટીમ વિડિયો કલેક્શનની તાલીમ આપશે...</b></i></blockquote>"""
+તેમજ તમારી ટીમ વિડિયો કલેક્શનની તાલીમ આપશે...</i></b></blockquote>"""
 
     KANNADA_INFO = """
 <b><i><blockquote> ಹೇ <a href='tg://settings'> Dear User 🤌❤️</a></blockquote>
 
-<blockquote expandable> ಈಗ ನೀವು ಟೆಲಿಗ್ರಾಮ್‌ನಲ್ಲಿಯೂ ಹಣ ಗಳಿಸಬಹುದು.
+<blockquote expandable> ಇದೀಗ ನೀವು ಟೆಲಿಗ್ರಾಮ್‌ನಲ್ಲಿಯೂ ಹಣ ಗಳಿಸಬಹುದು.
 
  ಟೆಲಿಗ್ರಾಮ್ ಮೂಲಕ ಹಣ ಗಳಿಸಲು ನೀವು 1 ಗುಂಪನ್ನು ಹೊಂದಿರಬೇಕು.
  ನೀವು ಗುಂಪನ್ನು ಹೊಂದಿದ್ದರೆ, ನಮ್ಮ ಬೋಟ್ ಅನ್ನು ನಿಮ್ಮ ಗುಂಪಿಗೆ ಸೇರಿಸುವ ಮೂಲಕ ನೀವು ಹಣವನ್ನು ಗಳಿಸಬಹುದು.
@@ -617,7 +653,7 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
  ಅವಧಿ: /set_tutorial ವೀಡಿಯೊ ಲಿಂಕ್
 
-ನಿಮ್ಮ ತಂಡವು ವೀಡಿಯೋ ಸಂಗ್ರಹಣೆಗೆ ತರಬೇತಿ ನೀಡಲಿದೆ...</b></i></blockquote>"""
+ನಿಮ್ಮ ತಂಡವು ವೀಡಿಯೋ ಸಂಗ್ರಹಣೆಗೆ ತರಬೇತಿ ನೀಡಲಿದೆ...</i></b></blockquote>"""
 
     BANGLADESH_INFO = """
 <b><i><blockquote>আরে <a href='tg://settings'>Dear User 🤌❤️</a></blockquote>
@@ -643,27 +679,33 @@ Also your given tutorial will be Added inside Your specified Group...</b></i>"""
 
  মেয়াদ: /set_tutorial ভিডিও লিঙ্ক
 
-এছাড়াও আপনার দল ভিডিও সংগ্রহের প্রশিক্ষণ দেবে...</blockquote></i></b>"""
+এছাড়াও আপনার দল ভিডিও সংগ্রহের প্রশিক্ষণ দেবে...</i></b></blockquote>"""
 
-    RENAME_TXT = """<b><i><blockquote>‣ HOW TO RENAME A FILE 📝</blockquote>\n• /rename - send any file and click rename option and type new file name and then select \n[ document, video, audio ]
-\n<blockquote>‣ SET THUMBNAIL 🌄</blockquote>\n• /set_thumb - Send any picture to automatically set Thumbnail\n• /del_thumb Use this command and delete your old Thumbnail\n• /view_thumb Use this command view your current Thumbnail
+    RENAME_TXT = """<b><i><blockquote>‣ HOW TO RENAME A FILE 📝</blockquote>
+• /rename - send any file and click rename option and type new file name and then select 
+[ document, video, audio ]
 
-<blockquote>‣ SET CUSTOM CAPTION ✏️</blockquote>\n• /set_caption - Set a custom caption\n• /see_caption - See custom caption\n• /del_caption - Delete custom caption
+<blockquote>‣ SET THUMBNAIL 🌄</blockquote>
+• /set_thumb - Send any picture to automatically set Thumbnail
+• /del_thumb Use this command and delete your old Thumbnail
+• /view_thumb Use this command view your current Thumbnail
 
-<blockquote>Example:- <code>/set_caption</code> \n📕 File Name: {filename}
+<blockquote>‣ SET CUSTOM CAPTION ✏️</blockquote>
+• /set_caption - Set a custom caption
+• /see_caption - See custom caption
+• /del_caption - Delete custom caption
+
+<blockquote>Example:- <code>/set_caption</code> 
+📕 File Name: {filename}
 💾 Size: {filesize}
-⏰ Duration: {duration}</blockquote></b></i>
+⏰ Duration: {duration}</blockquote></i></b>
 """
 
     STREAM_TXT = """<b><i><blockquote>‣ Get Stream And Download Link 📥</blockquote>
-
-Get Streamable and Downloadable link of any file by using /stream</b></i>"""
+Get Streamable and Downloadable link of any file by using /stream</i></b>"""
 
 
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-
-
-

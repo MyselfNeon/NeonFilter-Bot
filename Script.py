@@ -102,14 +102,13 @@ Buy paid plan by - /plan
 
     EXTRAMOD_TXT = """<blockquote><i><b>‣ Extra Modules</b></i></blockquote>
 <blockquote><b><i>Maintained by <a href={}>NeonAnurag 💖</a></i></b> 
-<b><i>Powered By @NeonFiles</i> 🔥<b></blockquote>
+<b><i>Powered By @NeonFiles</i> 🔥</b></blockquote>
   
-<b><i>/id - Get ID of specified User 
-/info  - Get information about a user
-/song - Download any song
-/telegraph - Telegraph Module
-/tts - Text to Voice Converter
-/font - Stylish and cool Font generator</i></b>"""
+<i>/id - <b>Get ID of specified User</b> 
+/info  - <b>Get information about a user</b>
+/telegraph - <b>Telegraph Module</b>
+/tts - <b>Text to Voice Converter</b>
+/font - <b>Stylish and cool Font generator</i></b>"""
 
     ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐬 🛐</blockquote>
 <i><blockquote>Tʜᴇsᴇ Cᴏᴍᴍᴀɴᴅs ᴀʀᴇ Mᴀᴅᴇ Jᴜsᴛ Fᴏʀ Aᴅᴍɪɴs Aɴᴅ Wɪʟʟ Wᴏʀᴋ Oɴʟʏ Fᴏʀ Aᴅᴍɪɴs 🥰</blockquote></i>

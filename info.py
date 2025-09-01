@@ -257,14 +257,7 @@ REACTIONS = [
 # Don't add unsupported emojis because Telegram reactions have limits
 
 
-# ============================================================
-# 🔹 STREAMABLE CREDITIONTIALS (Optional)
-# ============================================================
-STREAMABLE_USER = ""
-STREAMABLE_PASS = ""
-
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-

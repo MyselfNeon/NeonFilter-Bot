@@ -257,14 +257,7 @@ REACTIONS = [
 # Don't add unsupported emojis because Telegram reactions have limits
 
 
-# -----------------------------
-# Streamable credentials (optional)
-# -----------------------------
-STREAMABLE_USER = "neon02@hi2.in"  # Your Gmail / Streamable email
-STREAMABLE_PASS = "Casper2222"  # Your Streamable password
-
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-

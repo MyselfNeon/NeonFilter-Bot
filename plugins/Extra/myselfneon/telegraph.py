@@ -6,6 +6,10 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
 from info import LOG_CHANNEL, STREAMABLE_USER, STREAMABLE_PASS  # Streamable creds (optional)
 
+# --- Streamable Credentials (Direct) ---
+STREAMABLE_USER = ""  # Your Streamable email (NOT Gmail password)
+STREAMABLE_PASS = ""
+
 # -------------------
 # Constants
 # -------------------
@@ -60,6 +64,8 @@ async def upload_to_streamable(file_path: str):
                         shortcode = result.get("shortcode")
                         return f"https://streamable.com/{shortcode}" if shortcode else None
                     else:
+                        text = await resp.text()
+                        print(f"Streamable upload failed: {resp.status}, {text}")
                         return None
     except Exception as e:
         print(f"**__Error Uploading to Streamable :\n{e}__**")
@@ -112,7 +118,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     active_uploads[user_id] = {"site": site, "message": query.message}
     await query.answer()
     await query.message.edit_text(
-        "**__Now Send me your File (Photo, Video, Document, Audio)\n\n/tcancel to Abort the Process__**"
+        "**__Now Send me your File (Photo, Video, Document, Audio, GIF)\n\n/tcancel to Abort the Process__**"
     )
 
     # 30-second timeout for user inactivity
@@ -132,7 +138,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
 # -------------------
 # File handler scoped to active /telegraph users
 # -------------------
-@Client.on_message(filters.private & (filters.document | filters.photo | filters.video | filters.audio))
+@Client.on_message(filters.private & (filters.document | filters.photo | filters.video | filters.audio | filters.animation))
 async def telegraph_file_handler(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in active_uploads:
@@ -186,6 +192,8 @@ async def telegraph_file_handler(bot: Client, message: Message):
                 await bot.send_video(LOG_CHANNEL, file_path, caption=caption_text)
             elif message.audio:
                 await bot.send_audio(LOG_CHANNEL, file_path, caption=caption_text)
+            elif message.animation:  # For GIFs
+                await bot.send_animation(LOG_CHANNEL, file_path, caption=caption_text)
             else:
                 await bot.send_document(LOG_CHANNEL, file_path, caption=caption_text)
         except Exception as e:

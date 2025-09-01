@@ -101,15 +101,14 @@ Buy paid plan by - /plan
 • /connections - List of all connections</i></b>"""
 
     EXTRAMOD_TXT = """<blockquote><i><b>‣ Extra Modules</b></i></blockquote>
-<blockquote><b>⪼ Maintained by : <a href={}>Owner</a></b> 
-<b>⪼ Join here : <a href={}>Update Channel</a></b></blockquote>
+<blockquote><b><i>Maintained by <a href={}>NeonAnurag 💖</a></i></b> 
+<b><i>Powered By @NeonFiles</i> 🔥<b></blockquote>
   
 <b><i>/id - Get ID of specified User 
 /info  - Get information about a user
 /song - Download any song
-/telegraph - Telegraph generator under 5MB video or photo and I will give you telegraph link
-/tts - Text to Voice converter
-/video - YouTube video downloader
+/telegraph - Telegraph Module
+/tts - Text to Voice Converter
 /font - Stylish and cool Font generator</i></b>"""
 
     ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐬 🛐</blockquote>

@@ -11,11 +11,19 @@ async def isolated_deeplink(client: Client, message: Message):
         # Extract the parameter after /start
         param = message.text.split(" ", 1)[1]
 
-        # Example: Only handle "Anurag"
+        # Example: Only handle "repolink"
         if param.lower() == "repolink":
-            await message.reply_text("<b><i>🍀 Rᴇᴘᴏsɪᴛᴏʀʏ Lɪɴᴋ 🍀\n\nTʜᴇ Rᴇᴘᴏsɪᴛᴏʀʏ Is Cᴜʀʀᴇɴᴛʟʏ Pʀɪᴠᴀᴛᴇ Dᴜᴇ Tᴏ Sᴏᴍᴇ Oɴɢᴏɪɴɢ Wᴏʀᴋ. Hᴏᴡᴇᴠᴇʀ, Iғ Yᴏᴜ Aʀᴇ Iɴᴛᴇʀᴇsᴛᴇᴅ Iɴ Oᴜʀ Bᴏᴛ Aɴᴅ Iᴛs Fᴇᴀᴛᴜʀᴇs, I Wᴏᴜʟᴅ Bᴇ Hᴀᴘᴘʏ Tᴏ Gʀᴀɴᴛ Yᴏᴜ Aᴄᴄᴇss.\n\nCᴏɴᴛᴀᴄᴛ : <a href='https://t.me/Talk2NeonBot'>@Tᴀʟᴋ𝟸NᴇᴏɴBᴏᴛ</a></i></b>")
-            
-        # Else: do nothing, totally isolated
+            await message.reply_text(
+                "<b><i>🍀 Rᴇᴘᴏsɪᴛᴏʀʏ Lɪɴᴋ 🍀\n\n"
+                "Tʜᴇ Rᴇᴘᴏsɪᴛᴏʀʏ Is Cᴜʀʀᴇɴᴛʟʏ Pʀɪᴠᴀᴛᴇ Dᴜᴇ Tᴏ Sᴏᴍᴇ Oɴɢᴏɪɴɢ Wᴏʀᴋ. "
+                "Hᴏᴡᴇᴠᴇʀ, Iғ Yᴏᴜ Aʀᴇ Iɴᴛᴇʀᴇsᴛᴇᴅ Iɴ Oᴜʀ Bᴏᴛ Aɴᴅ Iᴛs Fᴇᴀᴛᴜʀᴇs, "
+                "I Wᴏᴜʟᴅ Bᴇ Hᴀᴘᴘʏ Tᴏ Gʀᴀɴᴛ Yᴏᴜ Aᴄᴄᴇss.\n\n"
+                "Cᴏɴᴛᴀᴄᴛ : <a href='https://t.me/Talk2NeonBot'>@Tᴀʟᴋ𝟸NᴇᴏɴBᴏᴛ</a></i></b>"
+            )
     except Exception:
-        # Ignore any errors to prevent crashing
         pass
+
+
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

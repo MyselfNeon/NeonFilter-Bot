@@ -114,24 +114,24 @@ Buy paid plan by - /plan
 
     ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐬 🛐</blockquote>
 <i><blockquote>Tʜᴇsᴇ Cᴏᴍᴍᴀɴᴅs ᴀʀᴇ Mᴀᴅᴇ Jᴜsᴛ Fᴏʀ Aᴅᴍɪɴs Aɴᴅ Wɪʟʟ Wᴏʀᴋ Oɴʟʏ Fᴏʀ Aᴅᴍɪɴs 🥰</blockquote></i>
-<i>•</b> /logs - **Tᴏ Gᴇᴛ Rᴇᴄᴇɴᴛ Eʀʀᴏʀs**
-• /stats - **Gᴇᴛ Sᴛᴀᴛᴜs ᴏғ Fɪʟᴇs ɪɴ DB**
-• /delete - **Dᴇʟᴇᴛᴇ ᴀ Fɪʟᴇ Fʀᴏᴍ DB**
-• /users - **Gᴇᴛ Lɪsᴛ ᴏғ Usᴇʀs Aɴᴅ IDs**
-• /chats - **Gᴇᴛ Lɪsᴛ ᴏғ Cʜᴀᴛs Aɴᴅ IDs**
-• /leave  - **Tᴏ Lᴇᴀᴠᴇ Fʀᴏᴍ ᴀ Cʜᴀᴛ**
-• /disable  - **Tᴏ Dɪsᴀʙʟᴇ ᴀ Cʜᴀᴛ**
-• /ban  - **Bᴀɴ ᴀ Usᴇʀ**
-• /unban  - **Uɴʙᴀɴ ᴀ Usᴇʀ**
-• /channel - **Tᴏᴛᴀʟ Cᴏɴɴᴇᴄᴛᴇᴅ Cʜɴʟs**
-• /broadcast - **Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Usᴇʀs ᴏғ Bᴏᴛ**
-• /grp_broadcast - **Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Cᴏɴɴᴇᴄᴛᴇᴅ Gʀᴏᴜᴘs**
-• /gfilter - **Aᴅᴅ ᴀ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs**
-• /gfilters - **Lɪsᴛ ᴏғ Aʟʟ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs**
-• /delg - **Dʟᴛ ᴀ Sᴘᴇᴄɪғɪᴄ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀ**
-• /request - **Tᴏ Sᴇɴᴅ ᴀ Mᴏᴠɪᴇ/Sᴇʀɪᴇs Rᴇǫᴜᴇsᴛ Tᴏ Aʟʟ Bᴏᴛ Aᴅᴍɪɴs Oɴʟʏ Wᴏʀᴋ Oɴ Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ**
-• /delallg - **Tᴏ Dᴇʟᴇᴛᴇ Aʟʟ Gғɪʟᴛᴇʀs Fʀᴏᴍ Tʜᴇ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ**
-• /deletefiles - **Tᴏ Dᴇʟᴇᴛᴇ CᴀᴍRɪᴘ Aɴᴅ PʀᴇDVD Fɪʟᴇs Fʀᴏᴍ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ**</i>"""
+<i>•</b> /logs - <b>To Get Recent Errors</b>
+• /stats - <b>Get Status of Files in DB</b>
+• /delete - <b>Delete a File From DB</b>
+• /users - <b>Get List of Users And IDs</b>
+• /chats - <b>Get List of Chats And IDs</b>
+• /leave - <b>To Leave From a Chat</b>
+• /disable - <b>To Disable a Chat</b>
+• /ban - <b>Ban a User</b>
+• /unban - <b>Unban a User</b>
+• /channel - <b>Total Connected Chnls</b>
+• /broadcast - <b>Broadcast a Msg To All Users of Bot</b>
+• /grp_broadcast - <b>Broadcast a Msg To All Connected Groups</b>
+• /gfilter - <b>Add a Global Filters</b>
+• /gfilters - <b>List of All Global Filters</b>
+• /delg - <b>Dlt a Specific Global Filter</b>
+• /request - <b>To Send a Movie/Series Request To All Bot Admins Only Work On Support Group</b>
+• /delallg - <b>To Delete All Gfilters From The Bot's Database</b>
+• /deletefiles - <b>To Delete CamRip And PreDVD Files From Bot's Database</b></i>"""
 
     SEC_STATUS_TXT = """<b><i>★ Tᴏᴛᴀʟ Usᴇʀs: <code>{}</code>
 ★ Tᴏᴛᴀʟ Cʜᴀᴛs: <code>{}</code>

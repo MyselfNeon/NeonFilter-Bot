@@ -8,7 +8,7 @@ from info import ADMINS
 # CONFIG
 # ----------------------------
 RENDER_API_KEY = ""  # Leave empty if not using Render
-SERVICE_ID = ""      # Leave empty if not using Render
+SERVICE_ID = "srv-d2pl5875r7bs739rjpmg"      # Leave empty if not using Render
 ADMIN_ONLY = True
 LOG_TRUNCATE = 3000
 # ----------------------------

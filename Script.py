@@ -1,13 +1,13 @@
 class script(object):
     START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</i></blockquote>
-<i>I ᴀᴍ Lᴀᴛᴇsᴛ Aᴅᴠᴀɴᴄᴇᴅ Fɪʟᴛᴇʀ Bᴏᴛ.
+<i><blockquote>I ᴀᴍ Lᴀᴛᴇsᴛ Aᴅᴠᴀɴᴄᴇᴅ Fɪʟᴛᴇʀ Bᴏᴛ.
 Cᴏᴅᴇᴅ & Dᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ <a href='https://t.me/MyselfNeon'>NᴇᴏɴAɴᴜʀᴀɢ</a>.
-I ᴄᴀɴ Fɪʟᴛᴇʀ & Sᴇɴᴅ Mᴏᴠɪᴇs / Aɴɪᴍᴇs Fɪʟᴇs Aᴅᴅᴇᴅ ᴛᴏ ᴍʏ Dᴀᴛᴀʙᴀsᴇ !!</i></b>"""
+I ᴄᴀɴ Fɪʟᴛᴇʀ & Sᴇɴᴅ Mᴏᴠɪᴇs / Aɴɪᴍᴇs Fɪʟᴇs Aᴅᴅᴇᴅ ᴛᴏ ᴍʏ Dᴀᴛᴀʙᴀsᴇ !!</blockquote></i></b>"""
 
     CLONE_START_TXT = """<b><blockquote><i>‣ Hᴇʟʟᴏ {}</i></blockquote>
-<i>I am Latest Advanced Filter Bot.
+<i><blockquote>I am Latest Advanced Filter Bot.
 Coded & Developed by <a href='https://t.me/MyselfNeon'>NeonAnurag</a>.
-You can create you own Clone Bot and use it in your own channel. It will Filter and Send Movies/Animes files added to its Database !!</i></b>"""
+You can create you own Clone Bot and use it in your own channel. It will Filter and Send Movies/Animes files added to its Database !!</blockquote></i></b>"""
     
     HELP_TXT = """<b><i>Hello {} 
 Here are all my useful features.</i></b>"""
@@ -43,7 +43,7 @@ Here are all my useful features.</i></b>"""
 </i></b></blockquote>"""
 
     SUBSCRIPTION_TXT = """<blockquote><b>‣ Referal Plans ⚡</b></blockquote>
-<blockquote><i>Refer your link to your Friends, Family, Channel and Groups to get free Premium for {}
+<blockquote><i><b>Refer your link to your Friends, Family, Channel and Groups to get free Premium for {}
 
 Referal Link - 
 https://telegram.me/{}?start=Neon-{}  ✨
@@ -52,7 +52,7 @@ If {} unique user start the Bot with your referal link then you will Automatical
 
 Buy paid plan by - /plan
 
-@NeonFiles</i></blockquote>"""
+@NeonFiles</i></b></blockquote>"""
 
     MANUELFILTER_TXT = """<blockquote><b><i>‣ Filters</i></b></blockquote>
 <b><i>Filter is a feature where users can set Automated replies for a perticular keyword and i will respond whenever a keyword is found in Message.</i></b>
@@ -114,7 +114,6 @@ Buy paid plan by - /plan
 
     ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐬 🛐</blockquote>
 <i><blockquote>Tʜᴇsᴇ Cᴏᴍᴍᴀɴᴅs ᴀʀᴇ Mᴀᴅᴇ Jᴜsᴛ Fᴏʀ Aᴅᴍɪɴs Aɴᴅ Wɪʟʟ Wᴏʀᴋ Oɴʟʏ Fᴏʀ Aᴅᴍɪɴs 🥰</blockquote></i>
-<blockquote>‣ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 & 𝐔𝐒𝐀𝐆𝐄</blockquote>
 <i>• /logs - Tᴏ Gᴇᴛ Rᴇᴄᴇɴᴛ Eʀʀᴏʀs
 • /stats - Gᴇᴛ Sᴛᴀᴛᴜs ᴏғ Fɪʟᴇs ɪɴ DB
 • /delete - Dᴇʟᴇᴛᴇ ᴀ Fɪʟᴇ Fʀᴏᴍ DB

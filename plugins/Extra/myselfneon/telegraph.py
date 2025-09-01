@@ -4,14 +4,15 @@ import aiohttp
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
-from info import LOG_CHANNEL  # only import LOG_CHANNEL
+from info import LOG_CHANNEL, STREAMABLE_USER, STREAMABLE_PASS  # Streamable creds optional
 
 # -------------------
 # Constants
 # -------------------
-MAX_SIZE = 200 * 1024 * 1024  # Local max file size 200 MB
+MAX_SIZE = 200 * 1024 * 1024  # 200 MB
 CATBOX_API = "https://catbox.moe/user/api.php"
 ENVS_UPLOAD_URL = "https://envs.sh"
+STREAMABLE_API = "https://api.streamable.com/upload/"
 
 # Track active uploads per user
 active_uploads = {}
@@ -44,6 +45,26 @@ async def upload_to_catbox(file_path: str):
         print(f"**__Error Uploading to Catbox :\n{e}__**")
         return None
 
+def upload_to_streamable(file_path: str):
+    """Uploads video to Streamable (requires credentials)"""
+    if not STREAMABLE_USER or not STREAMABLE_PASS:
+        return None
+    try:
+        with open(file_path, "rb") as f:
+            response = requests.post(
+                STREAMABLE_API,
+                files={"file": f},
+                auth=(STREAMABLE_USER, STREAMABLE_PASS),
+                timeout=60
+            )
+        data = response.json()
+        if response.status_code == 200 and "shortcode" in data:
+            return f"https://streamable.com/{data['shortcode']}"
+        return None
+    except Exception as e:
+        print(f"**__Error Uploading to Streamable :\n{e}__**")
+        return None
+
 # -------------------
 # /telegraph command
 # -------------------
@@ -56,12 +77,17 @@ async def telegraph_start(bot: Client, message: Message):
             "**__You Already have an Active Upload.\nFinish or Cancel it with /tcancel__**"
         )
 
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs"),
-             InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")]
-        ]
-    )
+    buttons = [
+        [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs"),
+         InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")]
+    ]
+
+    # Only show Streamable if credentials provided
+    if STREAMABLE_USER and STREAMABLE_PASS:
+        buttons[0].append(InlineKeyboardButton("Sᴛʀᴇᴀᴍᴀʙʟᴇ 🎬", callback_data="telegraph_streamable"))
+
+    keyboard = InlineKeyboardMarkup(buttons)
+
     await message.reply_text(
         "**__Choose The Site To Upload Your File__**",
         reply_markup=keyboard
@@ -76,7 +102,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_uploads:
         return await query.answer("Finish or Cancel your Current Upload First.", show_alert=True)
 
-    site = query.data.split("_")[1]  # envs or catbox
+    site = query.data.split("_")[1]  # envs, catbox or streamable
     active_uploads[user_id] = {"site": site, "message": query.message}
 
     await query.answer()
@@ -90,7 +116,6 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
             "**⏰ __Time's Up !!\nYou did not Send any File in 30 sec.__**\n"
             "**__Start a New Upload /telegraph__**"
         )
-        # Auto-delete timeout message after 20 seconds
         await asyncio.sleep(20)
         try:
             await timeout_msg.delete()
@@ -109,11 +134,16 @@ async def telegraph_file_handler(bot: Client, message: Message):
     active_uploads[user_id]["file_sent"] = True
     site = active_uploads[user_id]["site"]
 
+    # Streamable only allows videos
+    if site == "streamable" and not message.video:
+        await message.reply_text("**❌ __Streamable Only Accepts Videos__**")
+        return
+
     status_msg = await message.reply_text("**__Downloading Your File...__ ⬇️**")
     file_path = await message.download()
 
     # -----------------------------
-    # Continue normal upload
+    # File size check for Catbox
     # -----------------------------
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
         await status_msg.edit_text(f"**❌ __File Too Large (>{MAX_SIZE/1024/1024} MB).\n\nUpload Canceled__ ❌**")
@@ -124,13 +154,22 @@ async def telegraph_file_handler(bot: Client, message: Message):
     await status_msg.edit_text("**__Uploading Now...__ ⬆️**")
 
     try:
-        link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
+        # Handle upload per site
+        if site == "envs":
+            link = upload_to_envs(file_path)
+        elif site == "catbox":
+            link = await upload_to_catbox(file_path)
+        else:  # streamable
+            # 1-minute timeout if stuck
+            loop = asyncio.get_running_loop()
+            link = await loop.run_in_executor(None, upload_to_streamable, file_path)
+
         if not link:
             await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
             return
 
         # -----------------------------
-        # Log Upload to LOG_CHANNEL with actual generated link
+        # Log Upload to LOG_CHANNEL
         # -----------------------------
         try:
             caption_text = (
@@ -196,8 +235,3 @@ async def telegraph_cancel(bot: Client, message: Message):
     else:
         await message.reply_text("**🤷 __There Are No Active Uploads to Cancel. Use /telegraph to Create an Upload__**")
 
-
-
-# Dont remove Credits
-# Developer Telegram @MyselfNeon
-# Update channel - @NeonFiles

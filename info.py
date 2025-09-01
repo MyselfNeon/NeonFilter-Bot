@@ -256,13 +256,8 @@ REACTIONS = [
     "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"]
 # Don't add unsupported emojis because Telegram reactions have limits
 
-# -------------------
-# Streamable Credentials
-# -------------------
-STREAMABLE_USER = ""   # Your Streamable username
-STREAMABLE_PASS = ""     # Your Streamable password or API token
+
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-

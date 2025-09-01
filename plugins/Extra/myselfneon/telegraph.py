@@ -48,21 +48,26 @@ async def upload_to_catbox(file_path: str):
 def upload_to_streamable(file_path: str):
     """Uploads video to Streamable (requires credentials)"""
     if not STREAMABLE_USER or not STREAMABLE_PASS:
+        print("Streamable credentials missing!")
         return None
     try:
         with open(file_path, "rb") as f:
             response = requests.post(
-                STREAMABLE_API,
+                "https://api.streamable.com/upload/",
                 files={"file": f},
                 auth=(STREAMABLE_USER, STREAMABLE_PASS),
                 timeout=60
             )
         data = response.json()
-        if response.status_code == 200 and "shortcode" in data:
+        if response.status_code != 200:
+            print(f"Streamable Upload Failed! Status: {response.status_code}, Response: {data}")
+            return None
+        if "shortcode" in data:
             return f"https://streamable.com/{data['shortcode']}"
+        print(f"Unexpected Streamable Response: {data}")
         return None
     except Exception as e:
-        print(f"**__Error Uploading to Streamable :\n{e}__**")
+        print(f"**__Error Uploading to Streamable : {e}__**")
         return None
 
 # -------------------

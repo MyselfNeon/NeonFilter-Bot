@@ -114,24 +114,24 @@ Buy paid plan by - /plan
 
     ADMIN_TXT = """<b><blockquote>‣ 𝐀𝐃𝐌𝐈𝐍 𝐌𝐎𝐃𝐬 🛐</blockquote>
 <i><blockquote>Tʜᴇsᴇ Cᴏᴍᴍᴀɴᴅs ᴀʀᴇ Mᴀᴅᴇ Jᴜsᴛ Fᴏʀ Aᴅᴍɪɴs Aɴᴅ Wɪʟʟ Wᴏʀᴋ Oɴʟʏ Fᴏʀ Aᴅᴍɪɴs 🥰</blockquote></i>
-<i>• /logs - Tᴏ Gᴇᴛ Rᴇᴄᴇɴᴛ Eʀʀᴏʀs
-• /stats - Gᴇᴛ Sᴛᴀᴛᴜs ᴏғ Fɪʟᴇs ɪɴ DB
-• /delete - Dᴇʟᴇᴛᴇ ᴀ Fɪʟᴇ Fʀᴏᴍ DB
-• /users - Gᴇᴛ Lɪsᴛ ᴏғ Usᴇʀs Aɴᴅ IDs
-• /chats - Gᴇᴛ Lɪsᴛ ᴏғ Cʜᴀᴛs Aɴᴅ IDs
-• /leave  - Tᴏ Lᴇᴀᴠᴇ Fʀᴏᴍ ᴀ Cʜᴀᴛ
-• /disable  - Tᴏ Dɪsᴀʙʟᴇ ᴀ Cʜᴀᴛ
-• /ban  - Bᴀɴ ᴀ Usᴇʀ
-• /unban  - Uɴʙᴀɴ ᴀ Usᴇʀ
-• /channel - Tᴏᴛᴀʟ Cᴏɴɴᴇᴄᴛᴇᴅ Cʜɴʟs
-• /broadcast - Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Usᴇʀs ᴏғ Bᴏᴛ
-• /grp_broadcast - Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Cᴏɴɴᴇᴄᴛᴇᴅ Gʀᴏᴜᴘs
-• /gfilter - Aᴅᴅ ᴀ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs
-• /gfilters - Lɪsᴛ ᴏғ Aʟʟ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs
-• /delg - Dʟᴛ ᴀ Sᴘᴇᴄɪғɪᴄ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀ
-• /request - Tᴏ Sᴇɴᴅ ᴀ Mᴏᴠɪᴇ/Sᴇʀɪᴇs Rᴇǫᴜᴇsᴛ Tᴏ Aʟʟ Bᴏᴛ Aᴅᴍɪɴs Oɴʟʏ Wᴏʀᴋ Oɴ Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ
-• /delallg - Tᴏ Dᴇʟᴇᴛᴇ Aʟʟ Gғɪʟᴛᴇʀs Fʀᴏᴍ Tʜᴇ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ
-• /deletefiles - Tᴏ Dᴇʟᴇᴛᴇ CᴀᴍRɪᴘ Aɴᴅ PʀᴇDVD Fɪʟᴇs Fʀᴏᴍ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ</i></b>"""
+<i>•</b> /logs - **Tᴏ Gᴇᴛ Rᴇᴄᴇɴᴛ Eʀʀᴏʀs**
+• /stats - **Gᴇᴛ Sᴛᴀᴛᴜs ᴏғ Fɪʟᴇs ɪɴ DB**
+• /delete - **Dᴇʟᴇᴛᴇ ᴀ Fɪʟᴇ Fʀᴏᴍ DB**
+• /users - **Gᴇᴛ Lɪsᴛ ᴏғ Usᴇʀs Aɴᴅ IDs**
+• /chats - **Gᴇᴛ Lɪsᴛ ᴏғ Cʜᴀᴛs Aɴᴅ IDs**
+• /leave  - **Tᴏ Lᴇᴀᴠᴇ Fʀᴏᴍ ᴀ Cʜᴀᴛ**
+• /disable  - **Tᴏ Dɪsᴀʙʟᴇ ᴀ Cʜᴀᴛ**
+• /ban  - **Bᴀɴ ᴀ Usᴇʀ**
+• /unban  - **Uɴʙᴀɴ ᴀ Usᴇʀ**
+• /channel - **Tᴏᴛᴀʟ Cᴏɴɴᴇᴄᴛᴇᴅ Cʜɴʟs**
+• /broadcast - **Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Usᴇʀs ᴏғ Bᴏᴛ**
+• /grp_broadcast - **Bʀᴏᴀᴅᴄᴀsᴛ ᴀ Msɢ Tᴏ Aʟʟ Cᴏɴɴᴇᴄᴛᴇᴅ Gʀᴏᴜᴘs**
+• /gfilter - **Aᴅᴅ ᴀ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs**
+• /gfilters - **Lɪsᴛ ᴏғ Aʟʟ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs**
+• /delg - **Dʟᴛ ᴀ Sᴘᴇᴄɪғɪᴄ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀ**
+• /request - **Tᴏ Sᴇɴᴅ ᴀ Mᴏᴠɪᴇ/Sᴇʀɪᴇs Rᴇǫᴜᴇsᴛ Tᴏ Aʟʟ Bᴏᴛ Aᴅᴍɪɴs Oɴʟʏ Wᴏʀᴋ Oɴ Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ**
+• /delallg - **Tᴏ Dᴇʟᴇᴛᴇ Aʟʟ Gғɪʟᴛᴇʀs Fʀᴏᴍ Tʜᴇ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ**
+• /deletefiles - **Tᴏ Dᴇʟᴇᴛᴇ CᴀᴍRɪᴘ Aɴᴅ PʀᴇDVD Fɪʟᴇs Fʀᴏᴍ Bᴏᴛ's Dᴀᴛᴀʙᴀsᴇ**</i>"""
 
     SEC_STATUS_TXT = """<b><i>★ Tᴏᴛᴀʟ Usᴇʀs: <code>{}</code>
 ★ Tᴏᴛᴀʟ Cʜᴀᴛs: <code>{}</code>

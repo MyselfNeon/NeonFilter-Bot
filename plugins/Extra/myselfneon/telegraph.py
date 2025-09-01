@@ -4,7 +4,7 @@ import aiohttp
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
-from info import LOG_CHANNEL, STREAMABLE_USER, STREAMABLE_PASS  # import Streamable creds
+from info import LOG_CHANNEL  # only import LOG_CHANNEL
 
 # -------------------
 # Constants
@@ -12,7 +12,6 @@ from info import LOG_CHANNEL, STREAMABLE_USER, STREAMABLE_PASS  # import Streama
 MAX_SIZE = 200 * 1024 * 1024  # Local max file size 200 MB
 CATBOX_API = "https://catbox.moe/user/api.php"
 ENVS_UPLOAD_URL = "https://envs.sh"
-STREAMABLE_API = "https://api.streamable.com/upload"
 
 # Track active uploads per user
 active_uploads = {}
@@ -45,24 +44,6 @@ async def upload_to_catbox(file_path: str):
         print(f"**__Error Uploading to Catbox :\n{e}__**")
         return None
 
-async def upload_to_streamable(file_path: str):
-    if not STREAMABLE_USER or not STREAMABLE_PASS:
-        return None
-    try:
-        auth = aiohttp.BasicAuth(STREAMABLE_USER, STREAMABLE_PASS)
-        async with aiohttp.ClientSession(auth=auth, timeout=aiohttp.ClientTimeout(total=60)) as session:
-            with open(file_path, "rb") as f:
-                data = aiohttp.FormData()
-                data.add_field("file", f, filename=os.path.basename(file_path))
-                async with session.post(STREAMABLE_API, data=data) as resp:
-                    json_resp = await resp.json()
-                    if resp.status == 200 and json_resp.get("shortcode"):
-                        return f"https://streamable.com/{json_resp['shortcode']}"
-                    return None
-    except Exception as e:
-        print(f"**__Error Uploading to Streamable :\n{e}__**")
-        return None
-
 # -------------------
 # /telegraph command
 # -------------------
@@ -75,17 +56,12 @@ async def telegraph_start(bot: Client, message: Message):
             "**__You Already have an Active Upload.\nFinish or Cancel it with /tcancel__**"
         )
 
-    buttons = [
-        [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs"),
-         InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")]
-    ]
-
-    # Add Streamable if credentials exist
-    if STREAMABLE_USER and STREAMABLE_PASS:
-        buttons[0].append(InlineKeyboardButton("Sᴛʀᴇᴀᴍᴀʙʟᴇ 🎬", callback_data="telegraph_streamable"))
-
-    keyboard = InlineKeyboardMarkup(buttons)
-
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs"),
+             InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")]
+        ]
+    )
     await message.reply_text(
         "**__Choose The Site To Upload Your File__**",
         reply_markup=keyboard
@@ -100,7 +76,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_uploads:
         return await query.answer("Finish or Cancel your Current Upload First.", show_alert=True)
 
-    site = query.data.split("_")[1]  # envs, catbox, or streamable
+    site = query.data.split("_")[1]  # envs or catbox
     active_uploads[user_id] = {"site": site, "message": query.message}
 
     await query.answer()
@@ -114,6 +90,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
             "**⏰ __Time's Up !!\nYou did not Send any File in 30 sec.__**\n"
             "**__Start a New Upload /telegraph__**"
         )
+        # Auto-delete timeout message after 20 seconds
         await asyncio.sleep(20)
         try:
             await timeout_msg.delete()
@@ -135,11 +112,11 @@ async def telegraph_file_handler(bot: Client, message: Message):
     status_msg = await message.reply_text("**__Downloading Your File...__ ⬇️**")
     file_path = await message.download()
 
-    # File size check for catbox and streamable
-    if site in ["catbox", "streamable"] and os.path.getsize(file_path) > MAX_SIZE:
-        await status_msg.edit_text(
-            f"**❌ __File Too Large (>{MAX_SIZE/1024/1024} MB).\n\nUpload Canceled__ ❌**"
-        )
+    # -----------------------------
+    # Continue normal upload
+    # -----------------------------
+    if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
+        await status_msg.edit_text(f"**❌ __File Too Large (>{MAX_SIZE/1024/1024} MB).\n\nUpload Canceled__ ❌**")
         os.remove(file_path)
         active_uploads.pop(user_id)
         return
@@ -147,21 +124,14 @@ async def telegraph_file_handler(bot: Client, message: Message):
     await status_msg.edit_text("**__Uploading Now...__ ⬆️**")
 
     try:
-        # Choose correct upload function
-        if site == "envs":
-            link = upload_to_envs(file_path)
-        elif site == "catbox":
-            link = await upload_to_catbox(file_path)
-        elif site == "streamable":
-            link = await upload_to_streamable(file_path)
-        else:
-            link = None
-
+        link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
         if not link:
-            await status_msg.edit_text("**❌ __Upload Failed. Try Again.__ 🥲**")
+            await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
             return
 
-        # Log Upload to LOG_CHANNEL
+        # -----------------------------
+        # Log Upload to LOG_CHANNEL with actual generated link
+        # -----------------------------
         try:
             caption_text = (
                 f"**🛜 __New Upload Detected__**\n\n"
@@ -181,7 +151,9 @@ async def telegraph_file_handler(bot: Client, message: Message):
         except Exception as e:
             print(f"**__Failed to Log Upload: {e}__**")
 
+        # -----------------------------
         # Send final link to user
+        # -----------------------------
         await status_msg.edit_text(
             text=f"**✅ __Upload Completed !!\n\nYour Link 🖇️\n{link}__**",
             disable_web_page_preview=True,
@@ -194,7 +166,6 @@ async def telegraph_file_handler(bot: Client, message: Message):
                 ]
             )
         )
-
     except Exception as e:
         await status_msg.edit_text(f"**❌ __Upload Failed :\n`{e}`__**")
     finally:

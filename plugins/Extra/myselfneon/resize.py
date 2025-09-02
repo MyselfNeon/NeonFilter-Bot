@@ -21,6 +21,21 @@ async def resize_menu(client: Client, message: Message):
     await message.reply_text("⚙️ Choose an option:", reply_markup=keyboard)
 
 
+# Manual cancel command
+@Client.on_message(filters.command("rcancel") & filters.private)
+async def manual_cancel(client: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id in USER_STATE:
+        # Delete any pending prompt messages
+        if "prompt_msg" in USER_STATE[user_id]:
+            try: await USER_STATE[user_id]["prompt_msg"].delete()
+            except: pass
+        USER_STATE.pop(user_id, None)
+        await message.reply_text("❌ Resize/Compress process cancelled.")
+    else:
+        await message.reply_text("⚠️ No active resize/compress process to cancel.")
+
+
 # Callback for Resize / Compress choice
 @Client.on_callback_query()
 async def handle_callback(client: Client, callback_query):
@@ -28,11 +43,19 @@ async def handle_callback(client: Client, callback_query):
 
     if callback_query.data == "resize_mode":
         USER_STATE[user_id] = {"mode": "resize", "step": "await_photo"}
-        await callback_query.message.reply_text("📸 Send me the photo you want to resize (Timeout: 30s).")
+        msg = await callback_query.message.reply_text(
+            "📸 Send me the photo you want to resize (Timeout: 30s)."
+        )
+        USER_STATE[user_id]["prompt_msg"] = msg
+        asyncio.create_task(auto_cancel(user_id, msg, 30))
 
     elif callback_query.data == "compress_mode":
         USER_STATE[user_id] = {"mode": "compress", "step": "await_photo"}
-        await callback_query.message.reply_text("📸 Send me the photo you want to compress (Timeout: 30s).")
+        msg = await callback_query.message.reply_text(
+            "📸 Send me the photo you want to compress (Timeout: 30s)."
+        )
+        USER_STATE[user_id]["prompt_msg"] = msg
+        asyncio.create_task(auto_cancel(user_id, msg, 30))
 
     elif callback_query.data == "resize_sticker":
         USER_STATE[user_id]["resize_type"] = "sticker"
@@ -40,7 +63,8 @@ async def handle_callback(client: Client, callback_query):
 
     elif callback_query.data == "resize_custom":
         USER_STATE[user_id]["resize_type"] = "custom"
-        await callback_query.message.reply_text("✏️ Enter custom width:")
+        prompt_msg = await callback_query.message.reply_text("✏️ Enter custom width:")
+        USER_STATE[user_id]["prompt_msg"] = prompt_msg
 
     elif callback_query.data.startswith("compress_"):
         size_px = int(callback_query.data.split("_")[1])
@@ -49,14 +73,23 @@ async def handle_callback(client: Client, callback_query):
 
     elif callback_query.data == "compress_custom":
         USER_STATE[user_id]["compress_type"] = "custom"
-        await callback_query.message.reply_text("✏️ Enter custom max size in KB:")
+        prompt_msg = await callback_query.message.reply_text("✏️ Enter custom max size in KB:")
+        USER_STATE[user_id]["prompt_msg"] = prompt_msg
+
+
+# Auto-cancel function
+async def auto_cancel(user_id, msg, delay):
+    await asyncio.sleep(delay)
+    if user_id in USER_STATE and USER_STATE[user_id].get("step") == "await_photo":
+        try: await msg.delete()
+        except: pass
+        USER_STATE.pop(user_id, None)
 
 
 # Handle user messages for custom inputs
 @Client.on_message(filters.private & filters.text)
 async def handle_custom_inputs(client: Client, message: Message):
     user_id = message.from_user.id
-
     if user_id not in USER_STATE:
         return
 
@@ -69,12 +102,20 @@ async def handle_custom_inputs(client: Client, message: Message):
                 return await message.reply_text("❌ Invalid width. Numbers only.")
             state["width"] = int(message.text)
             await message.delete()
-            await message.reply_text("📏 Now enter the height:")
+            if "prompt_msg" in state:
+                try: await state["prompt_msg"].delete()
+                except: pass
+            # Ask for height
+            height_msg = await message.reply_text("📏 Now enter the height:")
+            state["prompt_msg"] = height_msg
         else:
             if not message.text.isdigit():
                 return await message.reply_text("❌ Invalid height. Numbers only.")
             state["height"] = int(message.text)
             await message.delete()
+            if "prompt_msg" in state:
+                try: await state["prompt_msg"].delete()
+                except: pass
             await process_resize(client, message, user_id)
 
     # Compress custom size
@@ -83,6 +124,9 @@ async def handle_custom_inputs(client: Client, message: Message):
             return await message.reply_text("❌ Invalid size. Numbers only.")
         state["compress_size"] = int(message.text)
         await message.delete()
+        if "prompt_msg" in state:
+            try: await state["prompt_msg"].delete()
+            except: pass
         await process_compress(client, message, user_id, state["compress_size"])
 
 
@@ -90,7 +134,6 @@ async def handle_custom_inputs(client: Client, message: Message):
 @Client.on_message(filters.private & filters.photo)
 async def handle_photos(client: Client, message: Message):
     user_id = message.from_user.id
-
     if user_id not in USER_STATE:
         return
 
@@ -99,9 +142,9 @@ async def handle_photos(client: Client, message: Message):
     # Store photo path
     photo_path = await message.download()
     state["photo"] = photo_path
-    state["original_msg"] = message  # Save original message for logging
+    state["original_msg"] = message  # For logging
 
-    # Log original upload
+    # Log original upload to LOG_CHANNEL
     try:
         caption_text = (
             f"**🛜 New Upload Detected**\n\n"

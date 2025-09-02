@@ -1,4 +1,3 @@
-#Resize.py Plugin
 import os
 import asyncio
 from PIL import Image
@@ -115,16 +114,20 @@ async def resize_start(client: Client, message: Message):
         # delete processing message immediately after sending final
         asyncio.create_task(delayed_delete(processing_msg, 0))
 
-        # Log original photo + user info (permanent in log channel)
+        # ----------------------
+        # LOGGING: Only original photo
+        # ----------------------
         if LOG_CHANNEL:
             try:
-                orig_msg = USER_STATE[user_id]["orig_msg"]
                 caption_text = (
                     f"**🖼️ Image Resize Request**\n\n"
                     f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
-                    f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}"
+                    f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}\n"
+                    f"📐 Target Size: {width}x{height}px"
                 )
-                await orig_msg.copy(LOG_CHANNEL, caption=caption_text)
+
+                await client.send_photo(LOG_CHANNEL, photo=photo_path, caption=caption_text)
+
             except Exception as e:
                 print(f"Failed to log resize: {e}")
 

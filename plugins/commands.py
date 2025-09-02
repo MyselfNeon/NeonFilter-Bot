@@ -1,4 +1,4 @@
-import os, string, logging, random, asyncio, time, datetime, re, sys, json, base64
+import os, string, logging, random, asyncio, time, datetime, re, sys, json, base64, requests
 from Script import script
 from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
@@ -1224,12 +1224,34 @@ async def removetutorial(bot, message):
     await save_group_settings(grpid, 'is_tutorial', False)
     await reply.edit_text(f"<b>__Successfully Removed Your Tutorial Link!!!__</b>")
 
+# Get Deploy Hook URL from env (keep it secret in Render dashboard)
+DEPLOY_HOOK_URL = os.environ.get("https://api.render.com/deploy/srv-d2pl5875r7bs739rjpmg?key=JHLALp0ftjM")
+
+
 @Client.on_message(filters.command("restart") & filters.user(ADMINS))
-async def stop_button(bot, message):
-    msg = await bot.send_message(text="**__Process Stopped 💢 \nBot is Restarting ♻️ ...__**", chat_id=message.chat.id)       
+async def restart_command(bot, message):
+    msg = await bot.send_message(
+        chat_id=message.chat.id,
+        text="**__💢 Process Stopped! \nBot is Restarting ♻️ ...__**"
+    )
     await asyncio.sleep(3)
-    await msg.edit("**__♻️ Bot is Restarted. \nNow you can use me 😅__**")
-    os.execl(sys.executable, sys.executable, *sys.argv)
+
+    # Try triggering Render redeploy
+    if DEPLOY_HOOK_URL:
+        try:
+            res = requests.post(DEPLOY_HOOK_URL)
+            if res.status_code == 200:
+                await msg.edit("**__✅ Redeploy triggered on Render! \nWait a bit while I come back online 😅__**")
+            else:
+                await msg.edit(
+                    f"⚠️ Failed to trigger redeploy. Status code: {res.status_code}"
+                )
+        except Exception as e:
+            await msg.edit(f"❌ Error while redeploying: `{e}`")
+    else:
+        # Fallback: local restart (for non-Render environments)
+        await msg.edit("**__♻️ Bot is Restarted locally. \nNow you can use me 😅__**")
+        os.execl(sys.executable, sys.executable, *sys.argv)
 
 @Client.on_message(filters.command("nofsub"))
 async def nofsub(client, message):
@@ -1406,3 +1428,4 @@ async def purge_requests(client, message):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

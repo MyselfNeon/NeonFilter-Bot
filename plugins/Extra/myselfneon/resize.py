@@ -68,7 +68,7 @@ async def resize_start(client: Client, message: Message):
         USER_STATE[user_id]["width"] = width
 
         # delete bot+user width messages
-        asyncio.create_task(delayed_delete(ask_width_msg, 2))
+        asyncio.create_task(delayed_delete(ask_width_msg, 10))
         asyncio.create_task(delayed_delete(width_response, 0))
 
         ask_height_msg = await message.reply_text(
@@ -87,7 +87,7 @@ async def resize_start(client: Client, message: Message):
         height = int(height_response.text)
 
         # delete bot+user height messages
-        asyncio.create_task(delayed_delete(ask_height_msg, 2))
+        asyncio.create_task(delayed_delete(ask_height_msg, 10))
         asyncio.create_task(delayed_delete(height_response, 0))
 
         # Process image

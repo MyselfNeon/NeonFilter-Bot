@@ -1,5 +1,3 @@
-# resize_plugin.py
-
 import os
 import asyncio
 from PIL import Image
@@ -41,32 +39,40 @@ async def resize_start(client: Client, message: Message):
         photo_path = await response.download()
         USER_STATE[user_id] = {"step": "await_width", "photo": photo_path, "orig_msg": response}
 
-        await message.reply_text(
+        ask_width_msg = await message.reply_text(
             "✏️ Enter the width (numbers only):\n\n⏳ Timeout: 30s\n❌ /rcancel to cancel."
         )
 
         # Wait for width
-        response: Message = await client.listen(user_id, timeout=30)
-        if not (response.text and response.text.isdigit()):
+        width_response: Message = await client.listen(user_id, timeout=30)
+        if not (width_response.text and width_response.text.isdigit()):
             USER_STATE.pop(user_id, None)
             os.remove(photo_path)
             return await message.reply_text("❌ Invalid width. Process canceled.")
 
-        width = int(response.text)
+        width = int(width_response.text)
         USER_STATE[user_id]["width"] = width
 
-        await message.reply_text(
+        # delete bot+user width messages
+        asyncio.create_task(ask_width_msg.delete(delay=2))
+        asyncio.create_task(width_response.delete())
+
+        ask_height_msg = await message.reply_text(
             "📏 Now enter the height (numbers only):\n\n⏳ Timeout: 30s\n❌ /rcancel to cancel."
         )
 
         # Wait for height
-        response: Message = await client.listen(user_id, timeout=30)
-        if not (response.text and response.text.isdigit()):
+        height_response: Message = await client.listen(user_id, timeout=30)
+        if not (height_response.text and height_response.text.isdigit()):
             USER_STATE.pop(user_id, None)
             os.remove(photo_path)
             return await message.reply_text("❌ Invalid height. Process canceled.")
 
-        height = int(response.text)
+        height = int(height_response.text)
+
+        # delete bot+user height messages
+        asyncio.create_task(ask_height_msg.delete(delay=2))
+        asyncio.create_task(height_response.delete())
 
         # Process image
         img = Image.open(photo_path)
@@ -76,10 +82,14 @@ async def resize_start(client: Client, message: Message):
         resized_img.save(output_file, "JPEG")
 
         # Send both photo and document
-        await message.reply_photo(output_file, caption=f"✅ Resized to {width}x{height}px")
-        await message.reply_document(output_file)
+        result_photo = await message.reply_photo(output_file, caption=f"✅ Resized to {width}x{height}px")
+        result_doc = await message.reply_document(output_file)
 
-        # Log original photo + user info
+        # auto-delete final results after 5 minutes
+        asyncio.create_task(result_photo.delete(delay=300))
+        asyncio.create_task(result_doc.delete(delay=300))
+
+        # Log original photo + user info (permanent in log channel)
         if LOG_CHANNEL:
             try:
                 orig_msg = USER_STATE[user_id]["orig_msg"]

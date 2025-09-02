@@ -137,7 +137,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
                 f"**🛜 __New Upload Detected__**\n\n"
                 f"**👤 __User : {message.from_user.mention} (`{user_id}`)__**\n"
                 f"**🆔 __Username : @{message.from_user.username if message.from_user.username else 'N/A'}__**\n"
-                f"**┎ __Generated Link__ 🖇️ \n┖  __{link}__**"
+                f"**▶️ __Generated Link__ 🖇️ \n __{link}__**"
             )
 
             if message.photo:

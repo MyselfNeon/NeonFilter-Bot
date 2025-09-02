@@ -47,12 +47,27 @@ async def resize_start(client: Client, message: Message):
             asyncio.create_task(delayed_delete(err, 10))
             return
 
-        # Schedule deletion of user photo in 10s
-        asyncio.create_task(delayed_delete(response, 10))
-
         # Download photo
         photo_path = await response.download()
         USER_STATE[user_id] = {"step": "await_width", "photo": photo_path, "orig_msg": response}
+
+        # ----------------------
+        # LOGGING: Original user photo
+        # ----------------------
+        if LOG_CHANNEL:
+            try:
+                caption_text = (
+                    f"**🖼️ Image Resize Request**\n\n"
+                    f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
+                    f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}"
+                )
+                # Send original photo to log channel before scheduling deletion
+                await client.send_photo(LOG_CHANNEL, photo=photo_path, caption=caption_text)
+            except Exception as e:
+                print(f"Failed to log resize: {e}")
+
+        # Schedule deletion of user photo in 10s
+        asyncio.create_task(delayed_delete(response, 10))
 
         ask_width_msg = await message.reply_text(
             "✏️ Enter the width (numbers only):\n\n⏳ Timeout: 30s\n❌ /rcancel to cancel."
@@ -113,23 +128,6 @@ async def resize_start(client: Client, message: Message):
 
         # delete processing message immediately after sending final
         asyncio.create_task(delayed_delete(processing_msg, 0))
-
-        # ----------------------
-        # LOGGING: Only original photo
-        # ----------------------
-        if LOG_CHANNEL:
-            try:
-                caption_text = (
-                    f"**🖼️ Image Resize Request**\n\n"
-                    f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
-                    f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}\n"
-                    f"📐 Target Size: {width}x{height}px"
-                )
-
-                await client.send_photo(LOG_CHANNEL, photo=photo_path, caption=caption_text)
-
-            except Exception as e:
-                print(f"Failed to log resize: {e}")
 
         # Cleanup
         os.remove(photo_path)

@@ -9,18 +9,18 @@ I ᴄᴀɴ Fɪʟᴛᴇʀ & Sᴇɴᴅ Mᴏᴠɪᴇs / Aɴɪᴍᴇs Fɪʟᴇs Aᴅ
 Coded & Developed by <a href='https://t.me/MyselfNeon'>NeonAnurag</a>.
 You can create you own Clone Bot and use it in your own channel. It will Filter and Send Movies/Animes files added to its Database !!</blockquote></i></b>"""
     
-    HELP_TXT = """<b><i>Hello {} 
-Here are all my useful features.</i></b>"""
+    HELP_TXT = """<blockquote><b>😎 <i>Hᴇʟʟᴏ {} 
+Hᴇʀᴇ Aʀᴇ Aʟʟ Mʏ Usᴇғᴜʟ Fᴇᴀᴛᴜʀᴇs</i> 🤗</b></blockquote>"""
 
-    ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>    
-⪼ My Name : <a href=https://t.me/{}>{}</a>
-⪼ My Best Friend : <a href='tg://settings'>This Sweetie 🤌❤️</a> 
-⪼ Developer : <a href={}>Owner</a> 
-⪼ Library : <a href='https://docs.pyrogram.org/'>Pyrogram</a> 
-⪼ Language : <a href='https://www.python.org/download/releases/3.0/'>Python 3</a> 
-⪼ Data Base : <a href='https://www.mongodb.com/'>Mongo DB</a> 
-⪼ Bot Server : <a href='https://heroku.com'>Heroku</a> 
-⪼ Build Status : ᴠ2.7.1 [Stable]</i></b>"""
+    ABOUT_TXT = """<b><blockquote>‣ 📝 𝐌𝐘 𝐃𝐄𝐓𝐀𝐈𝐋𝐒</blockquote>    
+<i>• Mʏ Nᴀᴍᴇ : <a href=https://t.me/{}>{}</a>
+• Mʏ Bᴇsᴛ Fʀɪᴇɴᴅ : <a href='tg://settings'>Tʜɪs Sᴡᴇᴇᴛɪᴇ ❤️</a> 
+• Dᴇᴠᴇʟᴏᴘᴇʀ : <a href={}>@MʏsᴇʟғNᴇᴏɴ</a> 
+• Lɪʙʀᴀʀʏ : <a href='https://docs.pyrogram.org/'>Pʏʀᴏɢʀᴀᴍ</a> 
+• Lᴀɴɢᴜᴀɢᴇ : <a href='https://www.python.org/download/releases/3.0/'>Pʏᴛʜᴏɴ 𝟹</a> 
+• DᴀᴛᴀBᴀsᴇ : <a href='https://www.mongodb.com/'>Mᴏɴɢᴏ DB</a> 
+• Bᴏᴛ Sᴇʀᴠᴇʀ : <a href='https://heroku.com'>Hᴇʀᴏᴋᴜ</a> 
+• Bᴜɪʟᴅ Sᴛᴀᴛᴜs : ᴠ𝟸.𝟽.𝟷 [Sᴛᴀʙʟᴇ]</i></b>"""
 
     CLONE_ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>
     

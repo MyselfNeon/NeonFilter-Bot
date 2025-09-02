@@ -1929,7 +1929,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
              InlineKeyboardButton('Fɪʟᴛᴇʀꜱ 🎭', callback_data='filters')
          ], [
              InlineKeyboardButton('Jꜱᴏɴ 👀', callback_data='json'), 
-             InlineKeyboardButton('Sʜᴀʀᴇ Tᴇxᴛ ✏️', callback_data='share')
+             InlineKeyboardButton('Mᴏᴅs ✏️', callback_data='mods')
          ], [
              InlineKeyboardButton('Sᴏɴɢ 🎙️', callback_data='song'),
              InlineKeyboardButton('Eᴀʀɴ Mᴏɴᴇʏ 💸', callback_data='shortlink_info')
@@ -2254,7 +2254,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-    elif query.data == "share":
+    elif query.data == "mods":
         btn = [[
             InlineKeyboardButton("⬅️ Bᴀᴄᴋ", callback_data="help"),
             InlineKeyboardButton("Cᴏɴᴛᴀᴄᴛ", url="telegram.me/MyselfNeon")
@@ -2266,7 +2266,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )
         reply_markup = InlineKeyboardMarkup(btn)
         await query.message.edit_text(
-            text=(script.SHARE_TXT),
+            text=(mods.MODS_TXT),
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
@@ -3288,6 +3288,7 @@ async def global_filters(client, message, text=False):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

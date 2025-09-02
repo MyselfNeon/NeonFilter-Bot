@@ -1,3 +1,4 @@
+#Resize.py Plugin
 import os
 import asyncio
 from PIL import Image
@@ -93,6 +94,9 @@ async def resize_start(client: Client, message: Message):
         asyncio.create_task(delayed_delete(ask_height_msg, 5))
         asyncio.create_task(delayed_delete(height_response, 5))
 
+        # Show processing message
+        processing_msg = await message.reply_text("⚙️ Please wait, your photo is being processed...")
+
         # Process image
         img = Image.open(photo_path)
         resized_img = img.resize((width, height))
@@ -107,6 +111,9 @@ async def resize_start(client: Client, message: Message):
         # auto-delete final results after 5 minutes
         asyncio.create_task(delayed_delete(result_photo, 300))
         asyncio.create_task(delayed_delete(result_doc, 300))
+
+        # delete processing message immediately after sending final
+        asyncio.create_task(delayed_delete(processing_msg, 0))
 
         # Log original photo + user info (permanent in log channel)
         if LOG_CHANNEL:

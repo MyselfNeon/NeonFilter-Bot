@@ -15,6 +15,16 @@ LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", 0))  # put channel id in env or 
 USER_STATE = {}  # temp state machine for interactive resize
 
 # ----------------------
+# HELPER: delayed delete
+# ----------------------
+async def delayed_delete(msg: Message, delay: int):
+    try:
+        await asyncio.sleep(delay)
+        await msg.delete()
+    except:
+        pass
+
+# ----------------------
 # RESIZE START
 # ----------------------
 @Client.on_message(filters.command("resize") & filters.private)
@@ -33,7 +43,9 @@ async def resize_start(client: Client, message: Message):
         response: Message = await client.listen(user_id, timeout=30)
         if not response.photo:
             USER_STATE.pop(user_id, None)
-            return await message.reply_text("❌ You didn’t send a valid photo. Process canceled.")
+            err = await message.reply_text("❌ You didn’t send a valid photo. Process canceled.")
+            asyncio.create_task(delayed_delete(err, 10))
+            return
 
         # Download photo
         photo_path = await response.download()
@@ -48,14 +60,16 @@ async def resize_start(client: Client, message: Message):
         if not (width_response.text and width_response.text.isdigit()):
             USER_STATE.pop(user_id, None)
             os.remove(photo_path)
-            return await message.reply_text("❌ Invalid width. Process canceled.")
+            err = await message.reply_text("❌ Invalid width. Process canceled.")
+            asyncio.create_task(delayed_delete(err, 10))
+            return
 
         width = int(width_response.text)
         USER_STATE[user_id]["width"] = width
 
         # delete bot+user width messages
-        asyncio.create_task(ask_width_msg.delete(delay=2))
-        asyncio.create_task(width_response.delete())
+        asyncio.create_task(delayed_delete(ask_width_msg, 2))
+        asyncio.create_task(delayed_delete(width_response, 0))
 
         ask_height_msg = await message.reply_text(
             "📏 Now enter the height (numbers only):\n\n⏳ Timeout: 30s\n❌ /rcancel to cancel."
@@ -66,13 +80,15 @@ async def resize_start(client: Client, message: Message):
         if not (height_response.text and height_response.text.isdigit()):
             USER_STATE.pop(user_id, None)
             os.remove(photo_path)
-            return await message.reply_text("❌ Invalid height. Process canceled.")
+            err = await message.reply_text("❌ Invalid height. Process canceled.")
+            asyncio.create_task(delayed_delete(err, 10))
+            return
 
         height = int(height_response.text)
 
         # delete bot+user height messages
-        asyncio.create_task(ask_height_msg.delete(delay=2))
-        asyncio.create_task(height_response.delete())
+        asyncio.create_task(delayed_delete(ask_height_msg, 2))
+        asyncio.create_task(delayed_delete(height_response, 0))
 
         # Process image
         img = Image.open(photo_path)
@@ -86,8 +102,8 @@ async def resize_start(client: Client, message: Message):
         result_doc = await message.reply_document(output_file)
 
         # auto-delete final results after 5 minutes
-        asyncio.create_task(result_photo.delete(delay=300))
-        asyncio.create_task(result_doc.delete(delay=300))
+        asyncio.create_task(delayed_delete(result_photo, 300))
+        asyncio.create_task(delayed_delete(result_doc, 300))
 
         # Log original photo + user info (permanent in log channel)
         if LOG_CHANNEL:
@@ -109,10 +125,12 @@ async def resize_start(client: Client, message: Message):
 
     except asyncio.TimeoutError:
         USER_STATE.pop(user_id, None)
-        await message.reply_text("⌛ Timeout! Process canceled.")
+        msgx = await message.reply_text("⌛ Timeout! Process canceled.")
+        asyncio.create_task(delayed_delete(msgx, 10))
     except Exception as e:
         USER_STATE.pop(user_id, None)
-        await message.reply_text(f"⚠️ Error: `{e}`")
+        msgx = await message.reply_text(f"⚠️ Error: `{e}`")
+        asyncio.create_task(delayed_delete(msgx, 10))
 
 
 # ----------------------
@@ -130,7 +148,8 @@ async def resize_cancel(client: Client, message: Message):
             pass
 
         USER_STATE.pop(user_id, None)
-        await message.reply_text("🛑 Resize process canceled successfully.")
+        done = await message.reply_text("🛑 Resize process canceled successfully.")
+        asyncio.create_task(delayed_delete(done, 10))
 
         if LOG_CHANNEL:
             try:
@@ -143,5 +162,6 @@ async def resize_cancel(client: Client, message: Message):
             except Exception as e:
                 print(f"Failed to log cancel: {e}")
     else:
-        await message.reply_text("⚠️ No active resize process to cancel.")
+        warn = await message.reply_text("⚠️ No active resize process to cancel.")
+        asyncio.create_task(delayed_delete(warn, 10))
         

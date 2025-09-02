@@ -12,8 +12,7 @@ You can create you own Clone Bot and use it in your own channel. It will Filter 
     HELP_TXT = """<b><i>Hello {} 
 Here are all my useful features.</i></b>"""
 
-    ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>
-    
+    ABOUT_TXT = """<b><i><blockquote>‣ 📝 My Details</blockquote>    
 ⪼ My Name : <a href=https://t.me/{}>{}</a>
 ⪼ My Best Friend : <a href='tg://settings'>This Sweetie 🤌❤️</a> 
 ⪼ Developer : <a href={}>Owner</a> 

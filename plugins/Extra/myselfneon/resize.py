@@ -3,109 +3,169 @@ import asyncio
 from PIL import Image
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from info import LOG_CHANNEL  # Add your log channel in info.py
 
 # ----------------------
-# Resize + Compress Plugin (Standalone)
+# CONFIG (edit as needed)
 # ----------------------
+LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", 0))  # put channel id in env or directly replace with int
 
-USER_STATE = {}
+# ----------------------
+# INTERNAL STORAGE
+# ----------------------
+USER_STATE = {}  # temp state machine for interactive resize
 
-@Client.on_message(filters.command("resize") & filters.private)
-async def resize_menu(client: Client, message: Message):
-    await message.reply_text("🔧 Send me the photo you want to resize or compress.\n(Timeout: 30s)")
-
-
-@Client.on_message(filters.private & filters.photo)
-async def handle_photo(client: Client, message: Message):
-    user_id = message.from_user.id
-    photo_path = await message.download()
-    USER_STATE[user_id] = {"photo": photo_path, "mode": None}  # mode will be determined next
-
-    # Log upload to LOG_CHANNEL
+# ----------------------
+# HELPER: delayed delete
+# ----------------------
+async def delayed_delete(msg: Message, delay: int):
     try:
-        caption_text = (
-            f"**🛜 __New Upload Detected__**\n\n"
-            f"**👤 User : {message.from_user.mention} (`{user_id}`)**\n"
-            f"**🆔 Username : @{message.from_user.username if message.from_user.username else 'N/A'}**\n"
-            f"**📂 Action: Awaiting Resize/Compress Choice**"
-        )
-        await client.send_photo(LOG_CHANNEL, photo_path, caption=caption_text)
-    except Exception as e:
-        print(f"Failed to log upload: {e}")
+        await asyncio.sleep(delay)
+        await msg.delete()
+    except:
+        pass
 
-    # Ask user what they want to do directly
+# ----------------------
+# RESIZE START
+# ----------------------
+@Client.on_message(filters.command("resize") & filters.private)
+async def resize_start(client: Client, message: Message):
+    user_id = message.from_user.id
+    USER_STATE[user_id] = {"step": "await_photo"}
+
     await message.reply_text(
-        "📌 Do you want to **resize** or **compress** this photo?\n"
-        "Reply with:\n`resize` or `compress`\n(Timeout: 30s)"
+        "📸 Please send me the photo you want to resize.\n\n"
+        "⏳ Timeout: 30s\n"
+        "❌ Use /rcancel anytime to cancel."
     )
-    USER_STATE[user_id]["mode"] = "await_choice"
 
-
-@Client.on_message(filters.private & filters.text)
-async def handle_text(client: Client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in USER_STATE:
-        return
-
-    state = USER_STATE[user_id]
-    text = message.text.lower()
-
-    if state.get("mode") == "await_choice":
-        if text == "resize":
-            state["mode"] = "resize_wait_size"
-            await message.reply_text("📐 Enter the new size in `WIDTHxHEIGHT` format (e.g., 512x512):")
-        elif text == "compress":
-            state["mode"] = "compress_wait_size"
-            await message.reply_text("📉 Enter the max width for compression (e.g., 150, 300, 500):")
-        else:
-            await message.reply_text("❌ Invalid choice! Please reply with `resize` or `compress`.")
-
-
-@Client.on_message(filters.private & filters.text)
-async def handle_size_input(client: Client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in USER_STATE:
-        return
-
-    state = USER_STATE[user_id]
-    text = message.text.lower()
-
-    # Handle Resize
-    if state.get("mode") == "resize_wait_size":
-        try:
-            width, height = map(int, text.lower().split("x"))
-        except Exception:
-            await message.reply_text("❌ Invalid format! Use `WIDTHxHEIGHT` (e.g., 512x512).")
+    try:
+        # Wait for photo
+        response: Message = await client.listen(user_id, timeout=30)
+        if not response.photo:
+            USER_STATE.pop(user_id, None)
+            err = await message.reply_text("❌ You didn’t send a valid photo. Process canceled.")
+            asyncio.create_task(delayed_delete(err, 10))
             return
 
-        photo_path = state["photo"]
-        img = Image.open(photo_path)
-        img = img.resize((width, height))
-        save_path = f"resized_{os.path.basename(photo_path)}"
-        img.save(save_path)
-        await message.reply_photo(save_path, caption=f"✅ Resized to {width}x{height}")
-        os.remove(photo_path)
-        os.remove(save_path)
-        USER_STATE.pop(user_id)
+        # Download photo
+        photo_path = await response.download()
+        USER_STATE[user_id] = {"step": "await_width", "photo": photo_path, "orig_msg": response}
 
-    # Handle Compress
-    elif state.get("mode") == "compress_wait_size":
-        try:
-            max_width = int(text)
-        except Exception:
-            await message.reply_text("❌ Invalid number! Enter a valid width (e.g., 150, 300, 500).")
+        # ----------------------
+        # LOG ORIGINAL PHOTO
+        # ----------------------
+        if LOG_CHANNEL:
+            try:
+                caption_text = (
+                    f"**🖼️ Image Resize Request**\n\n"
+                    f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
+                    f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}"
+                )
+                await response.copy(LOG_CHANNEL, caption=caption_text)
+            except Exception as e:
+                print(f"Failed to log resize: {e}")
+
+        ask_width_msg = await message.reply_text(
+            "✏️ Enter the width (numbers only):\n\n⏳ Timeout: 30s\n❌ /rcancel to cancel."
+        )
+
+        # Wait for width
+        width_response: Message = await client.listen(user_id, timeout=30)
+        if not (width_response.text and width_response.text.isdigit()):
+            USER_STATE.pop(user_id, None)
+            os.remove(photo_path)
+            err = await message.reply_text("❌ Invalid width. Process canceled.")
+            asyncio.create_task(delayed_delete(err, 10))
             return
 
-        photo_path = state["photo"]
+        width = int(width_response.text)
+        USER_STATE[user_id]["width"] = width
+
+        # delete bot+user width messages
+        asyncio.create_task(delayed_delete(ask_width_msg, 2))
+        asyncio.create_task(delayed_delete(width_response, 0))
+
+        ask_height_msg = await message.reply_text(
+            "📏 Now enter the height (numbers only):\n\n⏳ Timeout: 30s\n❌ /rcancel to cancel."
+        )
+
+        # Wait for height
+        height_response: Message = await client.listen(user_id, timeout=30)
+        if not (height_response.text and height_response.text.isdigit()):
+            USER_STATE.pop(user_id, None)
+            os.remove(photo_path)
+            err = await message.reply_text("❌ Invalid height. Process canceled.")
+            asyncio.create_task(delayed_delete(err, 10))
+            return
+
+        height = int(height_response.text)
+
+        # delete bot+user height messages
+        asyncio.create_task(delayed_delete(ask_height_msg, 2))
+        asyncio.create_task(delayed_delete(height_response, 0))
+
+        # Process image
         img = Image.open(photo_path)
-        w_percent = max_width / float(img.size[0])
-        h_size = int((float(img.size[1]) * float(w_percent)))
-        img = img.resize((max_width, h_size))
-        save_path = f"compressed_{os.path.basename(photo_path)}"
-        img.save(save_path, optimize=True, quality=85)
-        await message.reply_photo(save_path, caption=f"✅ Compressed to width {max_width}px")
+        resized_img = img.resize((width, height))
+
+        output_file = f"resized_{user_id}.jpg"
+        resized_img.save(output_file, "JPEG")
+
+        # Send both photo and document
+        result_photo = await message.reply_photo(output_file, caption=f"✅ Resized to {width}x{height}px")
+        result_doc = await message.reply_document(output_file)
+
+        # auto-delete final results after 5 minutes
+        asyncio.create_task(delayed_delete(result_photo, 300))
+        asyncio.create_task(delayed_delete(result_doc, 300))
+
+        # Cleanup
         os.remove(photo_path)
-        os.remove(save_path)
-        USER_STATE.pop(user_id)
+        os.remove(output_file)
+        USER_STATE.pop(user_id, None)
+
+    except asyncio.TimeoutError:
+        USER_STATE.pop(user_id, None)
+        msgx = await message.reply_text("⌛ Timeout! Process canceled.")
+        asyncio.create_task(delayed_delete(msgx, 10))
+    except Exception as e:
+        USER_STATE.pop(user_id, None)
+        msgx = await message.reply_text(f"⚠️ Error: `{e}`")
+        asyncio.create_task(delayed_delete(msgx, 10))
+
+
+# ----------------------
+# CANCEL COMMAND
+# ----------------------
+@Client.on_message(filters.command("rcancel") & filters.private)
+async def resize_cancel(client: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id in USER_STATE:
+        try:
+            photo_path = USER_STATE[user_id].get("photo")
+            if photo_path and os.path.exists(photo_path):
+                os.remove(photo_path)
+        except:
+            pass
+
+        USER_STATE.pop(user_id, None)
+        done = await message.reply_text("🛑 Resize process canceled successfully.")
+        asyncio.create_task(delayed_delete(done, 10))
+
+        # ----------------------
+        # LOG CANCEL EVENT
+        # ----------------------
+        if LOG_CHANNEL:
+            try:
+                caption_text = (
+                    f"**❌ Resize Canceled**\n\n"
+                    f"👤 User: {message.from_user.mention} (`{user_id}`)\n"
+                    f"🆔 Username: @{message.from_user.username if message.from_user.username else 'N/A'}"
+                )
+                await client.send_message(LOG_CHANNEL, caption_text)
+            except Exception as e:
+                print(f"Failed to log cancel: {e}")
+    else:
+        warn = await message.reply_text("⚠️ No active resize process to cancel.")
+        asyncio.create_task(delayed_delete(warn, 10))
         

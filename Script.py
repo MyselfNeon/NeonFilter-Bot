@@ -10,7 +10,7 @@ Coded & Developed by <a href='https://t.me/MyselfNeon'>NeonAnurag</a>.
 You can create you own Clone Bot and use it in your own channel. It will Filter and Send Movies/Animes files added to its Database !!</blockquote></i></b>"""
     
     HELP_TXT = """<blockquote><b>😎 <i>Hᴇʟʟᴏ {} 
-Hᴇʀᴇ Aʀᴇ Aʟʟ Mʏ Usᴇғᴜʟ Fᴇᴀᴛᴜʀᴇs</i> 🤗</b></blockquote>"""
+Hᴇʀᴇ Aʀᴇ Mʏ Usᴇғᴜʟ Fᴇᴀᴛᴜʀᴇs</i> 🤗</b></blockquote>"""
 
     ABOUT_TXT = """<b><blockquote>‣ 📝 𝐌𝐘 𝐃𝐄𝐓𝐀𝐈𝐋𝐒</blockquote>    
 <i>• Mʏ Nᴀᴍᴇ : <a href=https://t.me/{}>{}</a>

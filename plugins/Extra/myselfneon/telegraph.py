@@ -33,7 +33,7 @@ def upload_to_envs(file_path: str):
 
 async def upload_to_catbox(file_path: str):
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=300)) as session:
             with open(file_path, "rb") as f:
                 data = aiohttp.FormData()
                 data.add_field("reqtype", "fileupload")

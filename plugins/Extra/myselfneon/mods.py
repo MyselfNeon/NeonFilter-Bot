@@ -1,4 +1,4 @@
-  MODS_TXT = """
+    MODS_TXT = """
   <b>🛠️ Available Mods:</b>
 
 - Mod 1: Description...

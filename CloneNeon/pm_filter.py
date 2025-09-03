@@ -1,4 +1,3 @@
-
 import os, logging, string, asyncio, time, re, ast, random, math, pytz, pyrogram
 from datetime import datetime, timedelta, date, time
 from Script import script
@@ -67,10 +66,10 @@ async def next_page(bot, query):
     btn = [
         [
             InlineKeyboardButton(
-                text=f"[{get_size(filevj['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), filevj['file_name'].split()))}", callback_data=f"file#{filevj['file_id']}"
+                text=f"[{get_size(fileneo['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), fileneo['file_name'].split()))}", callback_data=f"file#{fileneo['file_id']}"
             ),
         ]
-        for filevj in files
+        for fileneo in files
     ]
 
     btn.insert(0, 
@@ -217,10 +216,10 @@ async def filter_yearss_cb_handler(client: Client, query: CallbackQuery):
     btn = [
         [
             InlineKeyboardButton(
-                text=f"[{get_size(filevj['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), filevj['file_name'].split()))}", callback_data=f"file#{filevj['file_id']}"
+                text=f"[{get_size(fileneo['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), fileneo['file_name'].split()))}", callback_data=f"file#{fileneo['file_id']}"
             ),
         ]
-        for filevj in files
+        for fileneo in files
     ]
     btn.insert(0, 
         [
@@ -329,10 +328,10 @@ async def filter_episodes_cb_handler(client: Client, query: CallbackQuery):
     btn = [
         [
             InlineKeyboardButton(
-                text=f"[{get_size(filevj['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), filevj['file_name'].split()))}", callback_data=f"file#{filevj['file_id']}"
+                text=f"[{get_size(fileneo['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), fileneo['file_name'].split()))}", callback_data=f"file#{fileneo['file_id']}"
             ),
         ]
-        for filevj in files
+        for fileneo in files
     ]
     btn.insert(0, 
         [
@@ -443,10 +442,10 @@ async def filter_languages_cb_handler(client: Client, query: CallbackQuery):
     btn = [
         [
             InlineKeyboardButton(
-                text=f"[{get_size(filevj['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), filevj['file_name'].split()))}", callback_data=f"file#{filevj['file_id']}"
+                text=f"[{get_size(fileneo['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), fileneo['file_name'].split()))}", callback_data=f"file#{fileneo['file_id']}"
             ),
         ]
-        for filevj in files
+        for fileneo in files
     ]
     btn.insert(0, 
         [
@@ -584,10 +583,10 @@ async def filter_seasons_cb_handler(client: Client, query: CallbackQuery):
     btn = [
         [
             InlineKeyboardButton(
-                text=f"[{get_size(filevj['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), filevj['file_name'].split()))}", callback_data=f"file#{filevj['file_id']}"
+                text=f"[{get_size(fileneo['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), fileneo['file_name'].split()))}", callback_data=f"file#{fileneo['file_id']}"
             ),
         ]
-        for filevj in files
+        for fileneo in files
     ]
     btn.insert(0, 
         [
@@ -692,10 +691,10 @@ async def filter_qualities_cb_handler(client: Client, query: CallbackQuery):
     btn = [
         [
             InlineKeyboardButton(
-                text=f"⚜️[{get_size(filevj['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), filevj['file_name'].split()))}", callback_data=f"file#{filevj['file_id']}"
+                text=f"⚜️[{get_size(fileneo['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), fileneo['file_name'].split()))}", callback_data=f"file#{fileneo['file_id']}"
             ),
         ]
-        for filevj in files
+        for fileneo in files
     ] 
     btn.insert(0, 
         [
@@ -886,10 +885,10 @@ async def auto_filter(client, name, msg, reply_msg, ai_search, spoll=False):
     btn = [
         [
             InlineKeyboardButton(
-                text=f"[{get_size(filevj['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), filevj['file_name'].split()))}", callback_data=f"file#{filevj['file_id']}"
+                text=f"[{get_size(fileneo['file_size'])}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), fileneo['file_name'].split()))}", callback_data=f"file#{fileneo['file_id']}"
             ),
         ]
-        for filevj in files
+        for fileneo in files
     ]
     btn.insert(0, 
         [
@@ -979,7 +978,7 @@ async def auto_filter(client, name, msg, reply_msg, ai_search, spoll=False):
         await fuk.delete()
         await message.delete()
 
-async def advantage_spell_chok(client, name, msg, reply_msg, vj_search):
+async def advantage_spell_chok(client, name, msg, reply_msg, neo_search):
     mv_id = msg.id
     mv_rqst = name
     reqstr1 = msg.from_user.id if msg.from_user else 0
@@ -1013,18 +1012,18 @@ async def advantage_spell_chok(client, name, msg, reply_msg, vj_search):
     movielist += [movie.get('title') for movie in movies]
     movielist += [f"{movie.get('title')} {movie.get('year')}" for movie in movies]
     SPELL_CHECK[mv_id] = movielist
-    if vj_search == True:
-        vj_search_new = False
-        vj_ai_msg = await reply_msg.edit_text("<b><i>Advance Ai Of Tech VJ Try To Find Your Movie With Your Wrong Spelling.</i></b>")
+    if neo_search == True:
+        neo_search_new = False
+        neo_ai_msg = await reply_msg.edit_text("<b><i>Advance Ai Of Neon Try To Find Your Movie With Your Wrong Spelling.</i></b>")
         movienamelist = []
         movienamelist += [movie.get('title') for movie in movies]
-        for techvj in movienamelist:
+        for techneo in movienamelist:
             try:
                 mv_rqst = mv_rqst.capitalize()
             except:
                 pass
-            if mv_rqst.startswith(techvj[0]):
-                await auto_filter(client, techvj, msg, reply_msg, vj_search_new)
+            if mv_rqst.startswith(techneo[0]):
+                await auto_filter(client, techneo, msg, reply_msg, neo_search_new)
                 break
         reqst_gle = mv_rqst.replace(" ", "+")
         button = [[

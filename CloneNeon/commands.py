@@ -1,4 +1,3 @@
-
 import os, string, logging, random, asyncio, time, datetime, re, sys, json, base64
 from Script import script
 from pyrogram import Client, filters, enums
@@ -92,12 +91,12 @@ async def start(client, message):
             return await message.reply('<b><i>No such file exist.</b></i>')
         filesarr = []
         for file in files:
-            vj_file_id = file['file_id']
-            k = await temp.BOT.send_cached_media(chat_id=PUBLIC_FILE_CHANNEL, file_id=vj_file_id)
-            vj = await client.get_messages(PUBLIC_FILE_CHANNEL, k.id)
-            mg = getattr(vj, vj.media.value)
+            neo_file_id = file['file_id']
+            k = await temp.BOT.send_cached_media(chat_id=PUBLIC_FILE_CHANNEL, file_id=neo_file_id)
+            neo = await client.get_messages(PUBLIC_FILE_CHANNEL, k.id)
+            mg = getattr(neo, neo.media.value)
             file_id = mg.file_id
-            files_ = await get_file_details(vj_file_id)
+            files_ = await get_file_details(neo_file_id)
             files1 = files_
             title = ' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@'), files1['file_name'].split()))
             size=get_size(files1['file_size'])
@@ -161,8 +160,8 @@ async def start(client, message):
     else:
         reply_markup=None
     k = await temp.BOT.send_cached_media(chat_id=PUBLIC_FILE_CHANNEL, file_id=file_id)
-    vj = await client.get_messages(PUBLIC_FILE_CHANNEL, k.id)
-    m = getattr(vj, vj.media.value)
+    neo = await client.get_messages(PUBLIC_FILE_CHANNEL, k.id)
+    m = getattr(neo, neo.media.value)
     file_id = m.file_id
     msg = await client.send_cached_media(
         chat_id=message.from_user.id,
@@ -187,7 +186,7 @@ async def settings(client, message):
     api = await client.ask(message.chat.id, "<b>Now Send Your Api</b>")
     try:
         shortzy = Shortzy(api_key=api.text, base_site=url.text)
-        link = 'https://t.me/VJ_Botz'
+        link = 'https://t.me/NeonFiles'
         await shortzy.convert(link)
     except Exception as e:
         await message.reply(f"**Error In Converting Link**\n\n<code>{e}</code>\n\n**Start The Process Again By - /settings**", reply_markup=InlineKeyboardMarkup(btn))

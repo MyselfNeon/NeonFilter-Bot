@@ -2266,7 +2266,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )
         reply_markup = InlineKeyboardMarkup(btn)
         await query.message.edit_text(
-            text=(script.MODS_TXT),
+            text=(mods.MODS_TXT),
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
@@ -3288,6 +3288,7 @@ async def global_filters(client, message, text=False):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

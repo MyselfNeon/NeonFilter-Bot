@@ -24,6 +24,23 @@ async def allowed(_, __, message):
     return False
 
 # --------------------------
+# Persistent file store map
+# --------------------------
+MAP_FILE = "file_store_map.json"
+
+# Load map if exists
+if os.path.exists(MAP_FILE):
+    with open(MAP_FILE, "r") as f:
+        FILE_STORE_MAP = json.load(f)
+else:
+    FILE_STORE_MAP = {}
+
+# Helper to save map
+def save_file_store_map():
+    with open(MAP_FILE, "w") as f:
+        json.dump(FILE_STORE_MAP, f)
+
+# --------------------------
 # Single file link
 # --------------------------
 @Client.on_message(filters.command(['link', 'plink']) & filters.create(allowed))
@@ -32,7 +49,6 @@ async def gen_link_s(bot, message):
         await message.reply("**__Now Send Me Your File (Video, Audio, Document) 😊__**")
         neo = await bot.listen(message.chat.id)  # using pyromod.listen
 
-        # Get file object safely
         file_obj = None
         if neo.document:
             file_obj = neo.document
@@ -46,12 +62,28 @@ async def gen_link_s(bot, message):
         if getattr(neo, "has_protected_content", False) and neo.from_user.id not in ADMINS:
             return await neo.reply("**__Protected content cannot be stored.__**")
 
-        # Take only the first value from unpack_new_file_id
-        file_id = unpack_new_file_id(file_obj.file_id)[0]
+        original_file_id = file_obj.file_id
+
+        # Check if this file is already stored
+        if original_file_id in FILE_STORE_MAP:
+            stored_file_id = FILE_STORE_MAP[original_file_id]
+        else:
+            # Upload to LOG_CHANNEL
+            post = await bot.send_document(
+                LOG_CHANNEL,
+                original_file_id,
+                caption=f"Stored for filestore by {message.from_user.first_name}"
+            )
+            stored_file_id = unpack_new_file_id(post.document.file_id)[0]
+            FILE_STORE_MAP[original_file_id] = stored_file_id
+            save_file_store_map()  # persist map
+
+        # Generate link
         prefix = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
-        b64_string = base64.urlsafe_b64encode(f"{prefix}{file_id}".encode()).decode().strip("=")
+        b64_string = base64.urlsafe_b64encode(f"{prefix}{stored_file_id}".encode()).decode().strip("=")
 
         await message.reply(f"Here is your Link:\nhttps://t.me/{temp.U_NAME}?start={b64_string}")
+
     except Exception as e:
         logger.error(f"Error in gen_link_s: {e}")
         await message.reply(f"❌ Error: {e}")
@@ -128,11 +160,26 @@ async def gen_link_batch(bot, message):
                 file_obj = neo.audio
 
             if file_obj:
+                # Use persistent map for batch files as well
+                original_file_id = file_obj.file_id
+                if original_file_id in FILE_STORE_MAP:
+                    stored_file_id = FILE_STORE_MAP[original_file_id]
+                else:
+                    post = await bot.send_document(
+                        LOG_CHANNEL,
+                        original_file_id,
+                        caption=f"Stored for filestore by {message.from_user.first_name}"
+                    )
+                    stored_file_id = unpack_new_file_id(post.document.file_id)[0]
+                    FILE_STORE_MAP[original_file_id] = stored_file_id
+                    save_file_store_map()
+
                 caption = getattr(neo, 'caption', '')
                 if caption:
                     caption = caption.html if hasattr(caption, 'html') else str(caption)
+
                 outlist.append({
-                    "file_id": file_obj.file_id,
+                    "file_id": stored_file_id,  # Use stored ID
                     "caption": caption,
                     "title": getattr(file_obj, "file_name", ""),
                     "size": file_obj.file_size,

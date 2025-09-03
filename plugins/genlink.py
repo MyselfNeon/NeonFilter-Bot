@@ -46,7 +46,8 @@ async def gen_link_s(bot, message):
         if getattr(neo, "has_protected_content", False) and neo.from_user.id not in ADMINS:
             return await neo.reply("**__Protected content cannot be stored.__**")
 
-        file_id, _ = unpack_new_file_id(file_obj.file_id)
+        # Take only the first value from unpack_new_file_id
+        file_id = unpack_new_file_id(file_obj.file_id)[0]
         prefix = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
         b64_string = base64.urlsafe_b64encode(f"{prefix}{file_id}".encode()).decode().strip("=")
 
@@ -63,7 +64,9 @@ async def gen_link_batch(bot, message):
     try:
         parts = message.text.strip().split(" ")
         if len(parts) != 3:
-            return await message.reply("**__Use correct Format ✅\n\nExample__**\n<code>/batch https://t.me/NeonFiles/10 https://t.me/NeonFiles/20</code>")
+            return await message.reply(
+                "**__Use correct Format ✅\n\nExample__**\n<code>/batch https://t.me/NeonFiles/10 https://t.me/NeonFiles/20</code>"
+            )
 
         cmd, first, last = parts
         regex = re.compile(r"(https://)?(t\.me/|telegram\.me/|telegram\.dog/)(c/)?([\w\d_]+)/(\d+)$")
@@ -142,10 +145,15 @@ async def gen_link_batch(bot, message):
             json.dump(outlist, out)
             tmp_path = out.name
 
-        post = await bot.send_document(LOG_CHANNEL, tmp_path, file_name="Batch.json", caption=f"⚠️Generated for filestore by {message.from_user.first_name}")
+        post = await bot.send_document(
+            LOG_CHANNEL,
+            tmp_path,
+            file_name="Batch.json",
+            caption=f"⚠️Generated for filestore by {message.from_user.first_name}"
+        )
         os.remove(tmp_path)
 
-        file_id, _ = unpack_new_file_id(post.document.file_id)
+        file_id = unpack_new_file_id(post.document.file_id)[0]
         await sts.edit(f"Here is your link\nContains `{og_msg}` files.\nhttps://t.me/{temp.U_NAME}?start=BATCH-{file_id}")
 
     except Exception as e:

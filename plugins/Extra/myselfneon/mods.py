@@ -1,0 +1,9 @@
+MODS_TXT = """
+  <b>🛠️ Available Mods:</b>
+
+- Mod 1: Description...
+- Mod 2: Description...
+- Mod 3: Description...
+
+Contact @MyselfNeon for support.
+"""

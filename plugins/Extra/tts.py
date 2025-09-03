@@ -44,19 +44,19 @@ async def text_to_speech(bot, message: Message):
     asyncio.create_task(auto_delete(reminder_msg))  # run async without blocking
 
     # Wait for user reply
-    vj = await bot.listen(message.chat.id)
+    neo = await bot.listen(message.chat.id)
 
-    if vj.text:
-        m = await vj.reply_text("🎙️ **__Processing Your Voice__...**")
+    if neo.text:
+        m = await neo.reply_text("🎙️ **__Processing Your Voice__...**")
         try:
-            audio = await convert(vj.text, voice)
-            await vj.reply_audio(audio)
+            audio = await convert(neo.text, voice)
+            await neo.reply_audio(audio)
             await m.delete()
             audio.close()
         except Exception as e:
             await m.edit(f"❌ Error: {e}")
     else:
-        await vj.reply_text("**__Send Me Only Text Buddy__**")
+        await neo.reply_text("**__Send Me Only Text Buddy__**")
 
 async def auto_delete(msg):
     await asyncio.sleep(4)  # auto delete after 4 seconds

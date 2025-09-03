@@ -8,7 +8,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified, PeerId
 from pyrogram.errors.exceptions.bad_request_400 import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 from utils import get_size, is_subscribed, pub_is_subscribed, get_poster, search_gagala, temp, get_settings, save_group_settings, get_shortlink, get_tutorial, send_all, get_cap
 from database.users_chats_db import db
-from database.ia_filterdb import col, sec_col, db as vjdb, sec_db, get_file_details, get_search_results, get_bad_files
+from database.ia_filterdb import col, sec_col, db as neodb, sec_db, get_file_details, get_search_results, get_bad_files
 from database.filters_mdb import del_all, find_filter, get_filters
 from database.connections_mdb import mydb, active_connection, all_connections, delete_connection, if_active, make_active, make_inactive
 from database.gfilters_mdb import find_gfilter, get_gfilters, del_allg
@@ -2140,7 +2140,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         totl_chats = await db.total_chat_count()
         filesp = col.count_documents({})
         totalsec = sec_col.count_documents({})
-        stats = vjdb.command('dbStats')
+        stats = neodb.command('dbStats')
         used_dbSize = (stats['dataSize']/(1024*1024))+(stats['indexSize']/(1024*1024))
         free_dbSize = 512-used_dbSize
         stats2 = sec_db.command('dbStats')
@@ -2170,7 +2170,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         totl_chats = await db.total_chat_count()
         filesp = col.count_documents({})
         totalsec = sec_col.count_documents({})
-        stats = vjdb.command('dbStats')
+        stats = neodb.command('dbStats')
         used_dbSize = (stats['dataSize']/(1024*1024))+(stats['indexSize']/(1024*1024))
         free_dbSize = 512-used_dbSize
         stats2 = sec_db.command('dbStats')
@@ -2752,7 +2752,7 @@ async def auto_filter(client, name, msg, reply_msg, ai_search, spoll=False):
             await fuk.delete()
             await message.delete()
 
-async def advantage_spell_chok(client, name, msg, reply_msg, vj_search):
+async def advantage_spell_chok(client, name, msg, reply_msg, neo_search):
     mv_id = msg.id
     mv_rqst = name
     reqstr1 = msg.from_user.id if msg.from_user else 0
@@ -2791,18 +2791,18 @@ async def advantage_spell_chok(client, name, msg, reply_msg, vj_search):
     movielist += [movie.get('title') for movie in movies]
     movielist += [f"{movie.get('title')} {movie.get('year')}" for movie in movies]
     SPELL_CHECK[mv_id] = movielist
-    if AI_SPELL_CHECK == True and vj_search == True:
-        vj_search_new = False
-        vj_ai_msg = await reply_msg.edit_text("<b><i>I Am Trying To Find Your Movie With Your Wrong Spelling.</i></b>")
+    if AI_SPELL_CHECK == True and neo_search == True:
+        neo_search_new = False
+        neo_ai_msg = await reply_msg.edit_text("<b><i>I Am Trying To Find Your Movie With Your Wrong Spelling.</i></b>")
         movienamelist = []
         movienamelist += [movie.get('title') for movie in movies]
-        for techvj in movienamelist:
+        for techneo in movienamelist:
             try:
                 mv_rqst = mv_rqst.capitalize()
             except:
                 pass
-            if mv_rqst.startswith(techvj[0]):
-                await auto_filter(client, techvj, msg, reply_msg, vj_search_new)
+            if mv_rqst.startswith(techneo[0]):
+                await auto_filter(client, techneo, msg, reply_msg, neo_search_new)
                 break
         reqst_gle = mv_rqst.replace(" ", "+")
         button = [[

@@ -1,4 +1,3 @@
-
 import re, os, json, base64, logging
 from utils import temp
 from pyrogram import filters, Client, enums
@@ -18,13 +17,13 @@ async def allowed(_, __, message):
 
 @Client.on_message(filters.command(['link', 'plink']) & filters.create(allowed))
 async def gen_link_s(bot, message):
-    vj = await bot.ask(chat_id = message.from_user.id, text = "**__Now Send Me Your Message Which You Want To Store 😊__**")
-    file_type = vj.media
+    neo = await bot.ask(chat_id = message.from_user.id, text = "**__Now Send Me Your Message Which You Want To Store 😊__**")
+    file_type = neo.media
     if file_type not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.AUDIO, enums.MessageMediaType.DOCUMENT]:
-        return await vj.reply("**__Send me only Video, Audio, File or Document.__**")
+        return await neo.reply("**__Send me only Video, Audio, File or Document.__**")
     if message.has_protected_content and message.chat.id not in ADMINS:
         return await message.reply("okDa")
-    file_id, ref = unpack_new_file_id((getattr(vj, file_type.value)).file_id)
+    file_id, ref = unpack_new_file_id((getattr(neo, file_type.value)).file_id)
     string = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
     string += file_id
     outstr = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")

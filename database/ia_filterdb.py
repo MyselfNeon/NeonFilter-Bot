@@ -1,4 +1,3 @@
-
 import re, base64, json
 from struct import pack
 from pyrogram.file_id import FileId

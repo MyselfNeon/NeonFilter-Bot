@@ -415,12 +415,6 @@ NOTE:
 • IMDʙ ꜱʜᴏᴜʟᴅ ʜᴀᴠᴇ ᴀᴅᴍɪɴ ᴘʀɪᴠɪʟʟᴀɢᴇ. 
 • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴡᴏʀᴋꜱ ᴏɴ ʙᴏᴛʜ ᴘᴍ ᴀɴᴅ ɢʀᴏᴜᴘ. 
 • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ʙʏ ᴀɴʏ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀ.</b>"""  
-
-    MODS_TXT = """<b><i><blockquote>‣ Text Share URL</blockquote>
-Get your text share url. 
-  
-- Example :- /share
-</i></b>"""
     
     PIN_TXT = """<b>ᴩɪɴ ᴍᴏᴅᴜʟᴇ 
 ᴩɪɴ ᴀ ᴍᴇꜱꜱᴀɢᴇ... 
@@ -699,6 +693,13 @@ Also your given tutorial will be Added inside Your specified Group...</i></b>"""
 
     STREAM_TXT = """<b><i><blockquote>‣ Get Stream And Download Link 📥</blockquote>
 Get Streamable and Downloadable link of any file by using /stream</i></b>"""
+
+    MODS_TXT = """<b><i><blockquote>‣ Text Share URL</blockquote>
+Get your text share url. 
+  
+- Example :- /share
+</i></b>"""
+
 
 
 # Dont remove Credits

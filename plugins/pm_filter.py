@@ -14,6 +14,7 @@ from database.connections_mdb import mydb, active_connection, all_connections, d
 from database.gfilters_mdb import find_gfilter, get_gfilters, del_allg
 from urllib.parse import quote_plus
 from Neon.util.file_properties import get_name, get_hash, get_media_file_size
+from mods import MODS_TXT
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.ERROR)
@@ -3288,6 +3289,7 @@ async def global_filters(client, message, text=False):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

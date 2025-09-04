@@ -1,3 +1,4 @@
+#Pass remover and adder.py
 import os
 import shutil
 import pyzipper
@@ -202,3 +203,27 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
     del PROCESSED_RESULTS[chat_id]
     await callback.answer()
   
+# ====================== PASSWORD HELP COMMAND ======================
+@Client.on_message(filters.command("phelp"))
+async def password_help(client: Client, message: Message):
+    help_text = """
+**🔐 Password Manager Commands Help 🔐**
+
+1️⃣ **Remove Password**
+• **Command:** `/removepass <password>`
+• **Usage:** Reply to a PDF or ZIP file.
+• **Description:** Removes password protection from PDF or ZIP. If ZIP contains large files (>2GB), it will send as a new ZIP.
+
+2️⃣ **Add Password**
+• **Command:** `/addpass <password>`
+• **Usage:** Reply to a PDF or ZIP file.
+• **Description:** Adds password protection to a PDF or ZIP file. You must provide a password.
+
+**⚠️ Notes:**
+- Only PDF and ZIP files are supported.
+- Large files (>2GB) may require ZIP packaging to send via Telegram.
+
+**🔥 Powered By @NeonFiles**
+"""
+    await message.reply(help_text)
+    

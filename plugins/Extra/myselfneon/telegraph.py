@@ -1,3 +1,4 @@
+#Telegraph.py
 import os
 import requests
 import aiohttp
@@ -196,7 +197,26 @@ async def telegraph_cancel(bot: Client, message: Message):
     else:
         await message.reply_text("**🤷 __There Are No Active Uploads to Cancel. Use /telegraph to Create an Upload__**")
 
-
+# -------------------
+# /thelp command (merged)
+# -------------------
+@Client.on_message(filters.command("thelp") & filters.private)
+async def telegraph_help(bot: Client, message: Message):
+    help_text = (
+        "**🛠️ Telegraph Upload Bot Commands & Features**\n\n"
+        "1. /telegraph - Start a new upload session.\n"
+        "   • Choose the site: Envs.sh or Catbox.\n"
+        "   • After selecting, send your file (Photo, Video, Document, Audio).\n\n"
+        "2. /tcancel - Cancel an active upload session.\n"
+        "   • Use this if you made a mistake or changed your mind.\n\n"
+        "3. /thelp - Show this help message.\n\n"
+        "📌 Additional Features:\n"
+        "• Active uploads are tracked per user to prevent multiple uploads at once.\n"
+        "• File size limit for Catbox: 200 MB.\n"
+        "• Uploaded files are logged to a dedicated LOG_CHANNEL.\n"
+        "• Inline buttons after upload for 'Open' or 'Close'.\n"
+    )
+    await message.reply_text(help_text)
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon

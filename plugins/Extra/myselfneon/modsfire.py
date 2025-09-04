@@ -1,5 +1,4 @@
 # plugins/modsfire.py
-
 import os
 import requests
 import aiohttp
@@ -322,4 +321,3 @@ async def mhelp_handler(client, message):
 async def cancel_upload(client, callback_query):
     ACTIVE_UPLOADS.pop(callback_query.message.chat.id, None)
     await callback_query.message.edit("❌ Upload cancelled.")
-  s

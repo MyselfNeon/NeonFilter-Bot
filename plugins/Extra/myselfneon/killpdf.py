@@ -207,23 +207,20 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
 @Client.on_message(filters.command("phelp"))
 async def password_help(client: Client, message: Message):
     help_text = """
-**🔐 Password Manager Commands Help 🔐**
+<blockquote>**🔐 𝐏𝐀𝐒𝐒𝐖𝐎𝐑𝐃 𝐌𝐀𝐍𝐀𝐆𝐄𝐑 🔐**</blockquote>
 
-1️⃣ **Remove Password**
-• **Command:** `/removepass <password>`
-• **Usage:** Reply to a PDF or ZIP file.
-• **Description:** Removes password protection from PDF or ZIP. If ZIP contains large files (>2GB), it will send as a new ZIP.
+1️⃣ **__Remove Password__ 🔓**
+**__• /removepass - Reply To a PDF or ZIP
+• If ZIP Contains Large Files (>2GB), It Will Send As A New Zip__**
+2️⃣ **__Add Password__ 🔐**
+**__• /addpass - Reply To a PDF or ZIP
+• Adds Password Protection To A PDF or ZIP File. You Must Provide A Password__**
 
-2️⃣ **Add Password**
-• **Command:** `/addpass <password>`
-• **Usage:** Reply to a PDF or ZIP file.
-• **Description:** Adds password protection to a PDF or ZIP file. You must provide a password.
+<blockquote>**⚠️ __Notes__**</blockquote>
+**__- Only PDF and ZIP Files Are Supported
+- Large Files (>2GB) May Require ZIP\n   Packaging To Send Via Telegram__**
 
-**⚠️ Notes:**
-- Only PDF and ZIP files are supported.
-- Large files (>2GB) may require ZIP packaging to send via Telegram.
-
-**🔥 Powered By @NeonFiles**
+**🔥 __Powered By @NeonFiles__**
 """
     await message.reply(help_text)
     

@@ -63,12 +63,12 @@ async def delete_task(client: Client, message: Message):
 async def todo_help(client: Client, message: Message):
     help_text = (
     "<blockquote>✨ **𝐓𝐀𝐒𝐊 𝐇𝐄𝐋𝐏** ✨</blockquote>\n\n"
-    "📝 __/addtask – **Add a New Task__**\n"
-    "🗑 __/deltask – **Delete a Task__**\n"
-    "📋 __/listtask – **Show All Your Tasks__**\n"
-    "❓ __/taskhelp – **Show This Help Menu__**\n\n"
+    "1️⃣ __/addtask – **Add a New Task__**\n"
+    "2️⃣ __/deltask – **Delete a Task__**\n"
+    "3️⃣ __/listtask – **Show All Your Tasks__**\n"
+    "4️⃣ __/taskhelp – **Show This Help Menu__**\n\n"
     "🔹 **__Example:__**\n"
-    "`/addtask Finish Homework`"
+    "`/addtask Finish Homework`\n\n**🔥 __Powered By @NeonFiles__ 🔥**"
     )
     await message.reply(help_text)
     

@@ -278,7 +278,7 @@ async def fun_help(_: Client, message: Message):
         "• __/roulette - **Bet On Roulette Colors__**\n"
         "• __/chickfight - **Chicken Fight__ 🐔**\n\n"
         
-        "**__Enjoy The Games And Try To Climb The Leaderboard !!__ 😄😇**"
+        "**__Enjoy The Games And Try To Climb The Leaderboard !!__\n\n🔥 __Powered By @NeonFiles__ 🔥**"
     )
     await message.reply_text(text)
     

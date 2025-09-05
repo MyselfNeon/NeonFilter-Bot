@@ -1,21 +1,24 @@
-#NeoDownload.py
 import os
 import aiohttp
 import asyncio
 import time
+import random
 import subprocess
+from PIL import Image
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from typing import Dict
 
-# Temp folder
+# ---------- CONFIG ----------
+GENERATE_THUMBNAILS = True  # True/False to enable collage generation
+NUM_SCREENSHOTS = 6         # Number of random screenshots in collage (6, 8, etc.)
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 # Active downloads dict to allow cancellation
 ACTIVE_DOWNLOADS: Dict[int, bool] = {}
 
-# -------- Helpers --------
+# ---------- Helpers ----------
 def human_readable(size):
     power = 2**10
     n = 0
@@ -46,7 +49,6 @@ async def progress_for_pyrogram(current, total, message: Message, start, action=
     except:
         pass
 
-# Map content types to extensions
 VIDEO_EXTENSIONS = {
     "video/mp4": ".mp4",
     "video/webm": ".webm",
@@ -55,7 +57,7 @@ VIDEO_EXTENSIONS = {
     "vnd.apple.mpegurl": ".m3u8"
 }
 
-# -------- Downloaders --------
+# ---------- Downloaders ----------
 async def download_chunk(session, url, start, end, fpath, index, chat_id):
     headers = {"Range": f"bytes={start}-{end}"}
     async with session.get(url, headers=headers) as resp:
@@ -75,7 +77,6 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
             total_size = int(resp_head.headers.get("Content-Length", 0))
             content_type = resp_head.headers.get("Content-Type", "").lower()
 
-            # Cancel check
             if not ACTIVE_DOWNLOADS.get(chat_id, True):
                 return None
 
@@ -87,9 +88,9 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
             file_path = temp_path + ext
 
             # Dynamic chunk count
-            if total_size < 5*1024*1024:  # <5MB
+            if total_size < 5*1024*1024:
                 workers = 1
-            elif total_size < 50*1024*1024:  # <50MB
+            elif total_size < 50*1024*1024:
                 workers = min(4, max_workers)
             else:
                 workers = max_workers
@@ -101,14 +102,10 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
                 end = total_size-1 if i == workers-1 else (i+1)*chunk_size - 1
                 tasks.append(download_chunk(session, url, start, end, temp_path, i, chat_id))
 
-            # Download concurrently
             downloaded_chunks = await asyncio.gather(*tasks)
-
-            # Cancel check
             if not ACTIVE_DOWNLOADS.get(chat_id, True):
                 return None
 
-            # Merge chunks
             with open(file_path, "wb") as outfile:
                 for chunk_file in downloaded_chunks:
                     if chunk_file is None:
@@ -126,20 +123,60 @@ async def download_m3u8(url: str, path: str, status_msg: Message, chat_id: int):
     await proc.communicate()
     return path + ".mp4" if os.path.exists(path + ".mp4") else None
 
-# -------- Inline Cancel Callback --------
+# ---------- Thumbnail Collage ----------
+def generate_thumbnail_collage(video_path, num_shots):
+    thumbnails = []
+    # Get video duration
+    result = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
+                             "format=duration", "-of", "default=noprint_wrappers=1:nokey=1",
+                             video_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    duration = float(result.stdout)
+    
+    times = sorted(random.sample([i for i in range(int(duration)-1)], min(num_shots, int(duration))))
+    
+    for i, t in enumerate(times):
+        thumb_path = f"{video_path}_thumb{i}.jpg"
+        subprocess.run(["ffmpeg", "-ss", str(t), "-i", video_path, "-frames:v", "1", "-q:v", "2", thumb_path])
+        if os.path.exists(thumb_path):
+            thumbnails.append(thumb_path)
+    
+    if not thumbnails:
+        return None
+    
+    imgs = [Image.open(t) for t in thumbnails]
+    widths, heights = zip(*(i.size for i in imgs))
+    cols = (len(imgs) + 1) // 2
+    max_width = max(widths)
+    max_height = max(heights)
+    collage_width = cols * max_width
+    collage_height = 2 * max_height
+    collage = Image.new("RGB", (collage_width, collage_height), color=(0,0,0))
+    
+    for idx, img in enumerate(imgs):
+        x = (idx % cols) * max_width
+        y = (idx // cols) * max_height
+        collage.paste(img, (x, y))
+        img.close()
+        os.remove(thumbnails[idx])
+    
+    collage_path = f"{video_path}_collage.jpg"
+    collage.save(collage_path)
+    return collage_path
+
+# ---------- Inline Cancel ----------
 @Client.on_callback_query(filters.regex("dlcancel"))
 async def cancel_callback(client: Client, query: CallbackQuery):
     ACTIVE_DOWNLOADS[query.message.chat.id] = False
     await query.message.edit("❌ Download/upload cancelled.")
     await query.answer("Cancelled!")
 
-# -------- Telegram Command --------
+# ---------- Main Command ----------
 @Client.on_message(filters.command(["neodl"]) & filters.private)
 async def neodl_handler(client: Client, message: Message):
     if len(message.command) < 2:
         return await message.reply_text("⚡ Usage:\n`/neodl <link1> [link2] ...`")
 
-    links = message.command[1:]  # multiple links support
+    links = message.command[1:]
     ACTIVE_DOWNLOADS[message.chat.id] = True
 
     for idx, url in enumerate(links, 1):
@@ -173,8 +210,14 @@ async def neodl_handler(client: Client, message: Message):
                 progress_args=(status, start_time, "Uploading")
             )
 
+        # Generate collage thumbnails
+        if GENERATE_THUMBNAILS:
+            collage = generate_thumbnail_collage(file_path, NUM_SCREENSHOTS)
+            if collage and os.path.exists(collage):
+                await message.reply_photo(collage, caption="📸 Video preview")
+                os.remove(collage)
+
         os.remove(file_path)
         await status.delete()
 
     ACTIVE_DOWNLOADS[message.chat.id] = False
-    

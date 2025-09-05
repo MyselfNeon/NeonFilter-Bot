@@ -5,8 +5,8 @@ import time
 import random
 import subprocess
 from PIL import Image
-from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrofork import Client, filters
+from pyrofork.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from typing import Dict
 
 # ---------- CONFIG ----------

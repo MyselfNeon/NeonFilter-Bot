@@ -203,18 +203,16 @@ async def telegraph_cancel(bot: Client, message: Message):
 @Client.on_message(filters.command("telegraphhelp") & filters.private)
 async def telegraph_help(bot: Client, message: Message):
     help_text = (
-        "**🛠️ Telegraph Upload Bot Commands & Features**\n\n"
-        "1. /telegraph - Start a new upload session.\n"
-        "   • Choose the site: Envs.sh or Catbox.\n"
-        "   • After selecting, send your file (Photo, Video, Document, Audio).\n\n"
-        "2. /tcancel - Cancel an active upload session.\n"
-        "   • Use this if you made a mistake or changed your mind.\n\n"
-        "3. /thelp - Show this help message.\n\n"
-        "📌 Additional Features:\n"
-        "• Active uploads are tracked per user to prevent multiple uploads at once.\n"
-        "• File size limit for Catbox: 200 MB.\n"
-        "• Uploaded files are logged to a dedicated LOG_CHANNEL.\n"
-        "• Inline buttons after upload for 'Open' or 'Close'.\n"
+        "<blockquote>**🛠️ 𝐓𝐄𝐋𝐄𝐆𝐑𝐀𝐏𝐇 𝐏𝐋𝐔𝐆𝐈𝐍**</blockquote>\n\n"
+        "1️⃣ __/telegraph \n- **Start a New Upload Session.__**\n"
+        "**__- Choose the Desired Site.__**\n"
+        "**__- After Selecting, Send Your File \n  (Photo, Video, Document, Audio).__**\n\n"
+        "2️⃣ __/tcancel \n- **Cancel An Active Upload Session.__**\n"
+        "**__- Use This If You Made A Mistake Or Changed Your Mind.__**\n\n"
+        "3️⃣ __/telegraphhelp \n- **Show This Help Message.__**\n\n"
+        "**📌 __Additional Features:__**\n"
+        "**- __Active Uploads Are Tracked Per User To Prevent Multiple Uploads At Once.__**\n"
+        "**- __File Size Limit For Catbox: 200 MB.__**\n"
     )
     await message.reply_text(help_text)
 

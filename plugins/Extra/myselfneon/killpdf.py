@@ -209,14 +209,14 @@ async def password_help(client: Client, message: Message):
     help_text = """
 <blockquote>**🔐 𝐏𝐀𝐒𝐒𝐖𝐎𝐑𝐃 𝐌𝐀𝐍𝐀𝐆𝐄𝐑 🔐**</blockquote>
 
-1️⃣ **__Remove Password__ 🔓**
+**🔓 __Remove Password__**
 **__• /removepass - Reply To a PDF or ZIP
 • If ZIP Contains Large Files (>2GB), It Will Send As A New Zip__**
-2️⃣ **__Add Password__ 🔐**
+**🔐 __Add Password__**
 **__• /addpass - Reply To a PDF or ZIP
 • Adds Password Protection To A PDF or ZIP File. You Must Provide A Password__**
 
-<blockquote>**⚠️ __Notes__**</blockquote>
+<blockquote>**⚠️ __Nᴏᴛᴇs__**</blockquote>
 **__- Only PDF and ZIP Files Are Supported
 - Large Files (>2GB) May Require ZIP\n   Packaging To Send Via Telegram__**
 

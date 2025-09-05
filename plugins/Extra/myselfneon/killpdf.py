@@ -213,7 +213,7 @@ async def password_help(client: Client, message: Message):
 **__• /removepass \n- Reply To any PDF or ZIP Files
 • If ZIP Contains Large Files (>2GB) It \n  Will Send As A New Zip__**
 \n**🔐 __Add Password__**
-**__• /addpass \n- Reply To  any PDF or ZIP Files
+**__• /addpass \n- Reply To any PDF or ZIP Files
 • Adds Password Protection To A PDF \n  ProvideFile. Give A Password First__**
 
 <blockquote>**⚠️ __Nᴏᴛᴇs__**</blockquote>

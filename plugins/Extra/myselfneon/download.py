@@ -203,7 +203,7 @@ async def dl_handler(client: Client, message: Message):
 
         # Fallback to YouTube 16:9 ratio
         if not width or not height:
-            width = 1280
+            width = 1200
             height = 800
 
         # Send video preserving aspect ratio or fallback

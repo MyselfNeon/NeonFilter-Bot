@@ -11,7 +11,7 @@ import subprocess
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-ACTIVE_DOWNLOADS = {}  # {chat_id: {file_id: True/False}}
+ACTIVE_DOWNLOADS = {}
 PROGRESS_BAR_LENGTH = 16
 MAX_PARALLEL_CHUNKS = 3
 MAX_ACTIVE_DOWNLOADS = 10
@@ -55,25 +55,36 @@ async def update_progress(current, total, message: Message, start, action="Downl
     except: pass
 
 # ---------- Fast download ----------
-async def download_range(session, url, start, end, temp_file, idx, progress, active_flag):
+async def download_range(session, url, start, end, temp_file, idx, progress, chat_id):
     headers = {"Range": f"bytes={start}-{end}"}
     async with session.get(url, headers=headers) as resp:
         async for chunk in resp.content.iter_chunked(1024*512):
-            if not active_flag[0]:
+            if not ACTIVE_DOWNLOADS.get(chat_id, True):
                 return
             temp_file[idx].write(chunk)
             progress[idx] += len(chunk)
 
-async def download_file(url: str, temp_path: str, status_msg: Message, active_flag):
+async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: int):
+    # Limit total active downloads per user
+    if ACTIVE_DOWNLOADS.get(chat_id,0) >= MAX_ACTIVE_DOWNLOADS:
+        await status_msg.edit("⚠ You reached the maximum 10 simultaneous downloads.")
+        return None
+    ACTIVE_DOWNLOADS[chat_id] = ACTIVE_DOWNLOADS.get(chat_id,0)+1
+
     async with aiohttp.ClientSession() as session:
         async with session.head(url) as resp_head:
             if resp_head.status != 200:
+                ACTIVE_DOWNLOADS[chat_id]-=1
                 return None
             total_size = int(resp_head.headers.get("Content-Length", 0))
             content_type = resp_head.headers.get("Content-Type","").lower()
+            if not ACTIVE_DOWNLOADS.get(chat_id, True):
+                ACTIVE_DOWNLOADS[chat_id]-=1
+                return None
 
             if any(x in content_type for x in ["application/vnd.apple.mpegurl","vnd.apple.mpegurl"]):
-                return await download_m3u8(url,temp_path,status_msg,active_flag)
+                ACTIVE_DOWNLOADS[chat_id]-=1
+                return await download_m3u8(url,temp_path,status_msg,chat_id)
 
             ext = VIDEO_EXTENSIONS.get(content_type,".mp4")
             file_path = temp_path+ext
@@ -83,15 +94,17 @@ async def download_file(url: str, temp_path: str, status_msg: Message, active_fl
             progress = [0]*MAX_PARALLEL_CHUNKS
             start_time = time.time()
 
+            # Download parallel chunks
             tasks = []
             for i in range(MAX_PARALLEL_CHUNKS):
                 start = i*chunk_size
                 end = min((i+1)*chunk_size-1, total_size-1)
-                tasks.append(download_range(session,url,start,end,temp_files,i,progress,active_flag))
+                tasks.append(download_range(session,url,start,end,temp_files,i,progress,chat_id))
 
+            # Monitor progress while downloading
             async def monitor():
                 while not all(t.done() for t in asyncio.all_tasks() if t in tasks):
-                    if not active_flag[0]:
+                    if not ACTIVE_DOWNLOADS.get(chat_id, True):
                         break
                     await update_progress(sum(progress), total_size, status_msg, start_time,"Downloading")
                     await asyncio.sleep(0.5)
@@ -101,10 +114,12 @@ async def download_file(url: str, temp_path: str, status_msg: Message, active_fl
             for f in temp_files:
                 f.close()
 
+            # Merge parts with progress feedback
             merged_size = 0
             with open(file_path,"wb") as f:
                 for i in range(MAX_PARALLEL_CHUNKS):
                     part_path = f"{file_path}.part{i}"
+                    part_size = os.path.getsize(part_path)
                     with open(part_path,"rb") as pf:
                         while True:
                             chunk = pf.read(1024*1024)
@@ -114,13 +129,17 @@ async def download_file(url: str, temp_path: str, status_msg: Message, active_fl
                             await update_progress(merged_size, total_size, status_msg, start_time,"Merging")
                     os.remove(part_path)
 
+            ACTIVE_DOWNLOADS[chat_id]-=1
             return file_path, total_size
 
 # ---------- M3U8 download ----------
-async def download_m3u8(url: str, path: str, status_msg: Message, active_flag):
+async def download_m3u8(url: str, path: str, status_msg: Message, chat_id: int):
+    if not ACTIVE_DOWNLOADS.get(chat_id, True):
+        return None
     temp_path = path+".mp4"
     cmd = ["ffmpeg","-y","-i",url,"-c","copy","-threads","4","-bsf:a","aac_adtstoasc",temp_path]
     proc = await asyncio.create_subprocess_exec(*cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    last_size = 0
     start_time = time.time()
 
     while True:
@@ -128,43 +147,38 @@ async def download_m3u8(url: str, path: str, status_msg: Message, active_flag):
             break
         if os.path.exists(temp_path):
             current_size = os.path.getsize(temp_path)
-            await update_progress(current_size, current_size+1024*1024, status_msg, start_time,"Downloading")
+            if current_size != last_size:
+                last_size = current_size
+                await update_progress(current_size, current_size+1024*1024, status_msg, start_time,"Downloading")
         await asyncio.sleep(1)
 
     await proc.communicate()
     size = os.path.getsize(temp_path) if os.path.exists(temp_path) else 0
-    return temp_path, size
+    return temp_path, size if os.path.exists(temp_path) else None
 
 # ---------- Cancel ----------
 @Client.on_callback_query(filters.regex("dlcancel"))
 async def cancel_callback(client: Client, query):
-    chat_id = query.message.chat.id
-    file_id = query.message.message_id
-    if chat_id in ACTIVE_DOWNLOADS and file_id in ACTIVE_DOWNLOADS[chat_id]:
-        ACTIVE_DOWNLOADS[chat_id][file_id][0] = False
+    ACTIVE_DOWNLOADS[query.message.chat.id] = False
     await query.message.edit("❌ Download/upload cancelled.")
     await query.answer("Cancelled!")
 
-# ---------- /dl COMMAND ----------
+# ---------- /dl COMMAND ---------
 @Client.on_message(filters.command(["dl"]) & filters.private)
 async def dl_handler(client: Client, message: Message):
-    if len(message.command) < 2: 
+    # Check if user sent just /dl without any links
+    if len(message.command) < 2:
         return await message.reply_text(
-            "⚠ You didn't provide any links!\n\n"
-            "Usage:\n"
-            "`/dl <link1> [link2 ...]`\n\n"
-            "Example:\n"
-            "`/dl https://example.com/video.mp4`\n"
-            "`/dl https://link1.com https://link2.com`"
+            "⚠ You need to provide a link to download!\n\n"
+            "Usage:\n`/dl <direct link or m3u8>`\n\n"
+            "Example:\n`/dl https://example.com/video.mp4`"
         )
-    
+
     links = message.command[1:]
-    chat_id = message.chat.id
-    if chat_id not in ACTIVE_DOWNLOADS:
-        ACTIVE_DOWNLOADS[chat_id] = {}
+    ACTIVE_DOWNLOADS[message.chat.id] = ACTIVE_DOWNLOADS.get(message.chat.id, 0)
 
     for idx, url in enumerate(links, 1):
-        temp_path = os.path.join(DOWNLOAD_DIR, f"{chat_id}_{int(time.time())}_{idx}")
+        temp_path = os.path.join(DOWNLOAD_DIR, f"{message.chat.id}_{int(time.time())}_{idx}")
         status = await message.reply_text(
             f"📥 Downloading {idx}/{len(links)}...",
             reply_markup=InlineKeyboardMarkup(
@@ -172,34 +186,27 @@ async def dl_handler(client: Client, message: Message):
             )
         )
 
-        # Track active flag per file
-        ACTIVE_DOWNLOADS[chat_id][status.message_id] = [True]
+        result = await download_file(url, temp_path, status, message.chat.id)
+        if not result:
+            await status.edit(f"❌ Failed to download link {idx}")
+            continue
 
-        # Run each download in its own task (concurrent)
-        asyncio.create_task(handle_download(url, temp_path, status, chat_id, status.message_id))
+        file_path, file_size = result
+        caption_text = f"🎬 **{os.path.basename(file_path)}**\n📦 Size: {human_readable(file_size)}"
 
-async def handle_download(url, temp_path, status_msg, chat_id, file_id):
-    active_flag = ACTIVE_DOWNLOADS[chat_id][file_id]
-    result = await download_file(url, temp_path, status_msg, active_flag)
-    if not result:
-        await status_msg.edit(f"❌ Failed to download {url}")
-        del ACTIVE_DOWNLOADS[chat_id][file_id]
-        return
+        try:
+            await message.reply_video(file_path, caption=caption_text)
+        except:
+            await message.reply_document(file_path, caption=caption_text)
 
-    file_path, file_size = result
-    caption_text = f"🎬 **{os.path.basename(file_path)}**\n📦 Size: {human_readable(file_size)}"
+        # Delete progress message after 5 seconds
+        await asyncio.sleep(5)
+        try: await status.delete()
+        except: pass
 
-    try:
-        await status_msg.reply_video(file_path, caption=caption_text)
-    except:
-        await status_msg.reply_document(file_path, caption=caption_text)
+        os.remove(file_path)
 
-    await asyncio.sleep(5)
-    try: await status_msg.delete()
-    except: pass
-
-    os.remove(file_path)
-    del ACTIVE_DOWNLOADS[chat_id][file_id]
+    ACTIVE_DOWNLOADS[message.chat.id] = 0
 
 # ---------- /dlhelp COMMAND ----------
 @Client.on_message(filters.command(["dlhelp"]) & filters.private)

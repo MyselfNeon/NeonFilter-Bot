@@ -204,7 +204,7 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
     await callback.answer()
   
 # ====================== PASSWORD HELP COMMAND ======================
-@Client.on_message(filters.command("phelp"))
+@Client.on_message(filters.command("passwordhelp"))
 async def password_help(client: Client, message: Message):
     help_text = """
 <blockquote>**🔐 𝐏𝐀𝐒𝐒𝐖𝐎𝐑𝐃 𝐌𝐀𝐍𝐀𝐆𝐄𝐑 🔐**</blockquote>

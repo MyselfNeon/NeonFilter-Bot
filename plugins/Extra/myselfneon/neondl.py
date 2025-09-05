@@ -11,7 +11,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 
 # ---------- CONFIG ----------
 GENERATE_THUMBNAILS = True  # True to generate collage
-NUM_SCREENSHOTS = 6         # Number of random screenshots
+NUM_SCREENSHOTS = 10         # Number of random screenshots
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 

@@ -5,7 +5,6 @@ import time
 import random
 import subprocess
 from PIL import Image
-from pyromod import listen
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
@@ -35,28 +34,8 @@ def human_readable(size):
         n +=1
     return f"{round(size,2)} {Dic_powerN[n]}"
 
-def progress_bar(done, total, length=16):
-    filled = int(length * done / total) if total else 0
-    return "▰" * filled + "▱" * (length - filled)
-
-async def update_progress(current, total, message: Message, start, action="Uploading"):
-    now = time.time()
-    elapsed = now - start
-    speed = current / (elapsed+1e-6)
-    eta = (total-current)/(speed+1e-6)
-    bar = progress_bar(current, total, length=16)
-    text = (
-        f"📤 **{action}...**\n\n"
-        f"{bar}\n"
-        f"**{human_readable(current)}** / **{human_readable(total)}**\n"
-        f"⚡ {human_readable(speed)}/s | ⏳ {int(eta)}s"
-    )
-    try:
-        await message.edit(text)
-    except: pass
-
 # ---------- Download ----------
-async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: int):
+async def download_file(url: str, temp_path: str, chat_id: int):
     async with aiohttp.ClientSession() as session:
         async with session.head(url) as resp_head:
             if resp_head.status != 200: return None
@@ -65,28 +44,25 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
             if not ACTIVE_DOWNLOADS.get(chat_id, True): return None
 
             if any(x in content_type for x in ["application/vnd.apple.mpegurl","vnd.apple.mpegurl"]):
-                return await download_m3u8(url,temp_path,status_msg,chat_id)
+                return await download_m3u8(url,temp_path,chat_id)
 
             ext = VIDEO_EXTENSIONS.get(content_type,".mp4")
             file_path = temp_path+ext
-            chunk_size = 1024*1024*2
-            downloaded = 0
 
             async with session.get(url) as resp:
                 with open(file_path,"wb") as f:
-                    async for chunk in resp.content.iter_chunked(chunk_size):
+                    async for chunk in resp.content.iter_chunked(1024*1024*2):
                         if not ACTIVE_DOWNLOADS.get(chat_id, True): return None
                         f.write(chunk)
-                        downloaded += len(chunk)
-                        await update_progress(downloaded,total,status_msg,time.time(),"Downloading")
-            return file_path
+            return file_path, total_size
 
-async def download_m3u8(url: str, path: str, status_msg: Message, chat_id: int):
+async def download_m3u8(url: str, path: str, chat_id: int):
     if not ACTIVE_DOWNLOADS.get(chat_id, True): return None
     cmd = ["ffmpeg","-y","-i",url,"-c","copy","-threads","4","-bsf:a","aac_adtstoasc",path+".mp4"]
     proc = await asyncio.create_subprocess_exec(*cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     await proc.communicate()
-    return path+".mp4" if os.path.exists(path+".mp4") else None
+    size = os.path.getsize(path+".mp4") if os.path.exists(path+".mp4") else 0
+    return path+".mp4", size if os.path.exists(path+".mp4") else None
 
 # ---------- Thumbnails ----------
 def generate_thumbnail_collage(video_path, num_shots):
@@ -130,41 +106,34 @@ async def cancel_callback(client: Client, query: CallbackQuery):
 # ---------- Main ----------
 @Client.on_message(filters.command(["neodl"]) & filters.private)
 async def neodl_handler(client: Client, message: Message):
-    if len(message.command)<2: return await message.reply_text("⚡ Usage:\n`/neodl <link>`")
+    if len(message.command)<2: 
+        return await message.reply_text("⚡ Usage:\n`/neodl <link>`")
     links = message.command[1:]
     ACTIVE_DOWNLOADS[message.chat.id]=True
 
     for idx,url in enumerate(links,1):
         temp_path = os.path.join(DOWNLOAD_DIR,f"{message.chat.id}_{int(time.time())}_{idx}")
         status = await message.reply_text(
-            f"📥 Starting download {idx}/{len(links)}...",
+            f"📥 Downloading {idx}/{len(links)}...",
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton("❌ Cancel",callback_data="dlcancel")]]
             )
         )
 
-        file_path = await download_file(url,temp_path,status,message.chat.id)
-        if not file_path or not os.path.exists(file_path):
+        result = await download_file(url,temp_path,message.chat.id)
+        if not result:
             await status.edit(f"❌ Failed to download link {idx}")
             continue
 
-        await status.edit("✅ Starting upload...")
-        start_time=time.time()
-        try:
-            await message.reply_video(
-                file_path,
-                caption=f"🎬 Video {idx}/{len(links)}",
-                progress=update_progress,
-                progress_args=(status,start_time,"Uploading")
-            )
-        except:
-            await message.reply_document(
-                file_path,
-                caption=f"📂 Video {idx}/{len(links)}",
-                progress=update_progress,
-                progress_args=(status,start_time,"Uploading")
-            )
+        file_path, file_size = result
+        caption_text = f"🎬 **{os.path.basename(file_path)}**\n📦 Size: {human_readable(file_size)}"
 
+        try:
+            await message.reply_video(file_path, caption=caption_text)
+        except:
+            await message.reply_document(file_path, caption=caption_text)
+
+        # Thumbnails
         if GENERATE_THUMBNAILS:
             collage=generate_thumbnail_collage(file_path,NUM_SCREENSHOTS)
             if collage and os.path.exists(collage):
@@ -173,5 +142,6 @@ async def neodl_handler(client: Client, message: Message):
 
         os.remove(file_path)
         await status.delete()
+
     ACTIVE_DOWNLOADS[message.chat.id]=False
     

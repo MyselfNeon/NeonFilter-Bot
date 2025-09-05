@@ -15,7 +15,6 @@ ACTIVE_DOWNLOADS = {}
 PROGRESS_BAR_LENGTH = 16
 MAX_PARALLEL_CHUNKS = 3
 MAX_ACTIVE_DOWNLOADS = 10
-DOWNLOAD_TIMEOUT = 30  # seconds with no progress
 
 VIDEO_EXTENSIONS = {
     "video/mp4": ".mp4",
@@ -56,20 +55,12 @@ async def update_progress(current, total, message: Message, start, action="Downl
 # ---------- Fast download ----------
 async def download_range(session, url, start, end, temp_file, idx, progress, chat_id):
     headers = {"Range": f"bytes={start}-{end}"}
-    last_progress = time.time()
-
     async with session.get(url, headers=headers) as resp:
         async for chunk in resp.content.iter_chunked(1024*512):
             if not ACTIVE_DOWNLOADS.get(chat_id, True):
                 return
-            if chunk:
-                temp_file[idx].write(chunk)
-                progress[idx] += len(chunk)
-                last_progress = time.time()
-            else:
-                # no data coming in
-                if time.time() - last_progress > DOWNLOAD_TIMEOUT:
-                    raise asyncio.TimeoutError("Download stalled")
+            temp_file[idx].write(chunk)
+            progress[idx] += len(chunk)
 
 async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: int):
     if ACTIVE_DOWNLOADS.get(chat_id,0) >= MAX_ACTIVE_DOWNLOADS:
@@ -78,59 +69,58 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
     ACTIVE_DOWNLOADS[chat_id] = ACTIVE_DOWNLOADS.get(chat_id,0)+1
 
     async with aiohttp.ClientSession() as session:
-        try:
-            async with session.head(url, timeout=10) as resp_head:
-                if resp_head.status != 200:
-                    ACTIVE_DOWNLOADS[chat_id]-=1
-                    return None
-                total_size = int(resp_head.headers.get("Content-Length", 0))
-                content_type = resp_head.headers.get("Content-Type","").lower()
-
-                ext = VIDEO_EXTENSIONS.get(content_type,".mp4")
-                file_path = temp_path+ext
-
-                chunk_size = math.ceil(total_size / MAX_PARALLEL_CHUNKS)
-                temp_files = [open(f"{file_path}.part{i}","wb") for i in range(MAX_PARALLEL_CHUNKS)]
-                progress = [0]*MAX_PARALLEL_CHUNKS
-                start_time = time.time()
-
-                tasks = []
-                for i in range(MAX_PARALLEL_CHUNKS):
-                    start = i*chunk_size
-                    end = min((i+1)*chunk_size-1, total_size-1)
-                    tasks.append(download_range(session,url,start,end,temp_files,i,progress,chat_id))
-
-                async def monitor():
-                    while not all(t.done() for t in asyncio.all_tasks() if t in tasks):
-                        if not ACTIVE_DOWNLOADS.get(chat_id, True):
-                            break
-                        await update_progress(sum(progress), total_size, status_msg, start_time,"Downloading")
-                        await asyncio.sleep(0.5)
-
-                await asyncio.gather(asyncio.gather(*tasks), monitor())
-
-                for f in temp_files:
-                    f.close()
-
-                merged_size = 0
-                with open(file_path,"wb") as f:
-                    for i in range(MAX_PARALLEL_CHUNKS):
-                        part_path = f"{file_path}.part{i}"
-                        with open(part_path,"rb") as pf:
-                            while True:
-                                chunk = pf.read(1024*1024)
-                                if not chunk: break
-                                f.write(chunk)
-                                merged_size += len(chunk)
-                                await update_progress(merged_size, total_size, status_msg, start_time,"Merging")
-                        os.remove(part_path)
-
+        async with session.head(url) as resp_head:
+            if resp_head.status != 200:
                 ACTIVE_DOWNLOADS[chat_id]-=1
-                return file_path, total_size
-        except asyncio.TimeoutError:
+                return None
+            total_size = int(resp_head.headers.get("Content-Length", 0))
+            content_type = resp_head.headers.get("Content-Type","").lower()
+            if "mpegurl" in content_type:  # Catch M3U links
+                await status_msg.edit("⚠ M3U/playlist links are not supported! Please send a direct video/file link.")
+                ACTIVE_DOWNLOADS[chat_id]-=1
+                return None
+
+            ext = VIDEO_EXTENSIONS.get(content_type,".mp4")
+            file_path = temp_path+ext
+
+            chunk_size = math.ceil(total_size / MAX_PARALLEL_CHUNKS)
+            temp_files = [open(f"{file_path}.part{i}","wb") for i in range(MAX_PARALLEL_CHUNKS)]
+            progress = [0]*MAX_PARALLEL_CHUNKS
+            start_time = time.time()
+
+            tasks = []
+            for i in range(MAX_PARALLEL_CHUNKS):
+                start = i*chunk_size
+                end = min((i+1)*chunk_size-1, total_size-1)
+                tasks.append(download_range(session,url,start,end,temp_files,i,progress,chat_id))
+
+            async def monitor():
+                while not all(t.done() for t in asyncio.all_tasks() if t in tasks):
+                    if not ACTIVE_DOWNLOADS.get(chat_id, True):
+                        break
+                    await update_progress(sum(progress), total_size, status_msg, start_time,"Downloading")
+                    await asyncio.sleep(0.5)
+
+            await asyncio.gather(asyncio.gather(*tasks), monitor())
+
+            for f in temp_files:
+                f.close()
+
+            merged_size = 0
+            with open(file_path,"wb") as f:
+                for i in range(MAX_PARALLEL_CHUNKS):
+                    part_path = f"{file_path}.part{i}"
+                    with open(part_path,"rb") as pf:
+                        while True:
+                            chunk = pf.read(1024*1024)
+                            if not chunk: break
+                            f.write(chunk)
+                            merged_size += len(chunk)
+                            await update_progress(merged_size, total_size, status_msg, start_time,"Merging")
+                    os.remove(part_path)
+
             ACTIVE_DOWNLOADS[chat_id]-=1
-            await status_msg.edit("❌ Download failed (timeout: no data in 30s)")
-            return None
+            return file_path, total_size
 
 # ---------- Cancel ----------
 @Client.on_callback_query(filters.regex("dlcancel"))
@@ -186,11 +176,11 @@ async def dl_handler(client: Client, message: Message):
             width = 1200
             height = 800
 
+        # Send video normally (no supports_streaming)
         try:
             await message.reply_video(
                 file_path,
                 caption=caption_text,
-                supports_streaming=True,
                 width=width,
                 height=height
             )
@@ -214,10 +204,10 @@ async def dlhelp_handler(client: Client, message: Message):
         "1️⃣ `/dl <link>` - Download a direct video/file link.\n"
         "   - Supports multiple links: `/dl link1 link2 ...`\n"
         "   - Max 3 parallel connections per file.\n"
-        "   - Max 10 active downloads per user.\n"
-        "   - Auto timeout if no data for 30s.\n\n"
+        "   - Max 10 active downloads per user.\n\n"
         "2️⃣ `❌ Cancel Button` - Tap the button during download to cancel.\n\n"
-        "⚡ Progress bar shows speed, ETA, and size. Disappears 5s after upload."
+        "⚡ Progress bar shows speed, ETA, and size. Disappears 5s after upload.\n"
+        "⚠ M3U/playlist links are not supported!"
     )
     await message.reply_text(help_text)
     

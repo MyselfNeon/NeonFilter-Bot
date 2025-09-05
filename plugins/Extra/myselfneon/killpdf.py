@@ -220,7 +220,7 @@ __• /addpass \n- **Reply To any PDF or ZIP Files
 **__- Only PDF and ZIP Are Supported
 - Large Files (>2GB) May Require ZIP\n   Packaging To Send Via Telegram__**
 
-**🔥 __Powered By @NeonFiles__**
+**🔥 __Powered By @NeonFiles__ 🔥**
 """
     await message.reply(help_text)
     

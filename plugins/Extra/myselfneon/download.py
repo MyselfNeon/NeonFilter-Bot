@@ -82,7 +82,7 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
                 ACTIVE_DOWNLOADS[chat_id]-=1
                 return None
 
-            if any(x in content_type for x in ["application/vnd.apple.mpegurl","vnd.apple.mpegurl"]):
+            if "mpegurl" in content_type:  # M3U8 playlist
                 ACTIVE_DOWNLOADS[chat_id]-=1
                 return await download_m3u8(url,temp_path,status_msg,chat_id)
 
@@ -132,9 +132,27 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
 async def download_m3u8(url: str, path: str, status_msg: Message, chat_id: int):
     if not ACTIVE_DOWNLOADS.get(chat_id, True):
         return None
-    temp_path = path+".mp4"
-    cmd = ["ffmpeg","-y","-i",url,"-c","copy","-threads","4","-bsf:a","aac_adtstoasc",temp_path]
-    proc = await asyncio.create_subprocess_exec(*cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    temp_path = path + ".mp4"
+
+    headers = "User-Agent: Mozilla/5.0\r\nReferer: https://google.com\r\n"
+    cmd = [
+        "ffmpeg","-y",
+        "-headers", headers,
+        "-i", url,
+        "-c","copy",
+        "-threads","4",
+        "-bsf:a","aac_adtstoasc",
+        temp_path
+    ]
+
+    try:
+        proc = await asyncio.create_subprocess_exec(*cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except FileNotFoundError:
+        await status_msg.edit("❌ **FFmpeg not found.** Please install ffmpeg.")
+        ACTIVE_DOWNLOADS[chat_id] = 0
+        return None
+
     last_size = 0
     start_time = time.time()
 
@@ -148,9 +166,16 @@ async def download_m3u8(url: str, path: str, status_msg: Message, chat_id: int):
                 await update_progress(current_size, current_size+1024*1024, status_msg, start_time,"Downloading")
         await asyncio.sleep(1)
 
-    await proc.communicate()
+    stdout, stderr = await proc.communicate()
+
+    if proc.returncode != 0:
+        error_text = stderr.decode(errors="ignore")[:500]
+        await status_msg.edit(f"❌ **M3U8 download failed**\n\nError:\n```{error_text}```")
+        ACTIVE_DOWNLOADS[chat_id] = 0
+        return None
+
     size = os.path.getsize(temp_path) if os.path.exists(temp_path) else 0
-    return temp_path, size if os.path.exists(temp_path) else None
+    return temp_path, size if size > 0 else None
 
 # ---------- Cancel ----------
 @Client.on_callback_query(filters.regex("dlcancel"))
@@ -201,12 +226,11 @@ async def dl_handler(client: Client, message: Message):
         except:
             pass
 
-        # Fallback to YouTube 16:9 ratio
+        # Fallback to 3:2 ratio
         if not width or not height:
             width = 1200
             height = 800
 
-        # Send video preserving aspect ratio or fallback
         try:
             await message.reply_video(
                 file_path,
@@ -218,7 +242,6 @@ async def dl_handler(client: Client, message: Message):
         except:
             await message.reply_document(file_path, caption=caption_text)
 
-        # Delete progress message after 5 seconds
         await asyncio.sleep(5)
         try: await status.delete()
         except: pass
@@ -240,4 +263,4 @@ async def dlhelp_handler(client: Client, message: Message):
         "⚡ Progress bar shows speed, ETA, and size. Disappears 5s after upload."
     )
     await message.reply_text(help_text)
-                                         
+    

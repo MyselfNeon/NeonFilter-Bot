@@ -10,9 +10,8 @@ from pyrofork.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from typing import Dict
 
 # ---------- CONFIG ----------
-GENERATE_THUMBNAILS = True  # True/False to enable collage generation
+GENERATE_THUMBNAILS = True  # True to generate collage, False to skip
 NUM_SCREENSHOTS = 6         # Number of random screenshots in collage
-TARGET_HEIGHT = 180          # Height of collage thumbnails (preserves aspect ratio)
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
@@ -33,7 +32,7 @@ def progress_bar(done, total, length=16):
     filled = int(length * done / total) if total else 0
     return "▰" * filled + "▱" * (length - filled)
 
-async def progress_for_pyrogram(current, total, message: Message, start, action="Uploading"):
+async def progress_for_pyrofork(current, total, message: Message, start, action="Uploading"):
     now = time.time()
     elapsed = now - start
     speed = current / (elapsed + 1e-6)
@@ -124,17 +123,19 @@ async def download_m3u8(url: str, path: str, status_msg: Message, chat_id: int):
     await proc.communicate()
     return path + ".mp4" if os.path.exists(path + ".mp4") else None
 
-# ---------- Thumbnail Collage (YouTube-style) ----------
-def generate_thumbnail_collage(video_path, num_shots, target_height=TARGET_HEIGHT):
+# ---------- Thumbnail Collage (preserve source ratio) ----------
+def generate_thumbnail_collage(video_path, num_shots):
     thumbnails = []
+    # Get video duration
     result = subprocess.run(
         ["ffprobe", "-v", "error", "-show_entries", "format=duration",
          "-of", "default=noprint_wrappers=1:nokey=1", video_path],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
     duration = float(result.stdout)
-
     times = sorted(random.sample(range(int(duration)-1), min(num_shots, int(duration))))
+
+    # Take screenshots at random times
     for i, t in enumerate(times):
         thumb_path = f"{video_path}_thumb{i}.jpg"
         subprocess.run(
@@ -146,18 +147,17 @@ def generate_thumbnail_collage(video_path, num_shots, target_height=TARGET_HEIGH
     if not thumbnails:
         return None
 
+    # Open images and get source sizes
     imgs = [Image.open(t) for t in thumbnails]
-    # Resize each image proportionally
-    resized_imgs = []
-    for img in imgs:
-        w = int(target_height * (img.width / img.height))
-        resized_imgs.append(img.resize((w, target_height)))
 
-    total_width = sum(img.width for img in resized_imgs)
-    collage = Image.new("RGB", (total_width, target_height), color=(0,0,0))
+    # Use source size (no resizing) to preserve ratio
+    widths, heights = zip(*(i.size for i in imgs))
+    total_width = sum(widths)
+    max_height = max(heights)
+    collage = Image.new("RGB", (total_width, max_height), color=(0,0,0))
 
     x_offset = 0
-    for img in resized_imgs:
+    for img in imgs:
         collage.paste(img, (x_offset, 0))
         x_offset += img.width
         img.close()
@@ -205,18 +205,18 @@ async def neodl_handler(client: Client, message: Message):
             await message.reply_video(
                 file_path,
                 caption=f"🎬 Video {idx}/{len(links)}",
-                progress=progress_for_pyrogram,
+                progress=progress_for_pyrofork,
                 progress_args=(status, start_time, "Uploading")
             )
         except:
             await message.reply_document(
                 file_path,
                 caption=f"📂 Video {idx}/{len(links)}",
-                progress=progress_for_pyrogram,
+                progress=progress_for_pyrofork,
                 progress_args=(status, start_time, "Uploading")
             )
 
-        # Generate YouTube-style collage thumbnails
+        # Generate thumbnail collage (source ratio)
         if GENERATE_THUMBNAILS:
             collage = generate_thumbnail_collage(file_path, NUM_SCREENSHOTS)
             if collage and os.path.exists(collage):

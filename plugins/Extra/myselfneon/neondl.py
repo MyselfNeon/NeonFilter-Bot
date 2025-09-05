@@ -11,7 +11,8 @@ from typing import Dict
 
 # ---------- CONFIG ----------
 GENERATE_THUMBNAILS = True  # True/False to enable collage generation
-NUM_SCREENSHOTS = 6         # Number of random screenshots in collage (6, 8, etc.)
+NUM_SCREENSHOTS = 6         # Number of random screenshots in collage
+TARGET_HEIGHT = 180          # Height of collage thumbnails (preserves aspect ratio)
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
@@ -123,42 +124,47 @@ async def download_m3u8(url: str, path: str, status_msg: Message, chat_id: int):
     await proc.communicate()
     return path + ".mp4" if os.path.exists(path + ".mp4") else None
 
-# ---------- Thumbnail Collage ----------
-def generate_thumbnail_collage(video_path, num_shots):
+# ---------- Thumbnail Collage (YouTube-style) ----------
+def generate_thumbnail_collage(video_path, num_shots, target_height=TARGET_HEIGHT):
     thumbnails = []
-    # Get video duration
-    result = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
-                             "format=duration", "-of", "default=noprint_wrappers=1:nokey=1",
-                             video_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "default=noprint_wrappers=1:nokey=1", video_path],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
     duration = float(result.stdout)
-    
-    times = sorted(random.sample([i for i in range(int(duration)-1)], min(num_shots, int(duration))))
-    
+
+    times = sorted(random.sample(range(int(duration)-1), min(num_shots, int(duration))))
     for i, t in enumerate(times):
         thumb_path = f"{video_path}_thumb{i}.jpg"
-        subprocess.run(["ffmpeg", "-ss", str(t), "-i", video_path, "-frames:v", "1", "-q:v", "2", thumb_path])
+        subprocess.run(
+            ["ffmpeg", "-ss", str(t), "-i", video_path, "-frames:v", "1", "-q:v", "2", thumb_path]
+        )
         if os.path.exists(thumb_path):
             thumbnails.append(thumb_path)
-    
+
     if not thumbnails:
         return None
-    
+
     imgs = [Image.open(t) for t in thumbnails]
-    widths, heights = zip(*(i.size for i in imgs))
-    cols = (len(imgs) + 1) // 2
-    max_width = max(widths)
-    max_height = max(heights)
-    collage_width = cols * max_width
-    collage_height = 2 * max_height
-    collage = Image.new("RGB", (collage_width, collage_height), color=(0,0,0))
-    
-    for idx, img in enumerate(imgs):
-        x = (idx % cols) * max_width
-        y = (idx // cols) * max_height
-        collage.paste(img, (x, y))
+    # Resize each image proportionally
+    resized_imgs = []
+    for img in imgs:
+        w = int(target_height * (img.width / img.height))
+        resized_imgs.append(img.resize((w, target_height)))
+
+    total_width = sum(img.width for img in resized_imgs)
+    collage = Image.new("RGB", (total_width, target_height), color=(0,0,0))
+
+    x_offset = 0
+    for img in resized_imgs:
+        collage.paste(img, (x_offset, 0))
+        x_offset += img.width
         img.close()
-        os.remove(thumbnails[idx])
-    
+
+    for t in thumbnails:
+        os.remove(t)
+
     collage_path = f"{video_path}_collage.jpg"
     collage.save(collage_path)
     return collage_path
@@ -210,7 +216,7 @@ async def neodl_handler(client: Client, message: Message):
                 progress_args=(status, start_time, "Uploading")
             )
 
-        # Generate collage thumbnails
+        # Generate YouTube-style collage thumbnails
         if GENERATE_THUMBNAILS:
             collage = generate_thumbnail_collage(file_path, NUM_SCREENSHOTS)
             if collage and os.path.exists(collage):
@@ -221,3 +227,4 @@ async def neodl_handler(client: Client, message: Message):
         await status.delete()
 
     ACTIVE_DOWNLOADS[message.chat.id] = False
+    

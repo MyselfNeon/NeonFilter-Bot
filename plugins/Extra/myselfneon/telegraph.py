@@ -200,7 +200,7 @@ async def telegraph_cancel(bot: Client, message: Message):
 # -------------------
 # /thelp command (merged)
 # -------------------
-@Client.on_message(filters.command("thelp") & filters.private)
+@Client.on_message(filters.command("telegraphhelp") & filters.private)
 async def telegraph_help(bot: Client, message: Message):
     help_text = (
         "**🛠️ Telegraph Upload Bot Commands & Features**\n\n"

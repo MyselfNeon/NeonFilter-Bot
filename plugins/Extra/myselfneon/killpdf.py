@@ -210,10 +210,10 @@ async def password_help(client: Client, message: Message):
 <blockquote>**🔐 𝐏𝐀𝐒𝐒𝐖𝐎𝐑𝐃 𝐌𝐀𝐍𝐀𝐆𝐄𝐑 🔐**</blockquote>
 
 **🔓 __Remove Password__**
-**__• /removepass \n- Reply To any PDF or ZIP Files
+__• /removepass \n- **Reply To any PDF or ZIP Files
 • If ZIP Contains Large Files (>2GB) It \n  Will Send As A New Zip__**
 \n**🔐 __Add Password__**
-**__• /addpass \n- Reply To any PDF or ZIP Files
+__• /addpass \n- **Reply To any PDF or ZIP Files
 • Adds Password Protection To A PDF \n  ProvideFile. Give A Password First__**
 
 <blockquote>**⚠️ __Nᴏᴛᴇs__**</blockquote>

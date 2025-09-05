@@ -65,7 +65,6 @@ async def download_range(session, url, start, end, temp_file, idx, progress, cha
             progress[idx] += len(chunk)
 
 async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: int):
-    # Limit total active downloads per user
     if ACTIVE_DOWNLOADS.get(chat_id,0) >= MAX_ACTIVE_DOWNLOADS:
         await status_msg.edit("⚠ You reached the maximum 10 simultaneous downloads.")
         return None
@@ -94,14 +93,12 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
             progress = [0]*MAX_PARALLEL_CHUNKS
             start_time = time.time()
 
-            # Download parallel chunks
             tasks = []
             for i in range(MAX_PARALLEL_CHUNKS):
                 start = i*chunk_size
                 end = min((i+1)*chunk_size-1, total_size-1)
                 tasks.append(download_range(session,url,start,end,temp_files,i,progress,chat_id))
 
-            # Monitor progress while downloading
             async def monitor():
                 while not all(t.done() for t in asyncio.all_tasks() if t in tasks):
                     if not ACTIVE_DOWNLOADS.get(chat_id, True):
@@ -114,7 +111,6 @@ async def download_file(url: str, temp_path: str, status_msg: Message, chat_id: 
             for f in temp_files:
                 f.close()
 
-            # Merge parts with progress feedback
             merged_size = 0
             with open(file_path,"wb") as f:
                 for i in range(MAX_PARALLEL_CHUNKS):
@@ -166,10 +162,11 @@ async def cancel_callback(client: Client, query):
 # ---------- /dl COMMAND ----------
 @Client.on_message(filters.command(["dl"]) & filters.private)
 async def dl_handler(client: Client, message: Message):
-    if len(message.command)<2: 
-        return await message.reply_text("⚡ Usage:\n`/dl <link>`")
+    if len(message.command) < 2:
+        return await message.reply_text("⚠ Usage:\n`/dl <direct link or m3u8>`")
+
     links = message.command[1:]
-    ACTIVE_DOWNLOADS[message.chat.id]=ACTIVE_DOWNLOADS.get(message.chat.id,0)
+    ACTIVE_DOWNLOADS[message.chat.id] = ACTIVE_DOWNLOADS.get(message.chat.id,0)
 
     for idx,url in enumerate(links,1):
         temp_path = os.path.join(DOWNLOAD_DIR,f"{message.chat.id}_{int(time.time())}_{idx}")
@@ -193,14 +190,17 @@ async def dl_handler(client: Client, message: Message):
         except:
             await message.reply_document(file_path, caption=caption_text)
 
+        # Delete user file after 3 seconds (if it was a user-uploaded file)
+        await asyncio.sleep(3)
+        try: os.remove(file_path)
+        except: pass
+
         # Delete progress message after 5 seconds
-        await asyncio.sleep(5)
+        await asyncio.sleep(2)
         try: await status.delete()
         except: pass
 
-        os.remove(file_path)
-
-    ACTIVE_DOWNLOADS[message.chat.id]=0
+    ACTIVE_DOWNLOADS[message.chat.id] = 0
 
 # ---------- /dlhelp COMMAND ----------
 @Client.on_message(filters.command(["dlhelp"]) & filters.private)
@@ -212,7 +212,8 @@ async def dlhelp_handler(client: Client, message: Message):
         "   - Max 3 parallel connections per file.\n"
         "   - Max 10 active downloads per user.\n\n"
         "2️⃣ `❌ Cancel Button` - Tap the button during download to cancel.\n\n"
-        "⚡ Progress bar shows speed, ETA, and size. Disappears 5s after upload."
+        "⚡ Progress bar shows speed, ETA, and size. Disappears 5s after upload.\n"
+        "⚠ If you send `/dl` without a link, you will see this usage warning."
     )
     await message.reply_text(help_text)
-  
+    

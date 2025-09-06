@@ -7,7 +7,8 @@ import shutil
 import subprocess
 import cv2
 import m3u8
-import ffmpeg
+import ffmpeg as ffmpeg_python
+import imageio_ffmpeg as iio_ffmpeg
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
@@ -22,9 +23,9 @@ MAX_TITLE_LEN = 50
 DELETE_AFTER = 600  # 10 minutes
 CLEANUP_INTERVAL = 1800  # 30 minutes
 
-USER_QUEUES = {}       # chat_id -> asyncio.Queue
-USER_ACTIVE = {}       # chat_id -> bool
-CANCEL_FLAGS = {}      # chat_id -> bool
+USER_QUEUES = {}
+USER_ACTIVE = {}
+CANCEL_FLAGS = {}
 
 HELP_TEXT = (
     "📌 **Downloader Help**\n\n"
@@ -145,7 +146,6 @@ async def download_file(url, dest, cb, chat_id):
 async def download_m3u8(url, output_path, message, chat_id):
     playlist = m3u8.load(url)
 
-    # Handle master playlist
     if playlist.is_variant:
         variant = max(playlist.playlists, key=lambda p: p.stream_info.bandwidth)
         url = variant.absolute_uri
@@ -175,9 +175,8 @@ async def download_m3u8(url, output_path, message, chat_id):
         for idx in range(1, total + 1):
             f.write(f"file 'seg_{chat_id}_{idx}.ts'\n")
 
-    ffmpeg.input(segments_file, format="concat", safe=0).output(
-        output_path, c="copy"
-    ).run(overwrite_output=True)
+    ffmpeg_path = iio_ffmpeg.get_ffmpeg_exe()
+    subprocess.run([ffmpeg_path, "-f", "concat", "-safe", "0", "-i", segments_file, "-c", "copy", output_path], check=True)
 
     for idx in range(1, total + 1):
         os.remove(os.path.join(DOWNLOAD_DIR, f"seg_{chat_id}_{idx}.ts"))
@@ -212,9 +211,9 @@ async def process_download(client,msg,url):
         resolution = get_video_resolution(dest)
 
         if size>2*1024*1024*1024:
+            ffmpeg_path = iio_ffmpeg.get_ffmpeg_exe()
             comp = dest.replace(".mp4","_compressed.mp4")
-            cmd = ["ffmpeg","-i",dest,"-b:v","1M",comp]
-            subprocess.run(cmd,check=False)
+            subprocess.run([ffmpeg_path, "-i", dest, "-b:v", "1M", comp], check=False)
             if os.path.exists(comp):
                 dest=comp
 
@@ -268,9 +267,4 @@ async def dl_help(client,msg):
 async def dl_cancel(client,msg):
     chat_id = msg.chat.id
     CANCEL_FLAGS[chat_id] = True
-    await msg.reply("🛑 Download cancelled.")
-
-# ---------- AUTO CLEANUP ----------
-async def start_cleanup():
-    asyncio.create_task(cleanup_downloads())
-    
+            

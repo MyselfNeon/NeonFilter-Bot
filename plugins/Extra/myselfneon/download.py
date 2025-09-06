@@ -6,6 +6,8 @@ import time
 import shutil
 import subprocess
 import cv2
+import m3u8
+import ffmpeg
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
@@ -19,14 +21,17 @@ MAX_RETRY = 3
 MAX_TITLE_LEN = 50
 DELETE_AFTER = 600  # 10 minutes
 CLEANUP_INTERVAL = 1800  # 30 minutes
+MAX_PARALLEL = 5  # m3u8 parallel segment downloads
 
-USER_QUEUES = {}  # chat_id -> asyncio.Queue
-USER_ACTIVE = {}  # chat_id -> bool
+USER_QUEUES = {}   # chat_id -> asyncio.Queue
+USER_ACTIVE = {}   # chat_id -> bool
+USER_VIDEO_COUNT = {}  # chat_id -> incremental counter for m3u8 filenames
 
 HELP_TEXT = (
     "📌 **Downloader Help**\n\n"
     "➡️ /dl <link>  → Download file/video.\n"
-    "➡️ Multiple links supported.\n\n"
+    "➡️ Multiple links supported.\n"
+    "➡️ /dlcancel   → Cancel your current download.\n\n"
     "⚡ Files >2GB auto-compress.\n"
     f"⚠ All uploaded videos are deleted after {DELETE_AFTER//60} minutes."
 )
@@ -91,7 +96,7 @@ async def cleanup_downloads():
                 os.remove(path)
             except: pass
 
-# ---------- DOWNLOAD ----------
+# ---------- NORMAL FILE DOWNLOAD ----------
 async def fetch_chunk(session, url, start, end, part):
     headers = {"Range": f"bytes={start}-{end}"}
     async with session.get(url, headers=headers) as resp:
@@ -132,10 +137,96 @@ async def download_file(url, dest, cb):
                 raise
             await asyncio.sleep(2)
 
+# ---------- M3U8 DOWNLOAD ----------
+def make_progress_bar(done, total):
+    filled = int(PROGRESS_BAR_LEN * done / total)
+    bar = "█" * filled + "░" * (PROGRESS_BAR_LEN - filled)
+    percent = (done / total) * 100
+    return f"[{bar}] {percent:.1f}%"
+
+async def fetch_segment(session, url, path):
+    async with session.get(url) as resp:
+        if resp.status != 200:
+            raise Exception(f"Failed segment {url}")
+        with open(path, "wb") as f:
+            f.write(await resp.read())
+
+async def download_m3u8(url, output_path, status_msg: Message):
+    playlist = m3u8.load(url)
+    if not playlist.segments:
+        raise Exception("No video segments in M3U8")
+
+    total = len(playlist.segments)
+    completed = 0
+    semaphore = asyncio.Semaphore(MAX_PARALLEL)
+
+    async with aiohttp.ClientSession() as session:
+        async def fetch_and_track(idx, seg_url):
+            nonlocal completed
+            seg_path = os.path.join(DOWNLOAD_DIR, f"seg_{idx}.ts")
+            async with semaphore:
+                await fetch_segment(session, seg_url, seg_path)
+            completed += 1
+            if completed % 5 == 0 or completed == total:
+                bar = make_progress_bar(completed, total)
+                await status_msg.edit_text(f"📥 Downloading m3u8...\n{bar}")
+
+        tasks = []
+        for idx, segment in enumerate(playlist.segments, start=1):
+            tasks.append(fetch_and_track(idx, segment.absolute_uri))
+
+        await asyncio.gather(*tasks)
+
+    # Merge segments
+    segments_file = os.path.join(DOWNLOAD_DIR, "segments.txt")
+    with open(segments_file, "w") as f:
+        for idx in range(1, total + 1):
+            f.write(f"file 'seg_{idx}.ts'\n")
+
+    ffmpeg.input(segments_file, format="concat", safe=0).output(
+        output_path, c="copy"
+    ).run(overwrite_output=True)
+
 # ---------- PROCESS ----------
 async def process_download(client,msg,url):
     chat_id = msg.chat.id
-    fname = url.split("/")[-1].split("?")[0] or f"video_{int(time.time())}.mp4"
+    raw_name = url.split("/")[-1].split("?")[0]
+
+    # Handle m3u8 separately
+    if raw_name.endswith(".m3u") or raw_name.endswith(".m3u8") or "m3u8" in raw_name:
+        USER_VIDEO_COUNT[chat_id] = USER_VIDEO_COUNT.get(chat_id, 0) + 1
+        fname = f"Video_{USER_VIDEO_COUNT[chat_id]}.mp4"
+        dest = os.path.join(DOWNLOAD_DIR, fname)
+        status = await msg.reply("⏳ Starting m3u8 download...")
+        try:
+            await download_m3u8(url, dest, status)
+            size = os.path.getsize(dest)
+            resolution = get_video_resolution(dest)
+            thumb = generate_thumbnail(dest)
+            caption = f"🎬 **{fname}**\n📦 {human_readable(size)}"
+            if resolution:
+                caption+=f"\n📺 {resolution}"
+            sent_msg = await client.send_video(chat_id,video=dest,caption=caption,thumb=thumb,supports_streaming=True)
+            await status.delete()
+            os.remove(dest)
+            if thumb and os.path.exists(thumb):
+                os.remove(thumb)
+            await asyncio.sleep(DELETE_AFTER)
+            try:
+                await client.delete_messages(chat_id,sent_msg.message_id)
+            except: pass
+        except Exception as e:
+            await status.edit(f"❌ Failed: {e}")
+        finally:
+            # cleanup ts files
+            for f in os.listdir(DOWNLOAD_DIR):
+                if f.endswith(".ts") or f=="segments.txt":
+                    try: os.remove(os.path.join(DOWNLOAD_DIR,f))
+                    except: pass
+        return
+
+    # Normal direct download
+    fname = raw_name or f"video_{int(time.time())}.mp4"
     fname = clean_title(fname)
     dest = os.path.join(DOWNLOAD_DIR,fname)
     status = await msg.reply("⏳ Starting download...")
@@ -192,15 +283,24 @@ async def dl_cmd(client,msg):
         USER_ACTIVE[chat_id]=True
         asyncio.create_task(worker(client,chat_id))
     for u in urls:
-        if u.endswith(".m3u") or "m3u8" in u:
-            await msg.reply("❌ M3U playlists not supported.")
-            continue
         await USER_QUEUES[chat_id].put((u,msg))
     await msg.reply("✅ Added to queue ⏳")
 
 @Client.on_message(filters.command(["dlhelp"]) & filters.private)
 async def dl_help(client,msg):
     await msg.reply(HELP_TEXT)
+
+@Client.on_message(filters.command(["dlcancel"]) & filters.private)
+async def dl_cancel(client,msg):
+    chat_id = msg.chat.id
+    if chat_id not in USER_ACTIVE or not USER_ACTIVE[chat_id]:
+        return await msg.reply("⚠️ No active download to cancel.")
+    USER_ACTIVE[chat_id] = False
+    if chat_id in USER_QUEUES:
+        while not USER_QUEUES[chat_id].empty():
+            try: USER_QUEUES[chat_id].get_nowait()
+            except: pass
+    await msg.reply("🛑 Download canceled.")
 
 # ---------- AUTO CLEANUP ----------
 async def start_cleanup():

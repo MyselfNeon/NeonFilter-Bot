@@ -1,3 +1,4 @@
+# plugins/download_single.py
 import os
 import aiohttp
 import asyncio
@@ -7,359 +8,442 @@ import shutil
 import subprocess
 import cv2
 import uuid
+import traceback
+
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import Message
+
+# Try to use imageio-ffmpeg if available for a bundled ffmpeg binary.
+try:
+    import imageio_ffmpeg as iio_ffmpeg
+    _FFMPEG_BIN = iio_ffmpeg.get_ffmpeg_exe()
+except Exception:
+    _FFMPEG_BIN = "ffmpeg"  # rely on system ffmpeg if present
 
 # ---------- CONFIG ----------
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-MAX_CHUNKS = 3
+MAX_PARALLEL_NORMAL = 5
+MAX_PARALLEL_ADMIN = 10
+ADMINS = {123456789}  # <-- put admin user IDs here (ints)
+
 MAX_RETRY = 3
-MAX_TITLE_LEN = 50
-DELETE_AFTER = 600  # 10 minutes
-CLEANUP_INTERVAL = 1800  # 30 minutes
-TASKS_PER_PAGE = 10
+DELETE_AFTER = 600  # seconds after sending file to delete it
+CLEANUP_INTERVAL = 1800  # remove leftover files every 30 minutes
 
-ADMINS = [123456789]  # Set admin user IDs here
-DASHBOARD_MSG = None
-CURRENT_PAGE = 0
+MAX_TITLE_LEN = 80
+PROGRESS_LEN = 13  # 13-block progress bar
 
-# ---------- GLOBALS ----------
-TASKS = {}       # task_id -> task dict
-USER_QUEUES = {} # user_id -> asyncio.Queue
-CANCEL_FLAGS = {}# task_id -> bool
+# ---------- GLOBAL STATE ----------
+USER_SEMAPHORES = {}   # user_id -> asyncio.Semaphore
+TASKS = {}             # task_id -> task dict
+CANCEL_FLAGS = {}      # task_id -> bool
 
-# ---------- HELP ----------
+# ---------- HELP TEXT ----------
 HELP_TEXT = (
     "📌 **Downloader Help**\n\n"
-    "➡️ /dl <link>  → Download file/video.\n"
-    "➡️ Multiple links supported.\n"
-    "❌ M3U/M3U8 links are not supported.\n"
-    "❌ /cancel2_<task_id> → Cancel specific task.\n"
-    "➡️ /dltask → Show all ongoing tasks."
+    "➡️ /dl <link>  → Start download for the link (supports multiple links).\n"
+    "➡️ Each link will get its own progress message.\n"
+    "➡️ To cancel a task, type the cancel command shown below the progress message (e.g. /cancel_<id>).\n"
+    "❌ M3U/M3U8 links are not supported."
 )
 
-# ---------- HELPERS ----------
-def human_readable(size):
+# ---------- UTIL HELPERS ----------
+def human_readable(size: int) -> str:
+    if size is None:
+        return "0 B"
     units = ["B","KB","MB","GB","TB"]
     i = 0
-    while size > 1024 and i < len(units)-1:
-        size /= 1024
+    s = float(size)
+    while s >= 1024 and i < len(units)-1:
+        s /= 1024
         i += 1
-    return f"{size:.2f} {units[i]}"
+    return f"{s:.2f} {units[i]}"
 
-def clean_title(name):
+def clean_title(name: str) -> str:
     name = name.replace('_',' ').replace('-',' ').replace('%20',' ')
     name = ' '.join(word.capitalize() for word in name.split())
-    if len(name) > MAX_TITLE_LEN: name = name[:MAX_TITLE_LEN].rstrip()+"..."
+    if len(name) > MAX_TITLE_LEN:
+        name = name[:MAX_TITLE_LEN].rstrip() + "..."
     return name
 
-def get_video_resolution(file_path):
-    try:
-        cap = cv2.VideoCapture(file_path)
-        if cap.isOpened():
-            w=int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            h=int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            cap.release()
-            return f"{w}x{h}"
-    except:
-        pass
-    return None
-
-def generate_thumbnail(file_path):
-    thumb_path = f"thumb_{int(time.time())}.jpg"
-    try:
-        cap = cv2.VideoCapture(file_path)
-        if cap.isOpened():
-            ret, frame = cap.read()
-            if ret: cv2.imwrite(thumb_path, frame)
-        cap.release()
-        if os.path.exists(thumb_path): return thumb_path
-    except:
-        pass
-    return None
-
-# ---------- CLEANUP ----------
-async def cleanup_downloads():
-    while True:
-        await asyncio.sleep(CLEANUP_INTERVAL)
-        for f in os.listdir(DOWNLOAD_DIR):
-            path = os.path.join(DOWNLOAD_DIR,f)
-            try: os.remove(path)
-            except: pass
-
-# ---------- PROGRESS BAR ----------
-def progress_bar_13(done, total):
-    length = 13
-    if total == 0: return "[□□□□□□□□□□□□□] 0.0%"
+def progress_bar_13(done: int, total: int) -> str:
+    length = PROGRESS_LEN
+    if total is None or total == 0:
+        blocks = "□" * length
+        return f"[{blocks}] 0.0%"
+    fraction = float(done) / float(max(total,1))
     blocks = ""
-    fraction = done / max(total,1)
-    per_block = 1/length
+    per_block = 1.0 / length
     for i in range(length):
-        block_start = i * per_block
-        block_end = (i+1) * per_block
-        if fraction >= block_end:
+        start = i * per_block
+        end = (i + 1) * per_block
+        if fraction >= end:
             blocks += "■"
-        elif fraction >= block_start:
+        elif fraction >= start:
             blocks += "▧"
         else:
             blocks += "□"
     percent = fraction * 100
     return f"[{blocks}] {percent:.1f}%"
 
-# ---------- DASHBOARD ----------
-def format_task(task):
-    bar = progress_bar_13(task.get("done",0), task.get("total",0))
-    status = task.get("status","Queued")
-    processed = human_readable(task.get("done",0))
-    total_str = human_readable(task.get("total",0))
-    speed = human_readable(task.get("speed",0))
+def get_ffmpeg_bin() -> str:
+    return _FFMPEG_BIN
 
-    if speed>0 and status.lower()=="downloading":
-        eta_sec = int((task.get("total",0) - task.get("done",0))/speed)
-        mins, secs = divmod(eta_sec, 60)
-        hours, mins = divmod(mins, 60)
-        eta_str = f"{hours}h{mins}m{secs}s" if hours else f"{mins}m{secs}s"
-    else:
-        eta_str = "-"
+def get_video_resolution(file_path: str):
+    try:
+        cap = cv2.VideoCapture(file_path)
+        if cap.isOpened():
+            w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            cap.release()
+            return f"{w}x{h}"
+    except:
+        pass
+    return None
 
-    elapsed_sec = int(task.get("elapsed",0))
-    mins, secs = divmod(elapsed_sec,60)
-    hours, mins = divmod(mins,60)
-    elapsed_str = f"{hours}h{mins}m{secs}s" if hours else f"{mins}m{secs}s"
+def generate_thumbnail(file_path: str):
+    thumb_path = os.path.join(DOWNLOAD_DIR, f"thumb_{int(time.time())}.jpg")
+    try:
+        cap = cv2.VideoCapture(file_path)
+        if cap.isOpened():
+            ret, frame = cap.read()
+            if ret:
+                cv2.imwrite(thumb_path, frame)
+        cap.release()
+        if os.path.exists(thumb_path):
+            return thumb_path
+    except:
+        pass
+    return None
 
-    user = task.get("user_name","Unknown")
-    uid = task.get("user_id","-")
-    tid = task["id"][:8]
-    engine = task.get("engine","Pyrogram")
+# ---------- CLEANUP LOOP ----------
+async def cleanup_loop():
+    while True:
+        await asyncio.sleep(CLEANUP_INTERVAL)
+        try:
+            for f in os.listdir(DOWNLOAD_DIR):
+                path = os.path.join(DOWNLOAD_DIR, f)
+                # don't remove files that are currently tasks outputs:
+                try:
+                    os.remove(path)
+                except:
+                    pass
+        except:
+            pass
+
+# ---------- CORE DOWNLOAD (single-stream, robust) ----------
+async def stream_download(url: str, dest: str, task_id: str, progress_cb):
+    """
+    Stream-download a URL to dest. Calls progress_cb(done, total, speed, eta) periodically.
+    Returns path on success, raises on failure.
+    """
+    for attempt in range(1, MAX_RETRY + 1):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=None)) as resp:
+                    if resp.status != 200:
+                        raise Exception(f"HTTP {resp.status}")
+                    total = int(resp.headers.get("Content-Length", 0) or 0)
+                    done = 0
+                    start = time.time()
+                    with open(dest, "wb") as f:
+                        async for chunk in resp.content.iter_chunked(64 * 1024):
+                            if CANCEL_FLAGS.get(task_id):
+                                # cleanup partial file and signal cancellation
+                                try:
+                                    f.close()
+                                except: pass
+                                raise asyncio.CancelledError("Cancelled by user")
+                            f.write(chunk)
+                            done += len(chunk)
+                            elapsed = time.time() - start
+                            speed = done / (elapsed + 1e-6)
+                            eta = int((total - done) / (speed + 1e-6)) if total and speed > 0 else -1
+                            # call back - non-blocking
+                            try:
+                                await progress_cb(done, total, speed, eta)
+                            except Exception:
+                                pass
+                    return dest, total
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            if attempt == MAX_RETRY:
+                raise
+            await asyncio.sleep(1)
+    raise Exception("Failed to download")
+
+# ---------- TASK RUNNER ----------
+async def run_task(client: Client, task_id: str):
+    """
+    Orchestrates the download -> compress -> upload -> cleanup flow for a single task.
+    """
+    task = TASKS.get(task_id)
+    if not task:
+        return
+
+    chat_id = task["chat_id"]
+    url = task["url"]
+
+    # Quick m3u check
+    if url.lower().endswith(".m3u") or "m3u8" in url.lower():
+        task["status"] = "M3U/M3U8 not supported ❌"
+        # update message
+        try:
+            await task["message"].edit_text(make_task_text(task))
+        except: pass
+        return
+
+    # prepare filename and dest
+    raw_name = url.split("/")[-1].split("?")[0] or f"video_{int(time.time())}.mp4"
+    fname = clean_title(raw_name)
+    dest = os.path.join(DOWNLOAD_DIR, fname)
+    task["fname"] = fname
+    task["status"] = "Downloading"
+    # update message
+    try:
+        await task["message"].edit_text(make_task_text(task))
+    except: pass
+
+    try:
+        async def progress_cb(done, total, speed, eta):
+            task["done"] = done
+            task["total"] = total
+            task["speed"] = speed
+            task["eta"] = eta
+            task["elapsed"] = int(time.time() - task["start_time"])
+            # edit message periodically (throttled per second)
+            now = time.time()
+            if now - task.get("_last_update", 0) >= 1:
+                task["_last_update"] = now
+                try:
+                    await task["message"].edit_text(make_task_text(task))
+                except:
+                    pass
+
+        # do download
+        path, total = await stream_download(url, dest, task_id, progress_cb)
+        # final update values
+        task["done"] = os.path.getsize(path)
+        task["total"] = total or task["done"]
+        task["elapsed"] = int(time.time() - task["start_time"])
+        try:
+            await task["message"].edit_text(make_task_text(task))
+        except: pass
+
+        # compress if >2GB
+        if task["total"] > 2 * 1024 * 1024 * 1024:
+            task["status"] = "Compressing"
+            try:
+                await task["message"].edit_text(make_task_text(task))
+            except: pass
+            comp = dest.replace(".mp4", "_compressed.mp4")
+            ff = get_ffmpeg_bin()
+            try:
+                subprocess.run([ff, "-i", dest, "-b:v", "1M", comp], check=False)
+                if os.path.exists(comp):
+                    os.remove(dest)
+                    dest = comp
+            except Exception:
+                # ignore compression failures, continue with original file
+                pass
+
+        # upload
+        task["status"] = "Uploading"
+        try:
+            await task["message"].edit_text(make_task_text(task))
+        except: pass
+
+        # generate thumbnail (best-effort)
+        thumb = None
+        try:
+            thumb = generate_thumbnail(dest)
+        except:
+            thumb = None
+
+        # send video (Pyrogram will stream if possible)
+        try:
+            await client.send_video(chat_id, video=dest, caption=f"🎬 {fname}\n📦 {human_readable(os.path.getsize(dest))}", thumb=thumb, supports_streaming=True)
+        except Exception as e:
+            # fallback: send as document
+            try:
+                await client.send_document(chat_id, document=dest, caption=f"📦 {human_readable(os.path.getsize(dest))}")
+            except:
+                pass
+
+        # cleanup sent file and thumb
+        try:
+            if os.path.exists(dest):
+                os.remove(dest)
+        except: pass
+        if thumb and os.path.exists(thumb):
+            try: os.remove(thumb)
+            except: pass
+
+        task["status"] = "Completed ✅"
+        try:
+            await task["message"].edit_text(make_task_text(task))
+        except: pass
+
+        # wait then remove task entry
+        await asyncio.sleep(DELETE_AFTER)
+    except asyncio.CancelledError:
+        task["status"] = "Cancelled ❌"
+        try:
+            await task["message"].edit_text(make_task_text(task))
+        except: pass
+    except Exception as exc:
+        task["status"] = f"❌ Failed: {exc}"
+        try:
+            await task["message"].edit_text(make_task_text(task))
+        except: pass
+    finally:
+        # release semaphore
+        sem = USER_SEMAPHORES.get(task["user_id"])
+        if sem:
+            try:
+                sem.release()
+            except: pass
+        # remove task from TASKS after a delay to allow user to read status
+        TASKS.pop(task_id, None)
+        CANCEL_FLAGS.pop(task_id, None)
+
+# ---------- UI / Text rendering ----------
+def make_task_text(task: dict) -> str:
+    fname = task.get("fname", task.get("url", "")).strip()
+    status = task.get("status", "Queued")
+    done = task.get("done", 0)
+    total = task.get("total", 0)
+    speed = task.get("speed", 0)
+    eta = task.get("eta", -1)
+    elapsed = task.get("elapsed", 0)
+
+    bar = progress_bar_13(done, total)
+    speed_str = human_readable(int(speed)) + "/s" if speed else "0 B/s"
+    eta_str = f"{eta}s" if isinstance(eta, int) and eta >= 0 else "-"
+    elapsed_str = f"{elapsed}s" if elapsed else "0s"
+
+    # nicer formatting for ETA & elapsed
+    def sec_to_hms(s):
+        if s is None or s < 0:
+            return "-"
+        s = int(s)
+        h, r = divmod(s, 3600)
+        m, s = divmod(r, 60)
+        if h:
+            return f"{h}h{m}m{s}s"
+        if m:
+            return f"{m}m{s}s"
+        return f"{s}s"
 
     text = (
-        f"Processing Task {tid}\n"
-        f"┃ {bar}\n"
-        f"┠ Processed: {processed} / {total_str}\n"
-        f"┠ Status: {status} | ETA: {eta_str}\n"
-        f"┠ Speed: {speed}/s | Elapsed: {elapsed_str}\n"
-        f"┠ Engine: {engine}\n"
-        f"┠ User: {user} | ID: {uid}\n"
-        f"┖ /cancel2_{tid}"
+        f"{bar}\n"
+        f"Status: {status}\n"
+        f"File: {fname}\n"
+        f"Processed: {human_readable(done)} / {human_readable(total)}\n"
+        f"Speed: {speed_str} | ETA: {sec_to_hms(eta)} | Elapsed: {sec_to_hms(elapsed)}\n\n"
+        f"Cancel: /cancel_{task['id']}\n"
     )
     return text
 
-def get_dashboard_buttons(total_pages):
-    row = []
-    if CURRENT_PAGE > 0: row.append(InlineKeyboardButton("⬅️ Prev", callback_data="dash_prev"))
-    row.append(InlineKeyboardButton("🔄 Refresh", callback_data="dash_refresh"))
-    if CURRENT_PAGE < total_pages - 1: row.append(InlineKeyboardButton("Next ➡️", callback_data="dash_next"))
-    return [row]
-
-# ---------- UPDATE DASHBOARD ----------
-async def update_dashboard(client):
-    global DASHBOARD_MSG, CURRENT_PAGE
-    while True:
-        await asyncio.sleep(1)
-        if DASHBOARD_MSG is None: continue
-        tasks_sorted = list(TASKS.values())
-        total_pages = max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE))
-        CURRENT_PAGE = min(CURRENT_PAGE,total_pages-1)
-        start = CURRENT_PAGE * TASKS_PER_PAGE
-        end = start + TASKS_PER_PAGE
-        msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
-        buttons = get_dashboard_buttons(total_pages)
-        try: await DASHBOARD_MSG.edit(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
-        except: pass
-
-# ---------- DOWNLOAD ----------
-async def fetch_chunk(session,url,start,end,part,task_id):
-    headers = {"Range": f"bytes={start}-{end}"}
-    async with session.get(url, headers=headers) as resp:
-        with open(part,"ab") as f:
-            async for chunk in resp.content.iter_chunked(1024*64):
-                if CANCEL_FLAGS.get(task_id): return
-                f.write(chunk)
-
-async def download_file(url,dest,task_id):
-    for attempt in range(MAX_RETRY):
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.head(url) as resp:
-                    if resp.status not in (200,206): raise Exception("Invalid URL")
-                    total = int(resp.headers.get("Content-Length",0))
-                size = math.ceil(total/MAX_CHUNKS)
-                parts = [f"{dest}.part{i}" for i in range(MAX_CHUNKS)]
-                tasks = [asyncio.create_task(fetch_chunk(session,url,i*size,min((i+1)*size-1,total-1),parts[i],task_id)) for i in range(MAX_CHUNKS)]
-                start_time = time.time()
-                async def progress():
-                    while any(not t.done() for t in tasks):
-                        if CANCEL_FLAGS.get(task_id):
-                            for t in tasks: t.cancel()
-                            return
-                        done = sum(os.path.getsize(p) for p in parts if os.path.exists(p))
-                        TASKS[task_id]["done"] = done
-                        TASKS[task_id]["total"] = total
-                        elapsed = time.time()-start_time
-                        TASKS[task_id]["elapsed"] = elapsed
-                        TASKS[task_id]["speed"] = done/(elapsed+1e-6)
-                        await asyncio.sleep(1)
-                await asyncio.gather(*tasks, progress())
-                if CANCEL_FLAGS.get(task_id): raise Exception("Cancelled")
-                with open(dest,"wb") as f:
-                    for p in parts:
-                        if os.path.exists(p):
-                            with open(p,"rb") as pf: shutil.copyfileobj(pf,f)
-                            os.remove(p)
-                return dest
-        except Exception as e:
-            if attempt+1==MAX_RETRY: raise
-            await asyncio.sleep(2)
-
-async def process_download(client, task_id):
-    task = TASKS[task_id]
-    url = task["url"]
-    if url.endswith(".m3u") or "m3u8" in url:
-        task["status"] = "M3U/M3U8 not supported ❌"
+# ---------- COMMANDS & HANDLERS ----------
+@Client.on_message(filters.command(["dl"]) & filters.private)
+async def cmd_dl(client: Client, msg: Message):
+    """
+    Usage: /dl <link1> <link2> ...
+    Each link produces its own progress message and runs (subject to per-user parallel limits).
+    """
+    text = msg.text or ""
+    parts = text.split()
+    urls = parts[1:]
+    if not urls:
+        await msg.reply("⚠️ Provide at least one URL. Usage: /dl <url1> <url2> ...")
         return
 
-    fname = clean_title(url.split("/")[-1].split("?")[0] or f"video_{int(time.time())}.mp4")
-    dest = os.path.join(DOWNLOAD_DIR,fname)
-    task["status"]="Downloading"
-    try:
-        await download_file(url, dest, task_id)
-        size = os.path.getsize(dest)
-        resolution = get_video_resolution(dest)
-        if size > 2*1024*1024*1024:
-            comp = dest.replace(".mp4", "_compressed.mp4")
-            subprocess.run(["ffmpeg", "-i", dest, "-b:v", "1M", comp], check=False)
-            if os.path.exists(comp):
-                dest = comp
-        thumb = generate_thumbnail(dest)
-        task["status"] = "Uploading"
-        await client.send_video(
-            task["chat_id"],
-            video=dest,
-            caption=f"🎬 {fname}\n📦 {human_readable(size)}\n📺 {resolution or ''}",
-            thumb=thumb,
-            supports_streaming=True
-        )
-        os.remove(dest)
-        if thumb and os.path.exists(thumb):
-            os.remove(thumb)
-        task["status"] = "Completed ✅"
-        await asyncio.sleep(DELETE_AFTER)
-    except Exception as e:
-        task["status"] = f"❌ Failed: {e}"
+    user_id = msg.from_user.id
+    max_parallel = MAX_PARALLEL_ADMIN if user_id in ADMINS else MAX_PARALLEL_NORMAL
 
-# ---------- WORKER ----------
-async def worker(client, user_id):
-    q = USER_QUEUES[user_id]
-    max_parallel = 10 if user_id in ADMINS else 5
-    running = set()
-    while True:
-        while len(running) < max_parallel and not q.empty():
-            task_id = await q.get()
-            coro = asyncio.create_task(process_download(client, task_id))
-            running.add(coro)
-            def done_callback(fut, running_set=running):
-                running_set.discard(fut)
-            coro.add_done_callback(done_callback)
-        await asyncio.sleep(0.5)
+    # ensure semaphore for this user
+    sem = USER_SEMAPHORES.get(user_id)
+    if sem is None:
+        sem = asyncio.Semaphore(max_parallel)
+        USER_SEMAPHORES[user_id] = sem
+    else:
+        # if admin status changed, adjust semaphore? (we keep existing)
+        pass
 
-# ---------- COMMANDS ----------
-@Client.on_message(filters.command(["dl"]) & filters.private)
-async def dl_cmd(client, msg):
-    global DASHBOARD_MSG, CURRENT_PAGE
-    user_id = msg.chat.id
-    urls = msg.text.split()[1:]
-    if not urls:
-        return await msg.reply("⚠️ Provide at least one URL.")
-
-    if user_id not in USER_QUEUES:
-        USER_QUEUES[user_id] = asyncio.Queue()
-        asyncio.create_task(worker(client, user_id))
-
-    added_count = 0
-    for u in urls:
-        tid = str(uuid.uuid4())
+    created = 0
+    for url in urls:
+        tid = uuid.uuid4().hex
+        # prepare initial task skeleton
         TASKS[tid] = {
             "id": tid,
-            "url": u,
-            "chat_id": user_id,
+            "url": url,
+            "chat_id": msg.chat.id,
             "user_id": user_id,
-            "user_name": msg.from_user.first_name,
+            "user_name": getattr(msg.from_user, "first_name", "User"),
+            "status": "Queued",
             "done": 0,
             "total": 0,
             "speed": 0,
+            "eta": -1,
             "elapsed": 0,
-            "status": "Queued",
-            "engine": "Pyrogram"
+            "fname": None,
+            "_last_update": 0,
+            "start_time": time.time()
         }
-        await USER_QUEUES[user_id].put(tid)
-        added_count += 1
+        # send initial progress message for the task
+        try:
+            m = await msg.reply(make_task_text(TASKS[tid]))
+        except Exception:
+            # fallback to simple reply (rare)
+            m = await msg.reply("Starting task...")
+        TASKS[tid]["message"] = m
+        CANCEL_FLAGS[tid] = False
+        created += 1
 
-    await msg.reply(f"✅ Added {added_count} task(s) to global dashboard.")
+        # start background runner that respects semaphore
+        async def schedule_task(client, tid):
+            sem = USER_SEMAPHORES.get(user_id)
+            await sem.acquire()
+            # check if cancelled pre-start
+            if CANCEL_FLAGS.get(tid):
+                TASKS[tid]["status"] = "Cancelled ❌"
+                try:
+                    await TASKS[tid]["message"].edit_text(make_task_text(TASKS[tid]))
+                except:
+                    pass
+                sem.release()
+                return
+            TASKS[tid]["start_time"] = time.time()
+            # run the actual task (don't await here - run in background)
+            await run_task(client, tid)
 
-    # Delete old dashboard if exists
-    try:
-        if DASHBOARD_MSG:
-            await DASHBOARD_MSG.delete()
-    except:
-        pass
-    CURRENT_PAGE = 0
-    tasks_sorted = list(TASKS.values())
-    start = CURRENT_PAGE * TASKS_PER_PAGE
-    end = start + TASKS_PER_PAGE
-    msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end])
-    buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted) / TASKS_PER_PAGE)))
-    DASHBOARD_MSG = await msg.reply(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+        asyncio.create_task(schedule_task(client, tid))
 
-@Client.on_message(filters.command(["dltask"]) & filters.private)
-async def dl_task(client, msg):
-    global DASHBOARD_MSG, CURRENT_PAGE
-    try:
-        if DASHBOARD_MSG:
-            await DASHBOARD_MSG.delete()
-    except:
-        pass
-    CURRENT_PAGE = 0
-    tasks_sorted = list(TASKS.values())
-    start = CURRENT_PAGE * TASKS_PER_PAGE
-    end = start + TASKS_PER_PAGE
-    msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
-    buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted) / TASKS_PER_PAGE)))
-    DASHBOARD_MSG = await msg.reply(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+    await msg.reply(f"✅ Added {created} task(s). Each link has its own progress message.")
 
-@Client.on_message(filters.regex(r"^/cancel2_(\w+)") & filters.private)
-async def cancel_task(client, msg):
-    tid = msg.text.split("_")[1]
-    if tid in TASKS:
-        CANCEL_FLAGS[tid] = True
-        TASKS[tid]["status"] = "Cancelled ❌"
-        await msg.reply(f"Task {tid[:8]} cancelled.")
-    else:
-        await msg.reply("❌ Task not found.")
-
-@Client.on_callback_query()
-async def dashboard_buttons(client, callback):
-    global CURRENT_PAGE, DASHBOARD_MSG
-    data = callback.data
-    tasks_sorted = list(TASKS.values())
-    total_pages = max(1, math.ceil(len(tasks_sorted) / TASKS_PER_PAGE))
-
-    if data == "dash_prev" and CURRENT_PAGE > 0:
-        CURRENT_PAGE -= 1
-    elif data == "dash_next" and CURRENT_PAGE < total_pages - 1:
-        CURRENT_PAGE += 1
-    elif data == "dash_refresh":
-        pass
-    else:
+@Client.on_message(filters.regex(r"^/cancel_([0-9a-fA-F]+)") & filters.private)
+async def cmd_cancel(client: Client, msg: Message):
+    tid = msg.text.split("_", 1)[1].strip()
+    task = TASKS.get(tid)
+    if not task:
+        await msg.reply("❌ Task not found or already finished.")
         return
-
-    start = CURRENT_PAGE * TASKS_PER_PAGE
-    end = start + TASKS_PER_PAGE
-    msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
-    buttons = get_dashboard_buttons(total_pages)
+    CANCEL_FLAGS[tid] = True
+    task["status"] = "Cancelling..."
     try:
-        await callback.message.edit(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+        await task["message"].edit_text(make_task_text(task))
     except:
         pass
-    await callback.answer()
+    await msg.reply(f"Requested cancel for task {tid[:8]}.")
+
+@Client.on_message(filters.command(["dlhelp"]) & filters.private)
+async def cmd_help(client: Client, msg: Message):
+    await msg.reply(HELP_TEXT)
+
+# ---------- START BACKGROUND CLEANUP ----------
+# create cleanup loop on import/start
+asyncio.get_event_loop().create_task(cleanup_loop())

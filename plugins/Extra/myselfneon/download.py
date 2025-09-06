@@ -1,225 +1,250 @@
-import os import aiohttp import asyncio import math import time import shutil import subprocess from urllib.parse import urlparse, parse_qs from pyrogram import Client, filters from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton import cv2  # For video metadata
+import os
+import aiohttp
+import asyncio
+import math
+import time
+import shutil
+import subprocess
+import cv2
+from pyrogram import Client, filters
+from pyrogram.types import (
+    Message,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 
----------------- CONFIG -----------------
+# ---------- CONFIG ----------
+DOWNLOAD_DIR = "downloads"
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-DOWNLOAD_DIR = "downloads" os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+PROGRESS_BAR_LEN = 16
+MAX_CHUNKS = 3
+MAX_RETRY = 3
+MAX_TITLE_LEN = 50
+DELETE_AFTER = 600  # seconds (10 minutes)
+CLEANUP_INTERVAL = 1800  # 30 minutes
 
-ACTIVE_DOWNLOADS = {}            # {chat_id: count} USER_QUEUE = {}                 # {chat_id: asyncio.Queue} PROGRESS_BAR_LENGTH = 16 MAX_PARALLEL_CHUNKS = 3 MAX_ACTIVE_DOWNLOADS = 10 RETRY_LIMIT = 3 TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB TEMP_SUFFIX = ".part"
+USER_QUEUES = {}   # {chat_id: asyncio.Queue}
+USER_ACTIVE = {}   # {chat_id: bool}
 
-VIDEO_EXTENSIONS = { "video/mp4": ".mp4", "video/webm": ".webm", "video/ogg": ".ogv" }
+HELP_TEXT = (
+    "📌 **Downloader Help**\n\n"
+    "➡️ /dl <link>  → Download file/video.\n"
+    "➡️ Multiple links supported.\n\n"
+    "⚡ Files >2GB auto-compress.\n"
+    f"⚠ All uploaded videos are deleted after {DELETE_AFTER//60} minutes."
+)
 
-MIME_DEFAULTS = { "application/octet-stream": ".bin", "text/html": ".html", }
+# ---------- HELPERS ----------
+def human_readable(size: int) -> str:
+    units = ["B", "KB", "MB", "GB", "TB"]
+    i = 0
+    while size > 1024 and i < len(units) - 1:
+        size /= 1024
+        i += 1
+    return f"{size:.2f} {units[i]}"
 
--------------- Helpers ------------------
+def progress_bar(done: int, total: int) -> str:
+    if total == 0:
+        return "[????????????]"
+    filled = int(PROGRESS_BAR_LEN * done / total)
+    bar = "▰" * filled + "▱" * (PROGRESS_BAR_LEN - filled)
+    percent = (done / total) * 100
+    return f"[{bar}] {percent:.1f}%"
 
-def human_readable(size): power = 2**10 n = 0 Dic_powerN = {0: "B",1:"KB",2:"MB",3:"GB",4:"TB"} while size > power and n < 4: size /= power n +=1 return f"{round(size,2)} {Dic_powerN[n]}"
+def clean_title(name: str) -> str:
+    name = name.replace('_', ' ').replace('-', ' ').replace('%20', ' ')
+    name = ' '.join(word.capitalize() for word in name.split())
+    if len(name) > MAX_TITLE_LEN:
+        name = name[:MAX_TITLE_LEN].rstrip() + '...'
+    return name
 
-def progress_bar(done, total, length=16): filled = int(length * done / total) if total else 0 bar = "▰" * filled + "▱" * (length - filled) pct = f"{int(done/total*100) if total else 0}%" return f"{bar} {pct}"
+def get_video_resolution(file_path):
+    try:
+        cap = cv2.VideoCapture(file_path)
+        if cap.isOpened():
+            w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            cap.release()
+            return f"{w}x{h}"
+    except:
+        pass
+    return None
 
-async def update_progress(current, total, message: Message, start, action="Downloading"): now = time.time() elapsed = now - start speed = current / (elapsed+1e-6) eta = int((total-current)/(speed+1e-6)) if total and speed>0 else 0 bar = progress_bar(current, total, length=PROGRESS_BAR_LENGTH) text = ( f"📤 {action}...\n\n" f"{bar}\n" f"{human_readable(current)} / {human_readable(total)}\n" f"⚡ {human_readable(speed)}/s | ⏳ {eta}s" ) try: await message.edit(text) except Exception: pass
+def generate_thumbnail(file_path):
+    thumb_path = f"thumb_{int(time.time())}.jpg"
+    try:
+        cap = cv2.VideoCapture(file_path)
+        if cap.isOpened():
+            ret, frame = cap.read()
+            if ret:
+                cv2.imwrite(thumb_path, frame)
+        cap.release()
+        if os.path.exists(thumb_path):
+            return thumb_path
+    except:
+        pass
+    return None
 
-def parse_link_options(url: str): """Allow passing options as query params, e.g. ?title=MyVideo&thumb=https://...""" parsed = urlparse(url) qs = parse_qs(parsed.query) opts = {k: v[0] for k, v in qs.items()} # return cleaned url without query clean = parsed._replace(query="").geturl() return clean, opts
+async def cleanup_downloads():
+    while True:
+        await asyncio.sleep(CLEANUP_INTERVAL)
+        for f in os.listdir(DOWNLOAD_DIR):
+            path = os.path.join(DOWNLOAD_DIR, f)
+            try:
+                os.remove(path)
+            except: pass
 
---------- Resumable ranged downloader ---------
+# ---------- DOWNLOAD ----------
+async def fetch_chunk(session, url, start, end, part):
+    headers = {"Range": f"bytes={start}-{end}"}
+    async with session.get(url, headers=headers) as resp:
+        with open(part, "ab") as f:
+            async for chunk in resp.content.iter_chunked(1024 * 64):
+                f.write(chunk)
 
-async def download_range(session, url, start, end, temp_path, idx, progress, chat_id, part_exist_len=0): headers = {"Range": f"bytes={start+part_exist_len}-{end}"} if part_exist_len>0 else {"Range": f"bytes={start}-{end}"} async with session.get(url, headers=headers) as resp: if resp.status not in (200, 206): return False mode = "ab" if part_exist_len>0 else "wb" with open(temp_path, mode) as f: async for chunk in resp.content.iter_chunked(1024*512): if not ACTIVE_DOWNLOADS.get(chat_id, True): return False f.write(chunk) progress[idx] += len(chunk) return True
-
-async def download_file(url: str, temp_base: str, status_msg: Message, chat_id: int): # Queue guard if ACTIVE_DOWNLOADS.get(chat_id,0) >= MAX_ACTIVE_DOWNLOADS: await status_msg.edit("⚠ You reached the maximum 10 simultaneous downloads.") return None ACTIVE_DOWNLOADS[chat_id] = ACTIVE_DOWNLOADS.get(chat_id,0)+1
-
-# parse inline options
-url, opts = parse_link_options(url)
-
-async with aiohttp.ClientSession() as session:
-    for attempt in range(RETRY_LIMIT):
+async def download_file(url, dest, cb):
+    for attempt in range(MAX_RETRY):
         try:
-            async with session.head(url, allow_redirects=True) as resp_head:
-                if resp_head.status not in (200, 206):
-                    await status_msg.edit(f"❌ Link returned status {resp_head.status}")
-                    ACTIVE_DOWNLOADS[chat_id]-=1
-                    return None
+            async with aiohttp.ClientSession() as session:
+                async with session.head(url) as resp:
+                    if resp.status not in (200, 206):
+                        raise Exception("❌ Invalid URL")
+                    total = int(resp.headers.get("Content-Length", 0))
 
-                total_size = int(resp_head.headers.get("Content-Length", 0))
-                content_type = resp_head.headers.get("Content-Type","").split(';')[0].lower()
+                size = math.ceil(total / MAX_CHUNKS)
+                tasks, parts = [], []
 
-                if "mpegurl" in content_type or url.lower().endswith('.m3u'):
-                    await status_msg.edit("⚠ M3U/playlist links are not supported! Please send a direct video/file link.")
-                    ACTIVE_DOWNLOADS[chat_id]-=1
-                    return None
-
-                ext = VIDEO_EXTENSIONS.get(content_type) or MIME_DEFAULTS.get(content_type) or ".mp4"
-                file_path = temp_base + ext
-
-                # Prepare part files (support resume)
-                chunk_size = max(1, math.ceil(total_size / MAX_PARALLEL_CHUNKS))
-                part_paths = [f"{file_path}{TEMP_SUFFIX}{i}" for i in range(MAX_PARALLEL_CHUNKS)]
-                progress = [0]*MAX_PARALLEL_CHUNKS
-
-                # If parts exist, read their sizes to resume
-                part_exist_lens = []
-                for p in part_paths:
-                    if os.path.exists(p):
-                        part_exist_lens.append(os.path.getsize(p))
-                    else:
-                        part_exist_lens.append(0)
+                for i in range(MAX_CHUNKS):
+                    start = i * size
+                    end = min(start + size - 1, total - 1)
+                    part = f"{dest}.part{i}"
+                    parts.append(part)
+                    tasks.append(fetch_chunk(session, url, start, end, part))
 
                 start_time = time.time()
 
-                tasks = []
-                for i in range(MAX_PARALLEL_CHUNKS):
-                    start = i*chunk_size
-                    end = min((i+1)*chunk_size-1, total_size-1)
-                    tasks.append(download_range(session,url,start,end,part_paths[i],i,progress,chat_id,part_exist_lens[i]))
+                async def progress():
+                    while any(not t.done() for t in tasks):
+                        done = sum(os.path.getsize(p) for p in parts if os.path.exists(p))
+                        elapsed = time.time() - start_time
+                        speed = done / (elapsed + 1e-6)
+                        eta = (total - done) / (speed + 1e-6)
+                        await cb(done, total, speed, eta)
+                        await asyncio.sleep(1)
 
-                async def monitor(task_futures):
-                    while True:
-                        if not ACTIVE_DOWNLOADS.get(chat_id, True):
-                            break
-                        done_size = sum(progress) + sum(part_exist_lens)
-                        await update_progress(done_size, total_size, status_msg, start_time, "Downloading")
-                        if all(t.done() for t in task_futures):
-                            break
-                        await asyncio.sleep(0.7)
+                await asyncio.gather(*tasks, progress())
 
-                # Run download
-                task_futures = [asyncio.create_task(t) for t in tasks]
-                monitor_task = asyncio.create_task(monitor(task_futures))
-                await asyncio.gather(*task_futures)
-                await monitor_task
-
-                # Merge parts
-                merged_size = 0
-                with open(file_path, 'ab') as outfile:
-                    for i in range(MAX_PARALLEL_CHUNKS):
-                        p = part_paths[i]
-                        if not os.path.exists(p):
-                            # missing part => fail
-                            await status_msg.edit("❌ Missing part files, download incomplete. Retry later.")
-                            ACTIVE_DOWNLOADS[chat_id]-=1
-                            return None
-                        with open(p,'rb') as pf:
-                            while True:
-                                chunk = pf.read(1024*1024)
-                                if not chunk: break
-                                outfile.write(chunk)
-                                merged_size += len(chunk)
-                        os.remove(p)
-                        await update_progress(merged_size, total_size, status_msg, start_time, "Merging")
-
-                ACTIVE_DOWNLOADS[chat_id]-=1
-
-                # return path and meta
-                return file_path, total_size, content_type, opts
-
+                with open(dest, "wb") as f:
+                    for p in parts:
+                        if os.path.exists(p):
+                            with open(p, "rb") as pf:
+                                shutil.copyfileobj(pf, f)
+                            os.remove(p)
+                return dest
         except Exception as e:
-            if attempt+1 >= RETRY_LIMIT:
-                await status_msg.edit(f"❌ Failed after {RETRY_LIMIT} attempts: {e}")
-                ACTIVE_DOWNLOADS[chat_id]-=1
-                return None
-            await asyncio.sleep(1 + attempt*2)
-ACTIVE_DOWNLOADS[chat_id]-=1
-return None
+            if attempt + 1 == MAX_RETRY:
+                raise
+            await asyncio.sleep(2)
 
----------- Compression if > 2GB (TG limit) ----------
+# ---------- PROCESS ----------
+async def process_download(client: Client, msg: Message, url: str):
+    chat_id = msg.chat.id
+    fname = url.split("/")[-1].split("?")[0] or f"video_{int(time.time())}.mp4"
+    fname = clean_title(fname)
 
-def compress_if_needed(file_path: str): size = os.path.getsize(file_path) if size <= TG_MAX_FILE_SIZE: return file_path
+    dest = os.path.join(DOWNLOAD_DIR, fname)
+    status = await msg.reply("⏳ Starting download...")
 
-# try to compress with ffmpeg (re-encode to lower bitrate)
-base, ext = os.path.splitext(file_path)
-compressed = f"{base}_compressed.mp4"
-cmd = [
-    "ffmpeg", "-y", "-i", file_path,
-    "-vcodec", "libx264", "-preset", "fast",
-    "-crf", "28", "-acodec", "aac", "-b:a", "128k",
-    compressed
-]
-try:
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    if os.path.exists(compressed) and os.path.getsize(compressed) < size:
-        os.remove(file_path)
-        return compressed
-except Exception:
-    pass
-return file_path
+    async def cb(done, total, speed, eta):
+        bar = progress_bar(done, total)
+        text = (
+            f"📥 **Downloading** {fname}\n\n"
+            f"{bar}\n"
+            f"📦 {human_readable(done)} / {human_readable(total)}\n"
+            f"⚡ {human_readable(speed)}/s\n"
+            f"⏳ {int(eta)}s left"
+        )
+        await status.edit(text)
 
----------- Per-user queue worker ----------
-
-async def ensure_user_queue(chat_id: int): if chat_id not in USER_QUEUE: USER_QUEUE[chat_id] = asyncio.Queue() asyncio.create_task(user_queue_worker(chat_id))
-
-async def user_queue_worker(chat_id: int): q = USER_QUEUE[chat_id] while True: item = await q.get() if item is None: break client, url, message = item await process_single_download(client, url, message) q.task_done()
-
----------- Core processing of a single link ----------
-
-async def process_single_download(client: Client, url: str, message: Message): status = await message.reply_text( "📥 Queued...", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="dlcancel")]]) ) result = await download_file(url, os.path.join(DOWNLOAD_DIR, f"{message.chat.id}_{int(time.time())}"), status, message.chat.id) if not result: try: await status.edit("❌ Failed to download.") except: pass return
-
-file_path, file_size, content_type, opts = result
-caption_text = opts.get('title') or f"🎬 **{os.path.basename(file_path)}**\n📦 Size: {human_readable(file_size)}"
-
-# Detect video metadata
-width = None
-height = None
-try:
-    cap = cv2.VideoCapture(file_path)
-    if cap.isOpened():
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    cap.release()
-except:
-    pass
-
-if not width or not height:
-    width = 1200
-    height = 800
-
-# Compress if too big
-send_path = compress_if_needed(file_path)
-
-# Send with thumbnail if provided
-thumb = opts.get('thumb')
-try:
-    if content_type.startswith('video'):
-        if thumb:
-            await message.reply_video(send_path, caption=caption_text, width=width, height=height, thumb=thumb)
-        else:
-            await message.reply_video(send_path, caption=caption_text, width=width, height=height)
-    else:
-        await message.reply_document(send_path, caption=caption_text)
-except Exception as e:
-    # fallback to document
     try:
-        await message.reply_document(send_path, caption=caption_text)
-    except Exception:
-        await status.edit(f"❌ Upload failed: {e}")
+        await download_file(url, dest, cb)
+        size = os.path.getsize(dest)
+        resolution = get_video_resolution(dest)
 
-# cleanup
-try:
-    await asyncio.sleep(5)
-    await status.delete()
-except:
-    pass
+        if size > 2 * 1024 * 1024 * 1024:
+            comp = dest.replace(".mp4", "_compressed.mp4")
+            cmd = ["ffmpeg", "-i", dest, "-b:v", "1M", comp]
+            subprocess.run(cmd, check=False)
+            if os.path.exists(comp):
+                dest = comp
 
-try:
-    os.remove(send_path)
-except:
-    pass
+        thumb = generate_thumbnail(dest)
 
----------- Cancel ----------
+        caption = f"🎬 **{fname}**\n📦 {human_readable(size)}"
+        if resolution:
+            caption += f"\n📺 {resolution}"
 
-@Client.on_callback_query(filters.regex("dlcancel")) async def cancel_callback(client: Client, query): ACTIVE_DOWNLOADS[query.message.chat.id] = False # clear queue q = USER_QUEUE.get(query.message.chat.id) if q: # remove all queued items while not q.empty(): try: q.get_nowait(); q.task_done() except: break await query.message.edit("❌ Download/upload cancelled.") await query.answer("Cancelled!")
+        sent_msg = await client.send_video(
+            chat_id,
+            video=dest,
+            caption=caption,
+            thumb=thumb,
+            supports_streaming=True
+        )
 
----------- /dl COMMAND (supports multiple links and inline opts) ---------
+        await status.delete()
+        os.remove(dest)
+        if thumb and os.path.exists(thumb):
+            os.remove(thumb)
 
-@Client.on_message(filters.command(["dl", "download"]) & filters.private) async def dl_handler(client: Client, message: Message): if len(message.command) < 2: return await message.reply_text( "⚠ You need to provide one or more links to download!\n\n" "Usage:\n/dl <direct link> [<link2> ...]\n\n" "You can add options to the link as query params, e.g.:\n" "/dl https://example.com/video.mp4?title=MyTitle&thumb=https://i.imgur.com/thumb.jpg" )
+        # Auto-delete after 10 minutes
+        await asyncio.sleep(DELETE_AFTER)
+        try:
+            await client.delete_messages(chat_id, sent_msg.message_id)
+        except: pass
 
-links = message.command[1:]
-await ensure_user_queue(message.chat.id)
-q = USER_QUEUE[message.chat.id]
+    except Exception as e:
+        await status.edit(f"❌ Failed: {e}")
 
-for url in links:
-    # enqueue the job
-    await q.put((client, url, message))
+# ---------- QUEUE ----------
+async def worker(client, chat_id):
+    q = USER_QUEUES[chat_id]
+    while True:
+        url, msg = await q.get()
+        if not USER_ACTIVE.get(chat_id, True):
+            q.task_done()
+            continue
+        await process_download(client, msg, url)
+        q.task_done()
 
-await message.reply_text(f"✅ Added {len(links)} link(s) to your queue. Use /dlhelp for options.")
+# ---------- COMMANDS ----------
+@Client.on_message(filters.command(["dl"]) & filters.private)
+async def dl_cmd(client: Client, msg: Message):
+    chat_id = msg.chat.id
+    urls = msg.text.split()[1:]
 
----------- /dlhelp COMMAND ----------
+    if not urls:
+        return await msg.reply("⚠️ Provide at least one URL.")
 
-@Client.on_message(filters.command(["dlhelp"]) & filters.private) async def dlhelp_handler(client: Client, message: Message): help_text = ( "📌 DL Bot Commands:\n\n" "1️⃣ /dl <link> - Download a direct video/file link.\n" "   - Supports multiple links: /dl link1 link2 ...\n" "   - Inline options: add ?title=...&thumb=... to the link.\n" "   - Max 3 parallel connections per file.\n" "   - Max 10 active downloads per user.\n\n" "2️⃣ ❌ Cancel Button - Tap the button during download to cancel.\n\n" "⚡ Features added:\n" "- Resume support for interrupted downloads.\n" "- Per-user queueing (one worker per user).\n" "- Auto-compression if file > 2GB (requires ffmpeg).\n" "- Accepts thumbnail & title via query params on the link.\n" "- More robust retry logic and nicer progress bar.\n" "- Fallback to document if video send fails.\n" ) await message.reply_text(help_text)
+    if chat_id not in USER_QUEUES:
+        USER_QUEUES[chat_id] = asyncio.Queue()
+        USER_ACTIVE[chat_id] = True
+        asyncio.create_task(worker(client, chat_id))
+
+    for u in urls:
+        if u.endswith(".m3u") or "m3u8" in u:
+            await msg.reply("❌ M3U playlists not supported.")
+            continue
+        await USER_QUEUES[chat_id].put((u, msg))
+
+    await msg.reply("✅ Added to queue ⏳")
+
+@Client.on_message(filters.command(["dlhelp"]) & filters.private)
+async def dl_help(client: Client, msg: Message):
+    await msg.reply(HELP_TEXT)
+
+# ---------- AUTO CLEANUP ----------
+async def start_cleanup():
+    asyncio.create_task(cleanup_downloads())
+    

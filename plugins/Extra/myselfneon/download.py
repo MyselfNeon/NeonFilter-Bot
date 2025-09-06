@@ -7,7 +7,6 @@ import shutil
 import subprocess
 import cv2
 import uuid
-import imageio_ffmpeg as iio_ffmpeg
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -147,14 +146,11 @@ def format_task(task):
     )
     return text
 
-# ---------- DASHBOARD BUTTONS ----------
 def get_dashboard_buttons(total_pages):
     row = []
-    if CURRENT_PAGE > 0:
-        row.append(InlineKeyboardButton("⬅️ Prev", callback_data="dash_prev"))
+    if CURRENT_PAGE > 0: row.append(InlineKeyboardButton("⬅️ Prev", callback_data="dash_prev"))
     row.append(InlineKeyboardButton("🔄 Refresh", callback_data="dash_refresh"))
-    if CURRENT_PAGE < total_pages - 1:
-        row.append(InlineKeyboardButton("Next ➡️", callback_data="dash_next"))
+    if CURRENT_PAGE < total_pages - 1: row.append(InlineKeyboardButton("Next ➡️", callback_data="dash_next"))
     return [row]
 
 # ---------- UPDATE DASHBOARD ----------
@@ -223,33 +219,38 @@ async def process_download(client, task_id):
     if url.endswith(".m3u") or "m3u8" in url:
         task["status"] = "M3U/M3U8 not supported ❌"
         return
+
     fname = clean_title(url.split("/")[-1].split("?")[0] or f"video_{int(time.time())}.mp4")
     dest = os.path.join(DOWNLOAD_DIR,fname)
-    task["fname"] = fname
-    task["status"] = "Downloading"
+    task["status"]="Downloading"
     try:
-        await download_file(url,dest,task_id)
+        await download_file(url, dest, task_id)
         size = os.path.getsize(dest)
-        task["total"] = size
         resolution = get_video_resolution(dest)
-        if size>2*1024*1024*1024:
-            ffmpeg_path = iio_ffmpeg.get_ffmpeg_exe()
-            comp = dest.replace(".mp4","_compressed.mp4")
-            subprocess.run([ffmpeg_path,"-i",dest,"-b:v","1M",comp],check=False)
-            if os.path.exists(comp): dest=comp
-        task["status"]="Uploading"
+        if size > 2*1024*1024*1024:
+            comp = dest.replace(".mp4", "_compressed.mp4")
+            subprocess.run(["ffmpeg", "-i", dest, "-b:v", "1M", comp], check=False)
+            if os.path.exists(comp):
+                dest = comp
         thumb = generate_thumbnail(dest)
-        await client.send_video(task["chat_id"],video=dest,caption=f"🎬 {fname}",thumb=thumb,supports_streaming=True)
+        task["status"] = "Uploading"
+        await client.send_video(
+            task["chat_id"],
+            video=dest,
+            caption=f"🎬 {fname}\n📦 {human_readable(size)}\n📺 {resolution or ''}",
+            thumb=thumb,
+            supports_streaming=True
+        )
         os.remove(dest)
-        if thumb and os.path.exists(thumb): os.remove(thumb)
-        task["status"]="Completed ✅"
+        if thumb and os.path.exists(thumb):
+            os.remove(thumb)
+        task["status"] = "Completed ✅"
         await asyncio.sleep(DELETE_AFTER)
-        TASKS.pop(task_id,None)
     except Exception as e:
-        task["status"]=f"❌ Failed: {e}"
+        task["status"] = f"❌ Failed: {e}"
 
 # ---------- WORKER ----------
-async def worker(client,user_id):
+async def worker(client, user_id):
     q = USER_QUEUES[user_id]
     max_parallel = 10 if user_id in ADMINS else 5
     running = set()
@@ -261,14 +262,12 @@ async def worker(client,user_id):
             def done_callback(fut, running_set=running):
                 running_set.discard(fut)
             coro.add_done_callback(done_callback)
-        if not running and q.empty():
-            await asyncio.sleep(1)
-        else:
-            await asyncio.sleep(0.5)
+        await asyncio.sleep(0.5)
 
 # ---------- COMMANDS ----------
 @Client.on_message(filters.command(["dl"]) & filters.private)
 async def dl_cmd(client, msg):
+    global DASHBOARD_MSG, CURRENT_PAGE
     user_id = msg.chat.id
     urls = msg.text.split()[1:]
     if not urls:
@@ -299,27 +298,19 @@ async def dl_cmd(client, msg):
 
     await msg.reply(f"✅ Added {added_count} task(s) to global dashboard.")
 
-    # ---------- REFRESH DASHBOARD ----------
-    global DASHBOARD_MSG, CURRENT_PAGE
+    # Delete old dashboard if exists
     try:
         if DASHBOARD_MSG:
             await DASHBOARD_MSG.delete()
     except:
         pass
-
     CURRENT_PAGE = 0
     tasks_sorted = list(TASKS.values())
     start = CURRENT_PAGE * TASKS_PER_PAGE
     end = start + TASKS_PER_PAGE
     msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end])
-    buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE)))
-    DASHBOARD_MSG = await msg.reply(
-        msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
-    )
-
-@Client.on_message(filters.command(["dlhelp"]) & filters.private)
-async def dl_help(client, msg):
-    await msg.reply(HELP_TEXT)
+    buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted) / TASKS_PER_PAGE)))
+    DASHBOARD_MSG = await msg.reply(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
 
 @Client.on_message(filters.command(["dltask"]) & filters.private)
 async def dl_task(client, msg):
@@ -334,35 +325,9 @@ async def dl_task(client, msg):
     start = CURRENT_PAGE * TASKS_PER_PAGE
     end = start + TASKS_PER_PAGE
     msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
-    buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE)))
-    DASHBOARD_MSG = await msg.reply(
-        msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
-    )
+    buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted) / TASKS_PER_PAGE)))
+    DASHBOARD_MSG = await msg.reply(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
 
-@Client.on_callback_query()
-async def dashboard_buttons(client, callback):
-    global CURRENT_PAGE
-    data = callback.data
-    tasks_sorted = list(TASKS.values())
-    total_pages = max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE))
-    if data == "dash_prev" and CURRENT_PAGE > 0:
-        CURRENT_PAGE -= 1
-    elif data == "dash_next" and CURRENT_PAGE < total_pages - 1:
-        CURRENT_PAGE += 1
-    elif data == "dash_refresh":
-        pass
-    else:
-        return
-    start = CURRENT_PAGE * TASKS_PER_PAGE
-    end = start + TASKS_PER_PAGE
-    msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
-    buttons = get_dashboard_buttons(total_pages)
-    try:
-        await callback.message.edit(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
-        await callback.answer()
-    except: pass
-
-# ---------- CANCEL TASK ----------
 @Client.on_message(filters.regex(r"^/cancel2_(\w+)") & filters.private)
 async def cancel_task(client, msg):
     tid = msg.text.split("_")[1]
@@ -373,7 +338,28 @@ async def cancel_task(client, msg):
     else:
         await msg.reply("❌ Task not found.")
 
-# ---------- START CLEANUP ----------
-async def start_cleanup():
-    asyncio.create_task(cleanup_downloads())
-    asyncio.create_task(update_dashboard(Client))
+@Client.on_callback_query()
+async def dashboard_buttons(client, callback):
+    global CURRENT_PAGE, DASHBOARD_MSG
+    data = callback.data
+    tasks_sorted = list(TASKS.values())
+    total_pages = max(1, math.ceil(len(tasks_sorted) / TASKS_PER_PAGE))
+
+    if data == "dash_prev" and CURRENT_PAGE > 0:
+        CURRENT_PAGE -= 1
+    elif data == "dash_next" and CURRENT_PAGE < total_pages - 1:
+        CURRENT_PAGE += 1
+    elif data == "dash_refresh":
+        pass
+    else:
+        return
+
+    start = CURRENT_PAGE * TASKS_PER_PAGE
+    end = start + TASKS_PER_PAGE
+    msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
+    buttons = get_dashboard_buttons(total_pages)
+    try:
+        await callback.message.edit(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+    except:
+        pass
+    await callback.answer()

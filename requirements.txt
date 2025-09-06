@@ -43,3 +43,4 @@ openai
 git+https://github.com/Joelkb/cinemagoer
 rarfile
 pyzipper
+m3u8

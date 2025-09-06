@@ -43,5 +43,5 @@ openai
 git+https://github.com/Joelkb/cinemagoer
 rarfile
 pyzipper
-m3u8
 imageio-ffmpeg>=0.4.10
+

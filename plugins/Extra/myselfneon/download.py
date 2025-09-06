@@ -252,81 +252,128 @@ async def process_download(client, task_id):
 async def worker(client,user_id):
     q = USER_QUEUES[user_id]
     max_parallel = 10 if user_id in ADMINS else 5
-    for _ in range(max_parallel):
-        asyncio.create_task(worker_loop(client,q))
-
-async def worker_loop(client,q):
+    running = set()
     while True:
-        task_id = await q.get()
-        CANCEL_FLAGS[task_id] = False
-        await process_download(client, task_id)
-        q.task_done()
+        while len(running) < max_parallel and not q.empty():
+            task_id = await q.get()
+            coro = asyncio.create_task(process_download(client, task_id))
+            running.add(coro)
+            def done_callback(fut, running_set=running):
+                running_set.discard(fut)
+            coro.add_done_callback(done_callback)
+        if not running and q.empty():
+            await asyncio.sleep(1)
+        else:
+            await asyncio.sleep(0.5)
 
 # ---------- COMMANDS ----------
 @Client.on_message(filters.command(["dl"]) & filters.private)
-async def dl_cmd(client,msg):
+async def dl_cmd(client, msg):
     user_id = msg.chat.id
     urls = msg.text.split()[1:]
-    if not urls: return await msg.reply("⚠️ Provide at least one URL.")
+    if not urls:
+        return await msg.reply("⚠️ Provide at least one URL.")
+
     if user_id not in USER_QUEUES:
-        USER_QUEUES[user_id]=asyncio.Queue()
-        await worker(client,user_id)
+        USER_QUEUES[user_id] = asyncio.Queue()
+        asyncio.create_task(worker(client, user_id))
+
+    added_count = 0
     for u in urls:
         tid = str(uuid.uuid4())
         TASKS[tid] = {
-            "id":tid,"url":u,"chat_id":user_id,"user_id":user_id,
-            "user_name":msg.from_user.first_name,"done":0,"total":0,
-            "speed":0,"elapsed":0,"status":"Queued","engine":"Pyrogram"
+            "id": tid,
+            "url": u,
+            "chat_id": user_id,
+            "user_id": user_id,
+            "user_name": msg.from_user.first_name,
+            "done": 0,
+            "total": 0,
+            "speed": 0,
+            "elapsed": 0,
+            "status": "Queued",
+            "engine": "Pyrogram"
         }
         await USER_QUEUES[user_id].put(tid)
-    await msg.reply(f"✅ Added {len(urls)} task(s) to global dashboard.")
-    global DASHBOARD_MSG
-    if DASHBOARD_MSG is None:
-        DASHBOARD_MSG = await msg.reply("Initializing dashboard...")
+        added_count += 1
 
-@Client.on_message(filters.command(["dlhelp"]) & filters.private)
-async def dl_help(client,msg):
-    await msg.reply(HELP_TEXT)
+    await msg.reply(f"✅ Added {added_count} task(s) to global dashboard.")
 
-@Client.on_message(filters.regex(r"^/cancel2_([a-f0-9]+)"))
-async def cancel_task(client,msg):
-    tid = msg.text.split("_")[-1]
-    if tid in TASKS:
-        CANCEL_FLAGS[tid] = True
-        TASKS[tid]["status"]="Cancelled ❌"
-
-@Client.on_message(filters.command(["dltask"]) & filters.private)
-async def dl_task_cmd(client, msg):
+    # ---------- REFRESH DASHBOARD ----------
     global DASHBOARD_MSG, CURRENT_PAGE
     try:
-        if DASHBOARD_MSG: await DASHBOARD_MSG.delete()
-    except: pass
+        if DASHBOARD_MSG:
+            await DASHBOARD_MSG.delete()
+    except:
+        pass
+
     CURRENT_PAGE = 0
-    if not TASKS:
-        DASHBOARD_MSG = await msg.reply("No ongoing tasks.")
-        return
     tasks_sorted = list(TASKS.values())
     start = CURRENT_PAGE * TASKS_PER_PAGE
     end = start + TASKS_PER_PAGE
     msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end])
     buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE)))
-    DASHBOARD_MSG = await msg.reply(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+    DASHBOARD_MSG = await msg.reply(
+        msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
+    )
 
-# ---------- CALLBACK ----------
+@Client.on_message(filters.command(["dlhelp"]) & filters.private)
+async def dl_help(client, msg):
+    await msg.reply(HELP_TEXT)
+
+@Client.on_message(filters.command(["dltask"]) & filters.private)
+async def dl_task(client, msg):
+    global DASHBOARD_MSG, CURRENT_PAGE
+    try:
+        if DASHBOARD_MSG:
+            await DASHBOARD_MSG.delete()
+    except:
+        pass
+    CURRENT_PAGE = 0
+    tasks_sorted = list(TASKS.values())
+    start = CURRENT_PAGE * TASKS_PER_PAGE
+    end = start + TASKS_PER_PAGE
+    msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
+    buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE)))
+    DASHBOARD_MSG = await msg.reply(
+        msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
+    )
+
 @Client.on_callback_query()
-async def dash_callback(client,query):
+async def dashboard_buttons(client, callback):
     global CURRENT_PAGE
-    if not DASHBOARD_MSG: return
+    data = callback.data
     tasks_sorted = list(TASKS.values())
     total_pages = max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE))
-    if query.data=="dash_next" and CURRENT_PAGE<total_pages-1:
-        CURRENT_PAGE +=1
-    elif query.data=="dash_prev" and CURRENT_PAGE>0:
-        CURRENT_PAGE -=1
-    elif query.data=="dash_refresh":
+    if data == "dash_prev" and CURRENT_PAGE > 0:
+        CURRENT_PAGE -= 1
+    elif data == "dash_next" and CURRENT_PAGE < total_pages - 1:
+        CURRENT_PAGE += 1
+    elif data == "dash_refresh":
         pass
-    await query.answer()
+    else:
+        return
+    start = CURRENT_PAGE * TASKS_PER_PAGE
+    end = start + TASKS_PER_PAGE
+    msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
+    buttons = get_dashboard_buttons(total_pages)
+    try:
+        await callback.message.edit(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+        await callback.answer()
+    except: pass
 
-# ---------- START ----------
-asyncio.create_task(cleanup_downloads())
-asyncio.create_task(update_dashboard(Client))
+# ---------- CANCEL TASK ----------
+@Client.on_message(filters.regex(r"^/cancel2_(\w+)") & filters.private)
+async def cancel_task(client, msg):
+    tid = msg.text.split("_")[1]
+    if tid in TASKS:
+        CANCEL_FLAGS[tid] = True
+        TASKS[tid]["status"] = "Cancelled ❌"
+        await msg.reply(f"Task {tid[:8]} cancelled.")
+    else:
+        await msg.reply("❌ Task not found.")
+
+# ---------- START CLEANUP ----------
+async def start_cleanup():
+    asyncio.create_task(cleanup_downloads())
+    asyncio.create_task(update_dashboard(Client))

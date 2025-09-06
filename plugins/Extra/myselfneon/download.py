@@ -125,7 +125,6 @@ async def cleanup_loop():
         try:
             for f in os.listdir(DOWNLOAD_DIR):
                 path = os.path.join(DOWNLOAD_DIR, f)
-                # don't remove files that are currently tasks outputs:
                 try:
                     os.remove(path)
                 except:
@@ -133,12 +132,8 @@ async def cleanup_loop():
         except:
             pass
 
-# ---------- CORE DOWNLOAD (single-stream, robust) ----------
+# ---------- CORE DOWNLOAD ----------
 async def stream_download(url: str, dest: str, task_id: str, progress_cb):
-    """
-    Stream-download a URL to dest. Calls progress_cb(done, total, speed, eta) periodically.
-    Returns path on success, raises on failure.
-    """
     for attempt in range(1, MAX_RETRY + 1):
         try:
             async with aiohttp.ClientSession() as session:
@@ -151,7 +146,6 @@ async def stream_download(url: str, dest: str, task_id: str, progress_cb):
                     with open(dest, "wb") as f:
                         async for chunk in resp.content.iter_chunked(64 * 1024):
                             if CANCEL_FLAGS.get(task_id):
-                                # cleanup partial file and signal cancellation
                                 try:
                                     f.close()
                                 except: pass
@@ -161,7 +155,6 @@ async def stream_download(url: str, dest: str, task_id: str, progress_cb):
                             elapsed = time.time() - start
                             speed = done / (elapsed + 1e-6)
                             eta = int((total - done) / (speed + 1e-6)) if total and speed > 0 else -1
-                            # call back - non-blocking
                             try:
                                 await progress_cb(done, total, speed, eta)
                             except Exception:
@@ -177,9 +170,6 @@ async def stream_download(url: str, dest: str, task_id: str, progress_cb):
 
 # ---------- TASK RUNNER ----------
 async def run_task(client: Client, task_id: str):
-    """
-    Orchestrates the download -> compress -> upload -> cleanup flow for a single task.
-    """
     task = TASKS.get(task_id)
     if not task:
         return
@@ -187,22 +177,18 @@ async def run_task(client: Client, task_id: str):
     chat_id = task["chat_id"]
     url = task["url"]
 
-    # Quick m3u check
     if url.lower().endswith(".m3u") or "m3u8" in url.lower():
         task["status"] = "M3U/M3U8 not supported ❌"
-        # update message
         try:
             await task["message"].edit_text(make_task_text(task))
         except: pass
         return
 
-    # prepare filename and dest
     raw_name = url.split("/")[-1].split("?")[0] or f"video_{int(time.time())}.mp4"
     fname = clean_title(raw_name)
     dest = os.path.join(DOWNLOAD_DIR, fname)
     task["fname"] = fname
     task["status"] = "Downloading"
-    # update message
     try:
         await task["message"].edit_text(make_task_text(task))
     except: pass
@@ -214,7 +200,6 @@ async def run_task(client: Client, task_id: str):
             task["speed"] = speed
             task["eta"] = eta
             task["elapsed"] = int(time.time() - task["start_time"])
-            # edit message periodically (throttled per second)
             now = time.time()
             if now - task.get("_last_update", 0) >= 1:
                 task["_last_update"] = now
@@ -223,9 +208,7 @@ async def run_task(client: Client, task_id: str):
                 except:
                     pass
 
-        # do download
         path, total = await stream_download(url, dest, task_id, progress_cb)
-        # final update values
         task["done"] = os.path.getsize(path)
         task["total"] = total or task["done"]
         task["elapsed"] = int(time.time() - task["start_time"])
@@ -233,7 +216,6 @@ async def run_task(client: Client, task_id: str):
             await task["message"].edit_text(make_task_text(task))
         except: pass
 
-        # compress if >2GB
         if task["total"] > 2 * 1024 * 1024 * 1024:
             task["status"] = "Compressing"
             try:
@@ -247,33 +229,27 @@ async def run_task(client: Client, task_id: str):
                     os.remove(dest)
                     dest = comp
             except Exception:
-                # ignore compression failures, continue with original file
                 pass
 
-        # upload
         task["status"] = "Uploading"
         try:
             await task["message"].edit_text(make_task_text(task))
         except: pass
 
-        # generate thumbnail (best-effort)
         thumb = None
         try:
             thumb = generate_thumbnail(dest)
         except:
             thumb = None
 
-        # send video (Pyrogram will stream if possible)
         try:
             await client.send_video(chat_id, video=dest, caption=f"🎬 {fname}\n📦 {human_readable(os.path.getsize(dest))}", thumb=thumb, supports_streaming=True)
-        except Exception as e:
-            # fallback: send as document
+        except Exception:
             try:
                 await client.send_document(chat_id, document=dest, caption=f"📦 {human_readable(os.path.getsize(dest))}")
             except:
                 pass
 
-        # cleanup sent file and thumb
         try:
             if os.path.exists(dest):
                 os.remove(dest)
@@ -287,7 +263,13 @@ async def run_task(client: Client, task_id: str):
             await task["message"].edit_text(make_task_text(task))
         except: pass
 
-        # wait then remove task entry
+        # 🆕 delete progress/queued message after 10 sec
+        try:
+            await asyncio.sleep(10)
+            await task["message"].delete()
+        except:
+            pass
+
         await asyncio.sleep(DELETE_AFTER)
     except asyncio.CancelledError:
         task["status"] = "Cancelled ❌"
@@ -300,17 +282,15 @@ async def run_task(client: Client, task_id: str):
             await task["message"].edit_text(make_task_text(task))
         except: pass
     finally:
-        # release semaphore
         sem = USER_SEMAPHORES.get(task["user_id"])
         if sem:
             try:
                 sem.release()
             except: pass
-        # remove task from TASKS after a delay to allow user to read status
         TASKS.pop(task_id, None)
         CANCEL_FLAGS.pop(task_id, None)
 
-# ---------- UI / Text rendering ----------
+# ---------- UI ----------
 def make_task_text(task: dict) -> str:
     fname = task.get("fname", task.get("url", "")).strip()
     status = task.get("status", "Queued")
@@ -322,10 +302,7 @@ def make_task_text(task: dict) -> str:
 
     bar = progress_bar_13(done, total)
     speed_str = human_readable(int(speed)) + "/s" if speed else "0 B/s"
-    eta_str = f"{eta}s" if isinstance(eta, int) and eta >= 0 else "-"
-    elapsed_str = f"{elapsed}s" if elapsed else "0s"
 
-    # nicer formatting for ETA & elapsed
     def sec_to_hms(s):
         if s is None or s < 0:
             return "-"
@@ -348,13 +325,9 @@ def make_task_text(task: dict) -> str:
     )
     return text
 
-# ---------- COMMANDS & HANDLERS ----------
+# ---------- COMMANDS ----------
 @Client.on_message(filters.command(["dl"]) & filters.private)
 async def cmd_dl(client: Client, msg: Message):
-    """
-    Usage: /dl <link1> <link2> ...
-    Each link produces its own progress message and runs (subject to per-user parallel limits).
-    """
     text = msg.text or ""
     parts = text.split()
     urls = parts[1:]
@@ -365,19 +338,14 @@ async def cmd_dl(client: Client, msg: Message):
     user_id = msg.from_user.id
     max_parallel = MAX_PARALLEL_ADMIN if user_id in ADMINS else MAX_PARALLEL_NORMAL
 
-    # ensure semaphore for this user
     sem = USER_SEMAPHORES.get(user_id)
     if sem is None:
         sem = asyncio.Semaphore(max_parallel)
         USER_SEMAPHORES[user_id] = sem
-    else:
-        # if admin status changed, adjust semaphore? (we keep existing)
-        pass
 
     created = 0
     for url in urls:
         tid = uuid.uuid4().hex
-        # prepare initial task skeleton
         TASKS[tid] = {
             "id": tid,
             "url": url,
@@ -394,21 +362,17 @@ async def cmd_dl(client: Client, msg: Message):
             "_last_update": 0,
             "start_time": time.time()
         }
-        # send initial progress message for the task
         try:
             m = await msg.reply(make_task_text(TASKS[tid]))
         except Exception:
-            # fallback to simple reply (rare)
             m = await msg.reply("Starting task...")
         TASKS[tid]["message"] = m
         CANCEL_FLAGS[tid] = False
         created += 1
 
-        # start background runner that respects semaphore
         async def schedule_task(client, tid):
             sem = USER_SEMAPHORES.get(user_id)
             await sem.acquire()
-            # check if cancelled pre-start
             if CANCEL_FLAGS.get(tid):
                 TASKS[tid]["status"] = "Cancelled ❌"
                 try:
@@ -418,7 +382,6 @@ async def cmd_dl(client: Client, msg: Message):
                 sem.release()
                 return
             TASKS[tid]["start_time"] = time.time()
-            # run the actual task (don't await here - run in background)
             await run_task(client, tid)
 
         asyncio.create_task(schedule_task(client, tid))
@@ -444,6 +407,5 @@ async def cmd_cancel(client: Client, msg: Message):
 async def cmd_help(client: Client, msg: Message):
     await msg.reply(HELP_TEXT)
 
-# ---------- START BACKGROUND CLEANUP ----------
-# create cleanup loop on import/start
+# ---------- START CLEANUP ----------
 asyncio.get_event_loop().create_task(cleanup_loop())

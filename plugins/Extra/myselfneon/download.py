@@ -23,15 +23,13 @@ CLEANUP_INTERVAL = 1800  # 30 minutes
 TASKS_PER_PAGE = 10
 
 ADMINS = [123456789]  # Set admin user IDs here
-DASHBOARD_CHAT_ID = None  # Set bot chat ID where dashboard is posted
+DASHBOARD_MSG = None
+CURRENT_PAGE = 0
 
 # ---------- GLOBALS ----------
 TASKS = {}       # task_id -> task dict
 USER_QUEUES = {} # user_id -> asyncio.Queue
 CANCEL_FLAGS = {}# task_id -> bool
-
-DASHBOARD_MSG = None
-CURRENT_PAGE = 0
 
 # ---------- HELP ----------
 HELP_TEXT = (
@@ -40,6 +38,7 @@ HELP_TEXT = (
     "➡️ Multiple links supported.\n"
     "❌ M3U/M3U8 links are not supported.\n"
     "❌ /cancel2_<task_id> → Cancel specific task.\n"
+    "➡️ /dltask → Show all ongoing tasks."
 )
 
 # ---------- HELPERS ----------
@@ -118,7 +117,6 @@ def format_task(task):
     total_str = human_readable(task.get("total",0))
     speed = human_readable(task.get("speed",0))
 
-    # ETA
     if speed>0 and status.lower()=="downloading":
         eta_sec = int((task.get("total",0) - task.get("done",0))/speed)
         mins, secs = divmod(eta_sec, 60)
@@ -149,6 +147,17 @@ def format_task(task):
     )
     return text
 
+# ---------- DASHBOARD BUTTONS ----------
+def get_dashboard_buttons(total_pages):
+    row = []
+    if CURRENT_PAGE > 0:
+        row.append(InlineKeyboardButton("⬅️ Prev", callback_data="dash_prev"))
+    row.append(InlineKeyboardButton("🔄 Refresh", callback_data="dash_refresh"))
+    if CURRENT_PAGE < total_pages - 1:
+        row.append(InlineKeyboardButton("Next ➡️", callback_data="dash_next"))
+    return [row]
+
+# ---------- UPDATE DASHBOARD ----------
 async def update_dashboard(client):
     global DASHBOARD_MSG, CURRENT_PAGE
     while True:
@@ -157,15 +166,10 @@ async def update_dashboard(client):
         tasks_sorted = list(TASKS.values())
         total_pages = max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE))
         CURRENT_PAGE = min(CURRENT_PAGE,total_pages-1)
-        start = CURRENT_PAGE*TASKS_PER_PAGE
-        end = start+TASKS_PER_PAGE
+        start = CURRENT_PAGE * TASKS_PER_PAGE
+        end = start + TASKS_PER_PAGE
         msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end]) or "No tasks running."
-        buttons = []
-        if total_pages>1:
-            row = []
-            if CURRENT_PAGE>0: row.append(InlineKeyboardButton("⬅️ Prev",callback_data="dash_prev"))
-            if CURRENT_PAGE<total_pages-1: row.append(InlineKeyboardButton("Next ➡️",callback_data="dash_next"))
-            buttons.append(row)
+        buttons = get_dashboard_buttons(total_pages)
         try: await DASHBOARD_MSG.edit(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
         except: pass
 
@@ -228,13 +232,11 @@ async def process_download(client, task_id):
         size = os.path.getsize(dest)
         task["total"] = size
         resolution = get_video_resolution(dest)
-        # Compression
         if size>2*1024*1024*1024:
             ffmpeg_path = iio_ffmpeg.get_ffmpeg_exe()
             comp = dest.replace(".mp4","_compressed.mp4")
             subprocess.run([ffmpeg_path,"-i",dest,"-b:v","1M",comp],check=False)
             if os.path.exists(comp): dest=comp
-        # Upload
         task["status"]="Uploading"
         thumb = generate_thumbnail(dest)
         await client.send_video(task["chat_id"],video=dest,caption=f"🎬 {fname}",thumb=thumb,supports_streaming=True)
@@ -293,14 +295,36 @@ async def cancel_task(client,msg):
         CANCEL_FLAGS[tid] = True
         TASKS[tid]["status"]="Cancelled ❌"
 
-# ---------- CALLBACKS ----------
+@Client.on_message(filters.command(["dltask"]) & filters.private)
+async def dl_task_cmd(client, msg):
+    global DASHBOARD_MSG, CURRENT_PAGE
+    try:
+        if DASHBOARD_MSG: await DASHBOARD_MSG.delete()
+    except: pass
+    CURRENT_PAGE = 0
+    if not TASKS:
+        DASHBOARD_MSG = await msg.reply("No ongoing tasks.")
+        return
+    tasks_sorted = list(TASKS.values())
+    start = CURRENT_PAGE * TASKS_PER_PAGE
+    end = start + TASKS_PER_PAGE
+    msg_text = "\n\n".join(format_task(t) for t in tasks_sorted[start:end])
+    buttons = get_dashboard_buttons(max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE)))
+    DASHBOARD_MSG = await msg.reply(msg_text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+
+# ---------- CALLBACK ----------
 @Client.on_callback_query()
 async def dash_callback(client,query):
     global CURRENT_PAGE
-    if query.data=="dash_next":
-        CURRENT_PAGE+=1
-    elif query.data=="dash_prev":
-        CURRENT_PAGE-=1
+    if not DASHBOARD_MSG: return
+    tasks_sorted = list(TASKS.values())
+    total_pages = max(1, math.ceil(len(tasks_sorted)/TASKS_PER_PAGE))
+    if query.data=="dash_next" and CURRENT_PAGE<total_pages-1:
+        CURRENT_PAGE +=1
+    elif query.data=="dash_prev" and CURRENT_PAGE>0:
+        CURRENT_PAGE -=1
+    elif query.data=="dash_refresh":
+        pass
     await query.answer()
 
 # ---------- START ----------

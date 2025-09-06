@@ -15,7 +15,6 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-PROGRESS_BAR_LEN = 16
 MAX_CHUNKS = 3
 MAX_RETRY = 3
 MAX_TITLE_LEN = 50
@@ -92,22 +91,36 @@ async def cleanup_downloads():
             try: os.remove(path)
             except: pass
 
+# ---------- PROGRESS BAR ----------
+def progress_bar_13(done, total):
+    length = 13
+    if total == 0: return "[□□□□□□□□□□□□□] 0.0%"
+    blocks = ""
+    fraction = done / max(total,1)
+    per_block = 1/length
+    for i in range(length):
+        block_start = i * per_block
+        block_end = (i+1) * per_block
+        if fraction >= block_end:
+            blocks += "■"
+        elif fraction >= block_start:
+            blocks += "▧"
+        else:
+            blocks += "□"
+    percent = fraction * 100
+    return f"[{blocks}] {percent:.1f}%"
+
 # ---------- DASHBOARD ----------
 def format_task(task):
-    done = task.get("done",0)
-    total = task.get("total",0)
-    filled_len = int(PROGRESS_BAR_LEN * done / max(total,1))
-    bar = "▰"*filled_len + "▱"*(PROGRESS_BAR_LEN-filled_len)
-
-    percent = (done / max(total,1)) * 100
+    bar = progress_bar_13(task.get("done",0), task.get("total",0))
     status = task.get("status","Queued")
-    processed = human_readable(done)
-    total_str = human_readable(total)
+    processed = human_readable(task.get("done",0))
+    total_str = human_readable(task.get("total",0))
     speed = human_readable(task.get("speed",0))
 
-    # ETA calculation
+    # ETA
     if speed>0 and status.lower()=="downloading":
-        eta_sec = int((total - done)/speed)
+        eta_sec = int((task.get("total",0) - task.get("done",0))/speed)
         mins, secs = divmod(eta_sec, 60)
         hours, mins = divmod(mins, 60)
         eta_str = f"{hours}h{mins}m{secs}s" if hours else f"{mins}m{secs}s"
@@ -126,7 +139,7 @@ def format_task(task):
 
     text = (
         f"Processing Task {tid}\n"
-        f"┃ {bar} {percent:.1f}%\n"
+        f"┃ {bar}\n"
         f"┠ Processed: {processed} / {total_str}\n"
         f"┠ Status: {status} | ETA: {eta_str}\n"
         f"┠ Speed: {speed}/s | Elapsed: {elapsed_str}\n"
@@ -165,7 +178,7 @@ async def fetch_chunk(session,url,start,end,part,task_id):
                 if CANCEL_FLAGS.get(task_id): return
                 f.write(chunk)
 
-async def download_file(url,dest,cb,task_id):
+async def download_file(url,dest,task_id):
     for attempt in range(MAX_RETRY):
         try:
             async with aiohttp.ClientSession() as session:
@@ -187,7 +200,6 @@ async def download_file(url,dest,cb,task_id):
                         elapsed = time.time()-start_time
                         TASKS[task_id]["elapsed"] = elapsed
                         TASKS[task_id]["speed"] = done/(elapsed+1e-6)
-                        await cb(done,total)
                         await asyncio.sleep(1)
                 await asyncio.gather(*tasks, progress())
                 if CANCEL_FLAGS.get(task_id): raise Exception("Cancelled")
@@ -212,7 +224,7 @@ async def process_download(client, task_id):
     task["fname"] = fname
     task["status"] = "Downloading"
     try:
-        await download_file(url,dest,lambda done,total: None,task_id)
+        await download_file(url,dest,task_id)
         size = os.path.getsize(dest)
         task["total"] = size
         resolution = get_video_resolution(dest)
@@ -222,7 +234,7 @@ async def process_download(client, task_id):
             comp = dest.replace(".mp4","_compressed.mp4")
             subprocess.run([ffmpeg_path,"-i",dest,"-b:v","1M",comp],check=False)
             if os.path.exists(comp): dest=comp
-        # Upload video
+        # Upload
         task["status"]="Uploading"
         thumb = generate_thumbnail(dest)
         await client.send_video(task["chat_id"],video=dest,caption=f"🎬 {fname}",thumb=thumb,supports_streaming=True)
@@ -291,6 +303,6 @@ async def dash_callback(client,query):
         CURRENT_PAGE-=1
     await query.answer()
 
-# ---------- START DASHBOARD UPDATER ----------
+# ---------- START ----------
 asyncio.create_task(cleanup_downloads())
 asyncio.create_task(update_dashboard(Client))

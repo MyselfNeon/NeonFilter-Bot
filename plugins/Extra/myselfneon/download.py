@@ -7,7 +7,6 @@ import shutil
 import subprocess
 import cv2
 import m3u8
-import ffmpeg as ffmpeg_python
 import imageio_ffmpeg as iio_ffmpeg
 from pyrogram import Client, filters
 from pyrogram.types import Message
@@ -23,9 +22,12 @@ MAX_TITLE_LEN = 50
 DELETE_AFTER = 600  # 10 minutes
 CLEANUP_INTERVAL = 1800  # 30 minutes
 
-USER_QUEUES = {}
-USER_ACTIVE = {}
-CANCEL_FLAGS = {}
+USER_QUEUES = {}      # chat_id -> asyncio.Queue
+USER_ACTIVE = {}      # chat_id -> bool
+CANCEL_FLAGS = {}     # chat_id -> bool
+
+# Set admin chat IDs here
+ADMINS = [123456789]
 
 HELP_TEXT = (
     "📌 **Downloader Help**\n\n"
@@ -154,6 +156,7 @@ async def download_m3u8(url, output_path, message, chat_id):
     if not playlist.segments:
         raise Exception("No video segments in M3U8")
 
+    seg_paths = []
     async with aiohttp.ClientSession() as session:
         total = len(playlist.segments)
         for idx, segment in enumerate(playlist.segments, start=1):
@@ -166,20 +169,28 @@ async def download_m3u8(url, output_path, message, chat_id):
                     raise Exception(f"Failed segment {idx}")
                 with open(seg_path, "wb") as f:
                     f.write(await resp.read())
+            seg_paths.append(seg_path)
             if idx % 5 == 0 or idx == total:
                 bar = progress_bar(idx, total)
                 await message.edit_text(f"📥 Downloading...\n{bar}")
 
+    # Create concat file with absolute paths
     segments_file = os.path.join(DOWNLOAD_DIR, f"segments_{chat_id}.txt")
     with open(segments_file, "w") as f:
-        for idx in range(1, total + 1):
-            f.write(f"file 'seg_{chat_id}_{idx}.ts'\n")
+        for p in seg_paths:
+            f.write(f"file '{os.path.abspath(p)}'\n")
 
+    # Use imageio-ffmpeg binary
     ffmpeg_path = iio_ffmpeg.get_ffmpeg_exe()
-    subprocess.run([ffmpeg_path, "-f", "concat", "-safe", "0", "-i", segments_file, "-c", "copy", output_path], check=True)
+    # Re-encode to avoid codec copy issues
+    subprocess.run([
+        ffmpeg_path, "-f", "concat", "-safe", "0", "-i", segments_file,
+        "-c:v", "libx264", "-c:a", "aac", output_path
+    ], check=True)
 
-    for idx in range(1, total + 1):
-        os.remove(os.path.join(DOWNLOAD_DIR, f"seg_{chat_id}_{idx}.ts"))
+    # Cleanup segment files
+    for p in seg_paths:
+        os.remove(p)
     os.remove(segments_file)
 
 # ---------- PROCESS ----------
@@ -232,32 +243,38 @@ async def process_download(client,msg,url):
     except Exception as e:
         await status.edit(f"❌ Failed: {e}")
 
-# ---------- QUEUE ----------
-async def worker(client,chat_id):
+# ---------- WORKERS ----------
+async def worker(client, chat_id):
     q = USER_QUEUES[chat_id]
     while True:
-        url,msg = await q.get()
-        if not USER_ACTIVE.get(chat_id,True):
+        url, msg = await q.get()
+        if not USER_ACTIVE.get(chat_id, True):
             q.task_done()
             continue
         CANCEL_FLAGS[chat_id] = False
-        await process_download(client,msg,url)
+        await process_download(client, msg, url)
         q.task_done()
+
+async def start_workers(client, chat_id):
+    max_parallel = 10 if chat_id in ADMINS else 5
+    if chat_id not in USER_QUEUES:
+        USER_QUEUES[chat_id] = asyncio.Queue()
+        USER_ACTIVE[chat_id] = True
+        CANCEL_FLAGS[chat_id] = False
+    for _ in range(max_parallel):
+        asyncio.create_task(worker(client, chat_id))
 
 # ---------- COMMANDS ----------
 @Client.on_message(filters.command(["dl"]) & filters.private)
-async def dl_cmd(client,msg):
+async def dl_cmd(client, msg):
     chat_id = msg.chat.id
     urls = msg.text.split()[1:]
     if not urls:
         return await msg.reply("⚠️ Provide at least one URL.")
-    if chat_id not in USER_QUEUES:
-        USER_QUEUES[chat_id]=asyncio.Queue()
-        USER_ACTIVE[chat_id]=True
-        asyncio.create_task(worker(client,chat_id))
+    await start_workers(client, chat_id)
     for u in urls:
-        await USER_QUEUES[chat_id].put((u,msg))
-    await msg.reply("✅ Added to queue ⏳")
+        await USER_QUEUES[chat_id].put((u, msg))
+    await msg.reply(f"✅ Added {len(urls)} link(s) to queue ⏳")
 
 @Client.on_message(filters.command(["dlhelp"]) & filters.private)
 async def dl_help(client,msg):
@@ -267,4 +284,6 @@ async def dl_help(client,msg):
 async def dl_cancel(client,msg):
     chat_id = msg.chat.id
     CANCEL_FLAGS[chat_id] = True
-            
+
+# ---------- AUTO CLEANUP ----------
+asyncio.create_task(cleanup_downloads())

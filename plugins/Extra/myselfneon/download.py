@@ -412,5 +412,10 @@ async def cmd_cancel(client: Client, msg: Message):
             pass
     asyncio.create_task(delayed_delete())
 
+# ---------- COMMAND /dlhelp ----------
+@Client.on_message(filters.command(["dlhelp"]) & filters.private)
+async def cmd_help(client: Client, msg: Message):
+    await msg.reply(HELP_TEXT)
+
 # ---------- START CLEANUP ----------
 asyncio.get_event_loop().create_task(cleanup_loop())

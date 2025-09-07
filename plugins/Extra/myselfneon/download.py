@@ -26,7 +26,7 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 MAX_PARALLEL_NORMAL = 5
 MAX_PARALLEL_ADMIN = 10
-ADMINS = {123456789}  # <-- put admin user IDs here (ints)
+ADMINS = {841851780}  # <-- put admin user IDs here (ints)
 
 MAX_RETRY = 3
 DELETE_AFTER = 600  # seconds after sending file to delete it
@@ -42,11 +42,11 @@ CANCEL_FLAGS = {}      # task_id -> bool
 
 # ---------- HELP TEXT ----------
 HELP_TEXT = (
-    "📌 **Downloader Help**\n\n"
-    "➡️ /dl <link>  → Start download for the link (supports multiple links).\n"
-    "➡️ Each link will get its own progress message.\n"
-    "➡️ To cancel a task, type the cancel command shown below the progress message (e.g. /cancel_<id>).\n"
-    "❌ M3U/M3U8 links are not supported."
+    "<blockquote>**⁉️ __Downloader Help__**</blockquote>\n\n"
+    "**🛜** __/dl yourlink - **Start Download For the Link (Supports Multiple Links)__**\n"
+    "**- __Each Link Shows A Progress Bar__**\n"
+    "**- __To Cancel A Task, Type The Cancel Command Shown Below The Progress Message (e.g. /cancel_id)__**\n\n"
+    "**❌ __M3U/M3U8 Links Not Suppored.__**"
 )
 
 # ---------- UTIL HELPERS ----------

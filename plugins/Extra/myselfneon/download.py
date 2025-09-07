@@ -403,9 +403,14 @@ async def cmd_cancel(client: Client, msg: Message):
         pass
     await msg.reply(f"Requested cancel for task {tid[:8]}.")
 
-@Client.on_message(filters.command(["dlhelp"]) & filters.private)
-async def cmd_help(client: Client, msg: Message):
-    await msg.reply(HELP_TEXT)
+    # 🆕 Delete progress message after 3 sec when cancelled
+    async def delayed_delete():
+        await asyncio.sleep(3)
+        try:
+            await task["message"].delete()
+        except:
+            pass
+    asyncio.create_task(delayed_delete())
 
 # ---------- START CLEANUP ----------
 asyncio.get_event_loop().create_task(cleanup_loop())

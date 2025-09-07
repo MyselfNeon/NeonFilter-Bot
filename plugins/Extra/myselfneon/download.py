@@ -178,7 +178,7 @@ async def run_task(client: Client, task_id: str):
     url = task["url"]
 
     if url.lower().endswith(".m3u") or "m3u8" in url.lower():
-        task["status"] = "M3U/M3U8 not supported ❌"
+        task["status"] = "**__M3U/M3U8 Not Supported__ ❌**"
         try:
             await task["message"].edit_text(make_task_text(task))
         except: pass
@@ -188,7 +188,7 @@ async def run_task(client: Client, task_id: str):
     fname = clean_title(raw_name)
     dest = os.path.join(DOWNLOAD_DIR, fname)
     task["fname"] = fname
-    task["status"] = "Downloading"
+    task["status"] = "**__Downloading__**"
     try:
         await task["message"].edit_text(make_task_text(task))
     except: pass
@@ -217,7 +217,7 @@ async def run_task(client: Client, task_id: str):
         except: pass
 
         if task["total"] > 2 * 1024 * 1024 * 1024:
-            task["status"] = "Compressing"
+            task["status"] = "**__Compressing__**"
             try:
                 await task["message"].edit_text(make_task_text(task))
             except: pass
@@ -258,7 +258,7 @@ async def run_task(client: Client, task_id: str):
             try: os.remove(thumb)
             except: pass
 
-        task["status"] = "Completed ✅"
+        task["status"] = "**__Completed__ ✅**"
         try:
             await task["message"].edit_text(make_task_text(task))
         except: pass
@@ -272,12 +272,12 @@ async def run_task(client: Client, task_id: str):
 
         await asyncio.sleep(DELETE_AFTER)
     except asyncio.CancelledError:
-        task["status"] = "Cancelled ❌"
+        task["status"] = "**__Cancelled__ ❌**"
         try:
             await task["message"].edit_text(make_task_text(task))
         except: pass
     except Exception as exc:
-        task["status"] = f"❌ Failed: {exc}"
+        task["status"] = f"**❌ __Failed: {exc}__**"
         try:
             await task["message"].edit_text(make_task_text(task))
         except: pass
@@ -316,12 +316,12 @@ def make_task_text(task: dict) -> str:
         return f"{s}s"
 
     text = (
-        f"{bar}\n"
-        f"Status: {status}\n"
-        f"File: {fname}\n"
-        f"Processed: {human_readable(done)} / {human_readable(total)}\n"
-        f"Speed: {speed_str} | ETA: {sec_to_hms(eta)} | Elapsed: {sec_to_hms(elapsed)}\n\n"
-        f"Cancel: /cancel_{task['id']}\n"
+        f"**{bar}**\n"
+        f"**__Sᴛᴀᴛᴜs: {status}__**\n"
+        f"**__Fɪʟᴇ: {fname}__**\n"
+        f"**__Pʀᴏᴄᴇssᴇᴅ: {human_readable(done)} / {human_readable(total)}__**\n"
+        f"**__Sᴘᴇᴇᴅ: {speed_str} | ETA: {sec_to_hms(eta)} | Elapsed: {sec_to_hms(elapsed)}__**\n\n"
+        f"**__Cᴀɴᴄᴇʟ:** /cancel_{task['id']}\n"
     )
     return text
 
@@ -332,7 +332,7 @@ async def cmd_dl(client: Client, msg: Message):
     parts = text.split()
     urls = parts[1:]
     if not urls:
-        await msg.reply("⚠️ Provide at least one URL. Usage: /dl <url1> <url2> ...")
+        await msg.reply("**⚠️ __Provide At Least One URL.\nUsage: /dl url1 url2 ...__**")
         return
 
     user_id = msg.from_user.id
@@ -365,7 +365,7 @@ async def cmd_dl(client: Client, msg: Message):
         try:
             m = await msg.reply(make_task_text(TASKS[tid]))
         except Exception:
-            m = await msg.reply("Starting task...")
+            m = await msg.reply("**__Starting Task...__**")
         TASKS[tid]["message"] = m
         CANCEL_FLAGS[tid] = False
         created += 1
@@ -374,7 +374,7 @@ async def cmd_dl(client: Client, msg: Message):
             sem = USER_SEMAPHORES.get(user_id)
             await sem.acquire()
             if CANCEL_FLAGS.get(tid):
-                TASKS[tid]["status"] = "Cancelled ❌"
+                TASKS[tid]["status"] = "**__Cancelled__ ❌**"
                 try:
                     await TASKS[tid]["message"].edit_text(make_task_text(TASKS[tid]))
                 except:
@@ -386,22 +386,22 @@ async def cmd_dl(client: Client, msg: Message):
 
         asyncio.create_task(schedule_task(client, tid))
 
-    await msg.reply(f"✅ Added {created} task(s). Each link has its own progress message.")
+    await msg.reply(f"**✅ __Added {created} Task(s).\nEach Link Has Its Own Progress Message.__**")
 
 @Client.on_message(filters.regex(r"^/cancel_([0-9a-fA-F]+)") & filters.private)
 async def cmd_cancel(client: Client, msg: Message):
     tid = msg.text.split("_", 1)[1].strip()
     task = TASKS.get(tid)
     if not task:
-        await msg.reply("❌ Task not found or already finished.")
+        await msg.reply("**❌ __Task Not Found Or Finished.__**")
         return
     CANCEL_FLAGS[tid] = True
-    task["status"] = "Cancelling..."
+    task["status"] = "**__Cancelling...__**"
     try:
         await task["message"].edit_text(make_task_text(task))
     except:
         pass
-    await msg.reply(f"Requested cancel for task {tid[:8]}.")
+    await msg.reply(f"**__Requested Cancel For Task {tid[:8]}.__**")
 
     # 🆕 Delete progress message after 3 sec when cancelled
     async def delayed_delete():

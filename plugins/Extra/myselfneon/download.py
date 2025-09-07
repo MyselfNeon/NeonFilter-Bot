@@ -43,7 +43,7 @@ CANCEL_FLAGS = {}      # task_id -> bool
 # ---------- HELP TEXT ----------
 HELP_TEXT = (
     "<blockquote>**⁉️ __Downloader Help__**</blockquote>\n\n"
-    "**🛜** __/dl yourlink - **Start Download For the Link (Supports Multiple Links)__**\n"
+    "**🛜** __/dl yourlink - **Start Download For the Link (Supports Multiple Links)__**\n\n"
     "**- __Each Link Shows A Progress Bar__**\n"
     "**- __To Cancel A Task, Type The Cancel Command Shown Below The Progress Message (e.g. /cancel_id)__**\n\n"
     "**❌ __M3U/M3U8 Links Not Suppored.__**"

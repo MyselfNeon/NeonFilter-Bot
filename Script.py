@@ -269,13 +269,13 @@ File Store is a feature which will create a Shareable link of a Single or Multip
 You can use this feature to download any song with super fast speed. Works Bot and Groups only...</blockquote>
 Commands : /song Song name.</i></b>""" 
   
-    YTDL_TXT = """<b><i><blockquote>‣ Youtube Video Downloader 📽️</blockquote>
+    YTDL_TXT = """<b><i><blockquote>‣ Downloader / URL Uploader</blockquote>
 
-Usage : You can download any video from Youtube
+**- __This Plugin lets you Download any Supported Direct Link and send it as MP4 (or File) to Telegram__**
 
-How to use : Type - /video or /mp4 
+**__How to Use : Type -** /dl yourlink__
 
-<blockquote>Example : <code>/mp4 https://youtu.be/example...</code></blockquote></i></b>""" 
+**__Example__ ⬇️**<blockquote><code>/dl https://neon.com/example.mp4</code></blockquote></i></b>""" 
   
     TTS_TXT = """<b><i>TTS module 🎤 : Translate text to Speech 
   

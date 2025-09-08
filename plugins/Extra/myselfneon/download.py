@@ -321,7 +321,7 @@ def make_task_text(task: dict) -> str:
         f"**__Fɪʟᴇ: {fname}__**\n"
         f"**__Pʀᴏᴄᴇssᴇᴅ: {human_readable(done)} / {human_readable(total)}__**\n"
         f"**__Sᴘᴇᴇᴅ: {speed_str} | ETA: {sec_to_hms(eta)} | Elapsed: {sec_to_hms(elapsed)}__**\n\n"
-        f"**__Cᴀɴᴄᴇʟ:** /cancel_{task['id']}\n"
+        f"**__Cᴀɴᴄᴇʟ:** /cancel_{task['id']}__\n"
     )
     return text
 

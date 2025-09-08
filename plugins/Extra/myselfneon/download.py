@@ -243,10 +243,10 @@ async def run_task(client: Client, task_id: str):
             thumb = None
 
         try:
-            await client.send_video(chat_id, video=dest, caption=f"**🎬 __{fname}__\n📦 __{human_readable(os.path.getsize(dest))}__**", thumb=thumb, supports_streaming=True)
+            await client.send_video(chat_id, video=dest, caption=f"**🎬 Name:** __{fname}__\n📦 __{human_readable(os.path.getsize(dest))}__", thumb=thumb, supports_streaming=True)
         except Exception:
             try:
-                await client.send_document(chat_id, document=dest, caption=f"**📦 __{human_readable(os.path.getsize(dest))}__**")
+                await client.send_document(chat_id, document=dest, caption=f"**📦 Size:** __{human_readable(os.path.getsize(dest))}__")
             except:
                 pass
 

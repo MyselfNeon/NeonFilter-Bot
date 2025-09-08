@@ -162,8 +162,8 @@ Tᴏᴛᴀʟ Mᴇᴍʙᴇʀs = <code>{}</code>
 Aᴅᴅᴇᴅ Bʏ - {}"""
 
     LOG_TEXT_P = """**__#NewUser Started Bot 👤__**
-**🈂️ __UserName - {}__**
-**🆔 __UserID - <code>{}</code>__**"""
+**🈂️ __UserID - <code>{}</code>__**
+**🆔 __UserName - {}__**"""
 
     ALRT_TXT = """<b><i>Hello {}
 This is not your Movie/Series request.

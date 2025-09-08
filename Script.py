@@ -271,11 +271,11 @@ Commands : /song Song name.</i></b>"""
   
     YTDL_TXT = """<b><i><blockquote>‣ Downloader / URL Uploader</blockquote>
 
-**- __This Plugin lets you Download any Supported Direct Link and send it as MP4 (or File) to Telegram__**
+- This Plugin lets you Download any Supported Direct Link and send it as MP4 (or File) to Telegram
 
-**__How to Use : Type -** /dl yourlink__
+How to Use : Type</b> - /dl yourlink
 
-**__Example__ ⬇️**<blockquote><code>/dl https://neon.com/example.mp4</code></blockquote></i></b>""" 
+<b>Example ⬇️<blockquote><code>/dl https://neon.com/example.mp4</code></blockquote></i></b>""" 
   
     TTS_TXT = """<b><i>TTS module 🎤 : Translate text to Speech 
   

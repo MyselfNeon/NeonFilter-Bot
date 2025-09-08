@@ -1,3 +1,4 @@
+#Tasks.py + Help Plugin seperately
 # ====================== PLUGINS/TODO.PY ======================
 from pyrogram import Client, filters
 from pyrogram.types import Message
@@ -71,4 +72,18 @@ async def todo_help(client: Client, message: Message):
     "`/addtask Finish Homework`\n\n**🔥 __Powered By @NeonFiles__ 🔥**"
     )
     await message.reply(help_text)
+
+# ====================== NEW /help HANDLER (separate HELP_TEXT) ======================
+HELP_TEXT = (
+    "<blockquote>🆘 **QUICK HELP — TODO PLUGIN** 🆘</blockquote>\n\n"
+    "• `/addtask <task>` — Add a new task quickly (e.g. `/addtask Buy milk`).\n"
+    "• `/listtask` — View all your tasks (numbered).\n"
+    "• `/deltask <number>` — Delete a task by its number from `/listtask`.\n\n"
+    "💡 Tip: Keep tasks short & actionable. Use the task number shown by `/listtask` when deleting.\n\n"
+    "**Powered By @NeonFiles**"
+)
+
+@Client.on_message(filters.command("help") & filters.private)
+async def help_command(client: Client, message: Message):
+    await message.reply(HELP_TEXT)
     

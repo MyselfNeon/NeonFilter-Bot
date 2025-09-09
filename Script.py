@@ -692,7 +692,7 @@ Also your given tutorial will be Added inside Your specified Group...</i></b>"""
 """
 
     STREAM_TXT = """<b><i><blockquote>‣ Get Stream And Download Link 📥</blockquote>
-Get Streamable and Downloadable link of any file by using /stream</i></b>"""
+Get Streamable and Downloadable link of any file by using /stream \n\n🆘 __Doesn’t work if the Bot is Deployed on Servers other than Heroku, and the URL values aren’t Set in the Repo.</i></b>"""
 
     MODS_TXT = """<b><i><blockquote>‣ Text Share URL</blockquote>
 Get your text share url. 

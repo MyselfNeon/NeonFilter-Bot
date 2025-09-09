@@ -13,7 +13,7 @@ async def stream_start(client, message):
     
     msg = await client.ask(
         message.chat.id, 
-        "**__Now Send me your File/Video to get Stream and Download Link__.\n\n🆘 __Doesn’t work if the Bot is Deployed on Servers other than Heroku, and the URL values aren’t Set in the Repo.__**"
+        "**__Now Send me your File/Video to get Stream and Download Link.__**"
     )
 
     # only accept video or document

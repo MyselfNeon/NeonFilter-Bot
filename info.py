@@ -222,7 +222,7 @@ YEARS = [str(year) for year in range(1900, 2026)]
 # ============================================================
 # 🔹 STREAMING & DOWNLOAD
 # ============================================================
-STREAM_MODE = bool(environ.get('STREAM_MODE', False))
+STREAM_MODE = bool(environ.get('STREAM_MODE', True))
 
 # If Stream Mode Is True Then Fill All Required Variable, If False Then Don't Fill.
 MULTI_CLIENT = False
@@ -261,3 +261,4 @@ REACTIONS = [
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

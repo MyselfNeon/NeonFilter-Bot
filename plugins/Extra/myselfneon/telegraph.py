@@ -267,7 +267,7 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
 
     await bot.send_message(
         chat_id,
-        f"**📝 __Uploaded Links (Page {page+1})__**\n\n{formatted_list}",
+        f"**📝 __Uploaded Links (Page {page+1})\n\n{formatted_list}__**",
         disable_web_page_preview=True,
         reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None
     )

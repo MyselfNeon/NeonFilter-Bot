@@ -157,7 +157,7 @@ OTHER DB :-
 ★ Fʀᴇᴇ Sᴛᴏʀᴀɢᴇ: <code>{} MB</code></i></b>"""
     
     LOG_TEXT_G = """**┎ __#NewGroup Bot Added__ 🤖**\n**┠**
-**┠ __Gʀᴏᴜᴘ = {}(<code>{}</code>)__**
+**┠ __Gʀᴏᴜᴘ = {}__ \n┠ __Gʀᴏᴜᴘ ID = (<code>{}</code>)__**
 **┠ __Tᴏᴛᴀʟ Mᴇᴍʙᴇʀs = <code>{}</code>__**
 **┖ __Aᴅᴅᴇᴅ Bʏ - {}__**"""
 

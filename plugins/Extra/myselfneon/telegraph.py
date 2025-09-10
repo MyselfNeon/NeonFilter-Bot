@@ -5,7 +5,9 @@ import aiohttp
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
-from info import LOG_CHANNEL  # only import LOG_CHANNEL
+from info import LOG_CHANNEL, ADMINS, DATABASE_NAME, DATABASE_URI  # import DB vars
+
+from motor.motor_asyncio import AsyncIOMotorClient
 
 # -------------------
 # Constants
@@ -13,9 +15,17 @@ from info import LOG_CHANNEL  # only import LOG_CHANNEL
 MAX_SIZE = 200 * 1024 * 1024  # Local max file size 200 MB
 CATBOX_API = "https://catbox.moe/user/api.php"
 ENVS_UPLOAD_URL = "https://envs.sh"
+LINKS_PER_PAGE = 15
 
 # Track active uploads per user
 active_uploads = {}
+
+# -------------------
+# MongoDB Setup
+# -------------------
+mongo_client = AsyncIOMotorClient(DATABASE_URI)
+db = mongo_client[DATABASE_NAME]
+telelist_col = db["telelist"]
 
 # -------------------
 # Helper functions
@@ -131,6 +141,11 @@ async def telegraph_file_handler(bot: Client, message: Message):
             return
 
         # -----------------------------
+        # Save to MongoDB
+        # -----------------------------
+        await telelist_col.insert_one({"link": link})
+
+        # -----------------------------
         # Log Upload to LOG_CHANNEL with actual generated link
         # -----------------------------
         try:
@@ -216,6 +231,69 @@ async def telegraph_help(bot: Client, message: Message):
     )
     await message.reply_text(help_text)
 
-# Dont remove Credits
-# Developer Telegram @MyselfNeon
-# Update channel - @NeonFiles
+# -------------------
+# /telelist command (Admin only with pagination)
+# -------------------
+@Client.on_message(filters.command("telelist") & filters.private)
+async def telegraph_list(bot: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id not in ADMINS:
+        return await message.reply_text("**⛔ You are not authorized to use this command.**")
+
+    await send_telelist_page(bot, message.chat.id, 0)
+
+
+async def send_telelist_page(bot: Client, chat_id: int, page: int):
+    cursor = telelist_col.find({})
+    links = [doc["link"] async for doc in cursor]
+
+    if not links:
+        return await bot.send_message(chat_id, "**📂 No Uploads Found Yet !!**")
+
+    start = page * LINKS_PER_PAGE
+    end = start + LINKS_PER_PAGE
+    page_links = links[start:end]
+
+    formatted_list = "\n".join([f"{start+idx+1:02d}. {link}" for idx, link in enumerate(page_links)])
+
+    keyboard = []
+    buttons = []
+    if page > 0:
+        buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"telelist_prev_{page-1}"))
+    if end < len(links):
+        buttons.append(InlineKeyboardButton("Next ➡️", callback_data=f"telelist_next_{page+1}"))
+    if buttons:
+        keyboard.append(buttons)
+
+    await bot.send_message(
+        chat_id,
+        f"**📝 Uploaded Links (Page {page+1})**\n\n{formatted_list}",
+        disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None
+    )
+
+# -------------------
+# Callback handler for pagination
+# -------------------
+@Client.on_callback_query(filters.regex(r"^telelist_(prev|next)_"))
+async def telelist_page_callback(bot: Client, query: CallbackQuery):
+    user_id = query.from_user.id
+    if user_id not in ADMINS:
+        return await query.answer("⛔ Not authorized", show_alert=True)
+
+    action, page = query.data.split("_")[1], int(query.data.split("_")[2])
+
+    await query.message.delete()
+    await send_telelist_page(bot, query.message.chat.id, page)
+
+# -------------------
+# /cleantelelist command (Admin only)
+# -------------------
+@Client.on_message(filters.command("cleantelelist") & filters.private)
+async def clean_telelist(bot: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id not in ADMINS:
+        return await message.reply_text("**⛔ You are not authorized to use this command.**")
+
+    await telelist_col.delete_many({})
+    await message.reply_text("**🧹 Telelist cleared successfully !!**")

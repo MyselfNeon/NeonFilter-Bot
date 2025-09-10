@@ -161,9 +161,9 @@ Gʀᴏᴜᴘ = {}(<code>{}</code>)
 Tᴏᴛᴀʟ Mᴇᴍʙᴇʀs = <code>{}</code>
 Aᴅᴅᴇᴅ Bʏ - {}"""
 
-    LOG_TEXT_P = """**__#NewUser Started Bot 👤__**
-\n\n**🈂️ __UsᴇʀNᴀᴍᴇ - <code>{}</code>__**
-**🆔 __UsᴇʀID - {}__**"""
+    LOG_TEXT_P = """**┎ __#NewUser Started Bot 👤__**\n┠
+\n**┠ 🆔 __UserID - <code>{}</code>__**
+**┖ 🈂️ __UserName - {}__**"""
 
     ALRT_TXT = """<b><i>Hello {}
 This is not your Movie/Series request.

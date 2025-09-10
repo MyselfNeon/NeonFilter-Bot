@@ -156,13 +156,13 @@ OTHER DB :-
 ★ Usᴇᴅ Sᴛᴏʀᴀɢᴇ: <code>{} MB</code>
 ★ Fʀᴇᴇ Sᴛᴏʀᴀɢᴇ: <code>{} MB</code></i></b>"""
     
-    LOG_TEXT_G = """#NewGroup
-Gʀᴏᴜᴘ = {}(<code>{}</code>)
-Tᴏᴛᴀʟ Mᴇᴍʙᴇʀs = <code>{}</code>
-Aᴅᴅᴇᴅ Bʏ - {}"""
+    LOG_TEXT_G = """**┎ __#NewGroup Bot Added__ 🤖**\n**┠**
+**┠ __Gʀᴏᴜᴘ = {}(<code>{}</code>)__**
+**┠ __Tᴏᴛᴀʟ Mᴇᴍʙᴇʀs = <code>{}</code>__**
+**┖ __Aᴅᴅᴇᴅ Bʏ - {}__**"""
 
-    LOG_TEXT_P = """**┎ __#NewUser Started Bot 👤__**\n┠
-\n**┠ 🆔 __UserID - <code>{}</code>__**
+    LOG_TEXT_P = """**┎ __#NewUser Started Bot 👤__**\n**┠**
+**┠ 🆔 __UserID - <code>{}</code>__**
 **┖ 🈂️ __UserName - {}__**"""
 
     ALRT_TXT = """<b><i>Hello {}

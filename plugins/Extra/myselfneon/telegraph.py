@@ -259,9 +259,9 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
     keyboard = []
     buttons = []
     if page > 0:
-        buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"telelist_prev_{page-1}"))
+        buttons.append(InlineKeyboardButton("⬅️ Pʀᴇᴠ", callback_data=f"telelist_prev_{page-1}"))
     if end < len(links):
-        buttons.append(InlineKeyboardButton("Next ➡️", callback_data=f"telelist_next_{page+1}"))
+        buttons.append(InlineKeyboardButton("Nᴇxᴛ ➡️", callback_data=f"telelist_next_{page+1}"))
     if buttons:
         keyboard.append(buttons)
 

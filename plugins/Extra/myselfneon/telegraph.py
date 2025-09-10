@@ -286,14 +286,7 @@ async def telelist_page_callback(bot: Client, query: CallbackQuery):
     await query.message.delete()
     await send_telelist_page(bot, query.message.chat.id, page)
 
-# -------------------
-# /cleantelelist command (Admin only)
-# -------------------
-@Client.on_message(filters.command("cleantelelist") & filters.private)
-async def clean_telelist(bot: Client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in ADMINS:
-        return await message.reply_text("**- __You Are Not Authorized To Use This Command__ 😁❌**")
 
-    await telelist_col.delete_many({})
-    await message.reply_text("**🧹 __Telelist Cleared Successfully !!__**")
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

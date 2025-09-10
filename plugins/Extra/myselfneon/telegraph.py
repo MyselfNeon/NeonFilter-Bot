@@ -238,7 +238,7 @@ async def telegraph_help(bot: Client, message: Message):
 async def telegraph_list(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in ADMINS:
-        return await message.reply_text("**⛔ You are not authorized to use this command.**")
+        return await message.reply_text("**- __You Are Not Authorized To Use This Command__ 😁❌**")
 
     await send_telelist_page(bot, message.chat.id, 0)
 
@@ -248,7 +248,7 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
     links = [doc["link"] async for doc in cursor]
 
     if not links:
-        return await bot.send_message(chat_id, "**📂 No Uploads Found Yet !!**")
+        return await bot.send_message(chat_id, "**📂 __No Uploads Found Yet !!__**")
 
     start = page * LINKS_PER_PAGE
     end = start + LINKS_PER_PAGE
@@ -267,7 +267,7 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
 
     await bot.send_message(
         chat_id,
-        f"**📝 Uploaded Links (Page {page+1})**\n\n{formatted_list}",
+        f"**📝 __Uploaded Links (Page {page+1})__**\n\n{formatted_list}",
         disable_web_page_preview=True,
         reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None
     )
@@ -279,7 +279,7 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
 async def telelist_page_callback(bot: Client, query: CallbackQuery):
     user_id = query.from_user.id
     if user_id not in ADMINS:
-        return await query.answer("⛔ Not authorized", show_alert=True)
+        return await query.answer("❌ Not Authorized", show_alert=True)
 
     action, page = query.data.split("_")[1], int(query.data.split("_")[2])
 
@@ -293,7 +293,7 @@ async def telelist_page_callback(bot: Client, query: CallbackQuery):
 async def clean_telelist(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in ADMINS:
-        return await message.reply_text("**⛔ You are not authorized to use this command.**")
+        return await message.reply_text("**- __You Are Not Authorized To Use This Command__ 😁❌**")
 
     await telelist_col.delete_many({})
-    await message.reply_text("**🧹 Telelist cleared successfully !!**")
+    await message.reply_text("**🧹 __Telelist Cleared Successfully !!__**")

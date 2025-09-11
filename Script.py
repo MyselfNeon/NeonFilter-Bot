@@ -697,10 +697,10 @@ Get Streamable and Downloadable link of any file by using /stream \n\n🆘 Doesn
     MODS_TXT = """<b><i><blockquote>‣ Neon Mods</blockquote>
 - Added Super Extra Features. 
   
-• /share - Share Your Texts 
-• /passhelp - Remove/Add Password to PDF/Docs
-• /taskhelp - ToDo Tasks 
-• /dl - Download any URL Links as a Media or Document File on Telegram 
+•</b> /share <b>- Share Your Texts 
+•</b> /passhelp <b>- Remove/Add Password to PDF or Document Files 🔐 
+•</b> /taskhelp <b>- ToDo Tasks List 
+•</b> /dl <b>- Download any URL Links as a Media or Document File on Telegram 
 </i></b>"""
 
 

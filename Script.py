@@ -426,7 +426,7 @@ NOTE:
 /unpin :- ᴛᴏ ᴜɴᴩɪɴ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴩɪɴɴᴇᴅ ᴍᴇssᴀɢᴇ</b>"""
 
     RESTART_TXT = """
-**🛜 __Neon Filter Bot Restarted !!__**
+**🛜 __{} Restarted !!__**
 
 **📅 __Dᴀᴛᴇ : {}__**
 **⏰ __Tɪᴍᴇ : {}__**

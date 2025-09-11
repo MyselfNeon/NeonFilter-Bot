@@ -75,12 +75,21 @@ async def todo_help(client: Client, message: Message):
 
 # ====================== NEW /help HANDLER (separate HELP_TEXT) ======================
 HELP_TEXT = (
-    "<blockquote>🆘 **QUICK HELP — TODO PLUGIN** 🆘</blockquote>\n\n"
-    "• `/addtask <task>` — Add a new task quickly (e.g. `/addtask Buy milk`).\n"
-    "• `/listtask` — View all your tasks (numbered).\n"
-    "• `/deltask <number>` — Delete a task by its number from `/listtask`.\n\n"
-    "💡 Tip: Keep tasks short & actionable. Use the task number shown by `/listtask` when deleting.\n\n"
-    "**Powered By @NeonFiles**"
+    "<blockquote>🆘 **HELP MENU** 🆘</blockquote>\n\n"
+    "**📤 __Telegraph Uploader__**\n"
+    "__/telegraph **- Start New Upload Session__**\n"
+    "__/tcancel **- Cancel Active Upload__**\n\n"
+    "**🛜 __URLs Downloader__**\n"
+    "__/dl yourlink **- Start Download With Progress Bar__**\n\n"
+    "**__- M3U/M3U8 Links Not Supported__**\n\n"
+    "**✨ __Task Manager__**\n"
+    "__/addtask **- Add a New Task__**\n"
+    "__/deltask **- Delete a Task__**\n"
+    "__/listtask **- Show All Tasks__**\n\n"
+    "**🔐 __Password Manager__**\n\n"
+    "__/addpass **- Add Password__**\n"
+    "__/removepass **- Remove Password__**\n\n"
+    "**🔥 __Powered By @NeonFiles__ 🔥**"
 )
 
 @Client.on_message(filters.command("help") & filters.private)

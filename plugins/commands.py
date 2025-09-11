@@ -1226,9 +1226,26 @@ async def removetutorial(bot, message):
 
 @Client.on_message(filters.command("restart") & filters.user(ADMINS))
 async def stop_button(bot, message):
-    msg = await bot.send_message(text="**__Process Stopped 💢 \nBot is Restarting ♻️ ...__**", chat_id=message.chat.id)       
+    me = await bot.get_me()
+    bot_name = f"{me.first_name} (@{me.username})"
+
+    now = datetime.now(pytz.timezone("Asia/Kolkata"))
+    date = now.strftime("%d-%m-%Y")
+    time = now.strftime("%I:%M:%S %p")
+
+    # your original "stopping..." message
+    msg = await bot.send_message(
+        chat_id=message.chat.id,
+        text="**__Process Stopped 💢 \nBot is Restarting ♻️ ...__**"
+    )
+
     await asyncio.sleep(3)
-    await msg.edit("**__♻️ Bot is Restarted Locally. \n\nNow you can use me 😇__**")
+
+    await msg.edit(
+        RESTART_TXT.format(bot_name, date, time),
+        parse_mode="markdown_v2"
+    )
+
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 @Client.on_message(filters.command("nofsub"))
@@ -1406,3 +1423,4 @@ async def purge_requests(client, message):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

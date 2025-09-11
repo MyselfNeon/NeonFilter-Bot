@@ -83,9 +83,13 @@ def split_chunks(text, size=3500):
     return [text[i:i+size] for i in range(0, len(text), size)]
 
 # ---------------- Handlers ----------------
-@Client.on_message(filters.private & filters.command("songs"))
+@Client.on_message(filters.private & filters.command("song"))
 async def song_entry(client: Client, m: Message):
-    await m.reply_text("🎶 *Song Module*\nChoose an action:", parse_mode="markdown", reply_markup=song_main_menu())
+    await m.reply_text(
+        "🎶 *Song Module*\nChoose an action:",
+        parse_mode="markdown_v2",
+        reply_markup=song_main_menu()
+    )
 
 @Client.on_callback_query(filters.regex(r"^song\|menu\|"))
 async def song_menu_cb(client: Client, cq: CallbackQuery):
@@ -120,8 +124,11 @@ async def song_media(client: Client, m: Message):
         yt_url, yt_title, yt_ch, thumb = youtube_search(f"{title} {artist}")
         kb = song_result_kbd(title, artist, yt_url)
         cap = f"🎵 *{title}*\n👤 _{artist}_"
-        if thumb: await m.reply_photo(thumb, caption=cap, parse_mode="markdown", reply_markup=kb)
-        else: await wait.edit(cap, parse_mode="markdown", reply_markup=kb)
+        if thumb:
+            await m.reply_photo(thumb, caption=cap, parse_mode="markdown_v2", reply_markup=kb)
+            await wait.delete()
+        else:
+            await wait.edit(cap, parse_mode="markdown_v2", reply_markup=kb)
     finally:
         SONG_STATE.pop(m.from_user.id, None)
         shutil.rmtree(tmp, ignore_errors=True)
@@ -136,8 +143,10 @@ async def song_text(client: Client, m: Message):
         if not yt_url: return await m.reply_text("❌ No results.")
         kb = song_result_kbd(title, ch, yt_url)
         cap = f"🔍 *{title}*\n👤 _{ch}_"
-        if thumb: await m.reply_photo(thumb, caption=cap, parse_mode="markdown", reply_markup=kb)
-        else: await m.reply_text(cap, parse_mode="markdown", reply_markup=kb)
+        if thumb:
+            await m.reply_photo(thumb, caption=cap, parse_mode="markdown_v2", reply_markup=kb)
+        else:
+            await m.reply_text(cap, parse_mode="markdown_v2", reply_markup=kb)
     elif state == "expect_link":
         yt_url = query if "youtu" in query else None
         if not yt_url: return await m.reply_text("❌ Only YouTube links supported.")
@@ -159,13 +168,15 @@ async def song_result_cb(client: Client, cq: CallbackQuery):
     action = parts[2]
     if action == "yt":
         url = unquote_plus(parts[3])
-        await cq.message.reply_text(f"▶️ {url}"); await cq.answer()
+        await cq.message.reply_text(f"▶️ {url}")
+        await cq.answer()
     elif action == "lyrics":
         t,a = unquote_plus(parts[3]).split("||")[0], unquote_plus(parts[3]).split("||")[1]
         lyrics = await fetch_lyrics(a, t)
         if lyrics: 
             for c in split_chunks(lyrics): await cq.message.reply_text(c)
-        else: await cq.message.reply_text("❌ Lyrics not found."); await cq.answer()
+        else: await cq.message.reply_text("❌ Lyrics not found.")
+        await cq.answer()
     elif action == "mp3":
         title, artist = [unquote_plus(x) for x in parts[3].split("||")]
         yt_url, *_ = youtube_search(f"{title} {artist}")
@@ -176,4 +187,3 @@ async def song_result_cb(client: Client, cq: CallbackQuery):
             await cq.message.reply_audio(mp3, title=t, performer=auth)
         finally: shutil.rmtree(tmp, ignore_errors=True)
         await cq.answer()
-      

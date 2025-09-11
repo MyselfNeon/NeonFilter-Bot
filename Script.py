@@ -694,10 +694,13 @@ Also your given tutorial will be Added inside Your specified Group...</i></b>"""
     STREAM_TXT = """<b><i><blockquote>‣ Get Stream And Download Link 📥</blockquote>
 Get Streamable and Downloadable link of any file by using /stream \n\n🆘 Doesn’t work if the Bot is Deployed on Servers other than Heroku, and the URL values aren’t Set in the Repo.</i></b>"""
 
-    MODS_TXT = """<b><i><blockquote>‣ Text Share URL</blockquote>
-Get your text share url. 
+    MODS_TXT = """<b><i><blockquote>‣ Neon Mods</blockquote>
+- Added Super Extra Features. 
   
-- Example :- /share
+• /share - Share Your Texts 
+• /passhelp - Remove/Add Password to PDF/Docs
+• /taskhelp - ToDo Tasks 
+• /dl - Download any URL Links as a Media or Document File on Telegram 
 </i></b>"""
 
 

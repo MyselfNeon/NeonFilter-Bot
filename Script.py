@@ -156,14 +156,14 @@ OTHER DB :-
 ★ Usᴇᴅ Sᴛᴏʀᴀɢᴇ: <code>{} MB</code>
 ★ Fʀᴇᴇ Sᴛᴏʀᴀɢᴇ: <code>{} MB</code></i></b>"""
     
-    LOG_TEXT_G = """**┎ __#NewGroup Bot Added__ 🤖**\n**┠**
-**┠ __Gʀᴏᴜᴘ = {}__ \n┠ __Gʀᴏᴜᴘ ID = (<code>{}</code>)__**
-**┠ __Tᴏᴛᴀʟ Mᴇᴍʙᴇʀs = <code>{}</code>__**
-**┖ __Aᴅᴅᴇᴅ Bʏ - {}__**"""
+    LOG_TEXT_G = """**✨ __#NewGroup__**
+**🏷️ __Gʀᴏᴜᴘ = {}__** \n**🆔 __Group ID = (<code>{}</code>)__**
+**👥 __Tᴏᴛᴀʟ Mᴇᴍʙᴇʀs = <code>{}</code>__**
+**➕ __Aᴅᴅᴇᴅ Bʏ - {}__**"""
 
-    LOG_TEXT_P = """**┎ __#NewUser Started Bot 👤__**\n**┠**
-**┠ 🆔 __UserID - <code>{}</code>__**
-**┖ 🈂️ __UserName - {}__**"""
+    LOG_TEXT_P = """**✨ __#NewUser__**
+**🆔 __UserID - <code>{}</code>__**
+**👤 __UserName - {}__**"""
 
     ALRT_TXT = """<b><i>Hello {}
 This is not your Movie/Series request.

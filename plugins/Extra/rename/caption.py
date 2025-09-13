@@ -30,3 +30,8 @@ async def see_caption(client, message):
        await message.reply_text(f"**Your Caption:-**\n\n`{caption}`")
     else:
        await message.reply_text("🥲 **__Sorry !! No Caption Found...__** 🥹")
+
+        
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

@@ -1953,7 +1953,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "about":
         buttons = [[
             InlineKeyboardButton('Sᴜᴘᴘᴏʀᴛ Gʀᴘ 🔊', url=GRP_LNK),
-            InlineKeyboardButton('Sᴏᴜʀᴄᴇ Cᴏᴅᴇ 🙏', url="https://myselfneon.github.io/dev/")
+            InlineKeyboardButton('Sᴏᴜʀᴄᴇ Cᴏᴅᴇ 🙏', url="https://myselfneon.github.io/Neon/")
         ],[
             InlineKeyboardButton('Hᴏᴍᴇ 🏠', callback_data='start'),
             InlineKeyboardButton('Cʟᴏsᴇ ❌', callback_data='close_data')
@@ -3288,4 +3288,5 @@ async def global_filters(client, message, text=False):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 

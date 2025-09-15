@@ -1,134 +1,104 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-import requests, re
-from bs4 import BeautifulSoup
-from indic_transliteration import sanscript
-from indic_transliteration.sanscript import transliterate
+import requests
+from info import CHNL_LNK
 
-# --- Scrapers ---
-def search_lyricsmint(query: str):
+API_URL = "https://apis.xditya.me/lyrics?song="
+
+
+@Client.on_message(filters.command("lyrics") & filters.private)
+async def fetch_lyrics(bot, message):
+    """Ask for song name and display lyrics with language toggle buttons."""
+    prompt = await bot.ask(
+        chat_id=message.from_user.id,
+        text="🎤 **Please send the song name:**"
+    )
+
+    if not prompt.text:
+        return await prompt.reply_text("❌ Only text is allowed!")
+
+    song_name = prompt.text
+    loading_msg = await prompt.reply_text("🔎 Searching lyrics...")
+
     try:
-        url = f"https://www.lyricsmint.com/search?q={query.replace(' ', '+')}"
-        r = requests.get(url, timeout=10).text
-        soup = BeautifulSoup(r, "html.parser")
-        song_link = soup.find("a", class_="title")
-        if not song_link: return None, None
-        page = requests.get(song_link["href"], timeout=10).text
-        soup = BeautifulSoup(page, "html.parser")
-        lyrics_div = soup.find("div", {"class": "lyricbox"})
-        lyrics = lyrics_div.get_text("\n").strip() if lyrics_div else None
-        info_div = soup.find("div", class_="info")
-        artist = info_div.get_text("\n").strip() if info_div else "Unknown"
-        return lyrics, artist
-    except:
-        return None, None
+        # Fetch both Hindi and English lyrics
+        lyrics_hindi, lyrics_english = get_lyrics(song_name)
 
-def search_bharatlyrics(query: str):
-    try:
-        url = f"https://bharatlyrics.com/?s={query.replace(' ', '+')}"
-        r = requests.get(url, timeout=10).text
-        soup = BeautifulSoup(r, "html.parser")
-        song_link = soup.find("a", class_="eg-post-title")
-        if not song_link: return None, None
-        page = requests.get(song_link["href"], timeout=10).text
-        soup = BeautifulSoup(page, "html.parser")
-        lyrics_div = soup.find("div", class_="lyric-content")
-        lyrics = lyrics_div.get_text("\n").strip() if lyrics_div else None
-        meta = soup.find("div", class_="post-meta")
-        artist = meta.get_text("\n").strip() if meta else "Unknown"
-        return lyrics, artist
-    except:
-        return None, None
+        # Send initial Hindi lyrics with buttons
+        await loading_msg.edit_text(
+            text=lyrics_hindi,
+            reply_markup=InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("Owner", url="https://t.me/myselfneon"),
+                    InlineKeyboardButton("English", callback_data=f"lang|english|{song_name}")
+                ]
+            ]),
+            disable_web_page_preview=True
+        )
+    except Exception:
+        await loading_msg.edit_text(
+            f"🚫 **Couldn't find lyrics for:** `{song_name}`",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("✨ Updates", url=CHNL_LNK)]]
+            )
+        )
 
-def search_starmaker(query: str):
-    try:
-        url = f"https://www.starmakerstudios.com/en/search?keyword={query.replace(' ', '%20')}"
-        r = requests.get(url, timeout=10).text
-        soup = BeautifulSoup(r, "html.parser")
-        song_link = soup.find("a", href=re.compile(r"/song/"))
-        if not song_link: return None, None
-        page = requests.get("https://www.starmakerstudios.com"+song_link["href"], timeout=10).text
-        soup = BeautifulSoup(page, "html.parser")
-        lyrics_div = soup.find("div", {"class": "lyrics"})
-        lyrics = lyrics_div.get_text("\n").strip() if lyrics_div else None
-        artist_div = soup.find("h2", class_="artist")
-        artist = artist_div.get_text().strip() if artist_div else "Unknown"
-        return lyrics, artist
-    except:
-        return None, None
 
-# --- Detect Roman Hindi or Hindi ---
-def detect_lang(query: str) -> str:
-    # List of typical Hindi words in Roman script
-    roman_hindi_keywords = ["ishq","bukhar","pyaar","dil","nasha","jaan","mohabbat","aashiqui"]
-    if re.search(r"[\u0900-\u097F]", query):   # Hindi Unicode
-        return "hindi"
-    if any(word.lower() in query.lower() for word in roman_hindi_keywords):
-        return "hindi"
-    return "hindi"  # everything else treat as Hindi (no English fallback)
+@Client.on_callback_query()
+async def language_toggle(bot: Client, query: CallbackQuery):
+    """Handle inline button presses for language toggle or closing message."""
+    data = query.data.split("|")
+    
+    if data[0] == "lang":
+        lang = data[1]
+        song_name = data[2]
 
-# --- Transliterate Devanagari to Roman ---
-def devanagari_to_roman(text: str):
-    try:
-        return transliterate(text, sanscript.DEVANAGARI, sanscript.ITRANS)
-    except:
-        return text
+        lyrics_hindi, lyrics_english = get_lyrics(song_name)
 
-# --- /lyrics command ---
-@Client.on_message(filters.command("lyrics"))
-async def lyrics_handler(client, message):
-    if len(message.command)<2:
-        return await message.reply("🎵 Usage: `/lyrics <song>`")
-    query = " ".join(message.command[1:])
-    lang_type = detect_lang(query)
+        if lang == "english":
+            await query.message.edit_text(
+                text=lyrics_english,
+                reply_markup=InlineKeyboardMarkup([
+                    [
+                        InlineKeyboardButton("Hindi", callback_data=f"lang|hindi|{song_name}"),
+                        InlineKeyboardButton("Close", callback_data="close")
+                    ]
+                ]),
+                disable_web_page_preview=True
+            )
+        elif lang == "hindi":
+            await query.message.edit_text(
+                text=lyrics_hindi,
+                reply_markup=InlineKeyboardMarkup([
+                    [
+                        InlineKeyboardButton("Owner", url="https://t.me/myselfneon"),
+                        InlineKeyboardButton("English", callback_data=f"lang|english|{song_name}")
+                    ]
+                ]),
+                disable_web_page_preview=True
+            )
 
-    await message.reply(f"🔎 Searching ({lang_type}) lyrics for: **{query}** ...")
+    elif data[0] == "close":
+        await query.message.delete()
 
-    # Search sequence: LyricsMint → BharatLyrics → Starmaker
-    lyrics, artist = search_lyricsmint(query)
-    if not lyrics: lyrics, artist = search_bharatlyrics(query)
-    if not lyrics: lyrics, artist = search_starmaker(query)
-    if not lyrics: return await message.reply("⚠️ Sorry, no lyrics found.")
 
-    if len(lyrics)>4000: lyrics = lyrics[:3990] + "\n...\n⚠️ Lyrics truncated."
+def get_lyrics(song):
+    """Fetch lyrics from the API in both Hindi and English."""
+    response = requests.get(API_URL + song)
+    data = response.json()
 
-    roman_lyrics = devanagari_to_roman(lyrics)
+    if "lyrics" not in data or not data["lyrics"]:
+        raise ValueError("Lyrics not found")
 
-    buttons = InlineKeyboardMarkup([[
-        InlineKeyboardButton("👤 Owner", url="https://t.me/myselfneon"),
-        InlineKeyboardButton("🌍 English", callback_data=f"lyrics:roman:{query}")
-    ]])
+    # Example conversion for demonstration
+    # In real scenario, you may have separate Hindi/English fields from API
+    lyrics_english = f"🎶 **Lyrics of '{song}' in English:**\n\n`{data['lyrics']}`\n\n✨ **Join @NeonFiles**"
+    lyrics_hindi = f"🎶 **'{song}' के गाने के बोल:**\n\n`{translate_to_hindi(data['lyrics'])}`\n\n✨ **Join @NeonFiles**"
 
-    await message.reply_text(f"{lyrics}\n\n👤 Artist: {artist}", reply_markup=buttons, disable_web_page_preview=True)
+    return lyrics_hindi, lyrics_english
 
-# --- Callback handler ---
-@Client.on_callback_query(filters.regex(r"^lyrics:"))
-async def lyrics_callback(client, callback: CallbackQuery):
-    data = callback.data.split(":")
-    action = data[1]
 
-    if action=="roman":
-        query = data[2]
-        lyrics, artist = search_lyricsmint(query)
-        if not lyrics: lyrics, artist = search_bharatlyrics(query)
-        if not lyrics: lyrics, artist = search_starmaker(query)
-        roman_lyrics = devanagari_to_roman(lyrics)
-        buttons = InlineKeyboardMarkup([[
-            InlineKeyboardButton("🇮🇳 Hindi", callback_data=f"lyrics:hindi:{query}"),
-            InlineKeyboardButton("❌ Close", callback_data="lyrics:close")
-        ]])
-        await callback.message.edit_text(f"{roman_lyrics}\n\n👤 Artist: {artist}", reply_markup=buttons, disable_web_page_preview=True)
-
-    elif action=="hindi":
-        query = data[2]
-        lyrics, artist = search_lyricsmint(query)
-        if not lyrics: lyrics, artist = search_bharatlyrics(query)
-        if not lyrics: lyrics, artist = search_starmaker(query)
-        buttons = InlineKeyboardMarkup([[
-            InlineKeyboardButton("👤 Owner", url="https://t.me/myselfneon"),
-            InlineKeyboardButton("🌍 English", callback_data=f"lyrics:roman:{query}")
-        ]])
-        await callback.message.edit_text(f"{lyrics}\n\n👤 Artist: {artist}", reply_markup=buttons, disable_web_page_preview=True)
-
-    elif action=="close":
-        await callback.message.delete()
+def translate_to_hindi(text):
+    """Dummy function: Replace with proper Hindi translation or API."""
+    # Here we just return same text for demo; you can integrate Google Translate API
+    return text.replace("Aaj ki raat", "आज की रात")

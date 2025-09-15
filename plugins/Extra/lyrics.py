@@ -2,8 +2,11 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from info import CHNL_LNK
 import requests
+import asyncio
 
 API = "https://apis.xditya.me/lyrics?song="
+
+STICKER_ID = "CAACAgQAAxkBAAIpW2jHeVco9nVHCFOVtGwC1eQ2pkdpAAJuDQAC1AtgUk1wdBxPRkmKHgQ"
 
 
 @Client.on_message(filters.command("lyrics") & filters.private)
@@ -17,13 +20,15 @@ async def sng(bot, message):
     if not neo.text:
         return await neo.reply_text("**__Send me Only Text Buddy 😊__**")
 
-    # Show searching message
-    mee = await neo.reply_text("`Searching 🔎`")
     song = neo.text.strip()
+
+    # Send sticker as "searching" indicator
+    sticker_msg = await bot.send_sticker(message.chat.id, STICKER_ID)
+    await asyncio.sleep(1)  # keep sticker for 1 sec
+    await sticker_msg.delete()
 
     try:
         rpl = lyrics(song)
-        await mee.delete()
         await bot.send_message(
             chat_id=message.from_user.id,
             text=rpl,
@@ -34,7 +39,6 @@ async def sng(bot, message):
             disable_web_page_preview=True
         )
     except Exception:
-        await mee.delete()
         await neo.reply_text(
             f"**__I Can't Find A Song With `{song}` 🚫__**",
             quote=True,
@@ -58,4 +62,4 @@ def lyrics(song: str) -> str:
         f"<blockquote>**🎶 __Successfully Extracted Lyrics Of {song}__**</blockquote>\n\n"
         f"`{fin['lyrics']}`"
         "\n\n\n<blockquote>**__Join @NeonFiles ✨__**</blockquote>"
-        )
+    )

@@ -23,7 +23,7 @@ async def sng(bot, message):
 
     # Send sticker as "searching" indicator
     sticker_msg = await bot.send_sticker(message.chat.id, STICKER_ID)
-    await asyncio.sleep(1)  # keep sticker for 1 sec
+    await asyncio.sleep(2)  # keep sticker for 2 sec
     await sticker_msg.delete()
 
     try:

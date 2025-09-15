@@ -34,7 +34,7 @@ async def sng(bot, message):
             text=rpl,
             reply_to_message_id=message.id,
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Aᴡᴇsᴏᴍᴇ Dᴇᴠᴇʟᴏᴘᴇʀ", url="tg://user?id=841851780")]]
+                [[InlineKeyboardButton("Aᴡᴇsᴏᴍᴇ Dᴇᴠᴇʟᴏᴘᴇʀ", url="https://myselfneon.github.io/neon/")]]
             ),
             disable_web_page_preview=True
         )
@@ -43,7 +43,7 @@ async def sng(bot, message):
             f"**__I Can't Find A Song With `{song}` 🚫__**",
             quote=True,
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Aᴡᴇsᴏᴍᴇ Dᴇᴠᴇʟᴏᴘᴇʀ 😎", url="https://t.me/MyselfNeon")]]
+                [[InlineKeyboardButton("Aᴡᴇsᴏᴍᴇ Dᴇᴠᴇʟᴏᴘᴇʀ 😎", url="https://myselfneon.github.io/neon/")]]
             )
         )
 

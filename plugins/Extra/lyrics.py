@@ -1,12 +1,11 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from info import CHNL_LNK
 import requests
 import asyncio
 
 API = "https://apis.xditya.me/lyrics?song="
 
-STICKER_ID = "CAACAgQAAxkBAAIpW2jHeVco9nVHCFOVtGwC1eQ2pkdpAAJuDQAC1AtgUk1wdBxPRkmKHgQ"
+STICKER_ID = "CAACAgIAAxkBAAIpb2jHer7l0e-CfAOB2Yy2SBDOzi7oAALdAAMw1J0RjVUlFacabq8eBA"
 
 
 @Client.on_message(filters.command("lyrics") & filters.private)
@@ -34,7 +33,7 @@ async def sng(bot, message):
             text=rpl,
             reply_to_message_id=message.id,
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Uᴘᴅᴀᴛᴇs", url=CHNL_LNK)]]
+                [[InlineKeyboardButton("Aᴡᴇsᴏᴍᴇ Dᴇᴠᴇʟᴏᴘᴇʀ", url="tg://user?id=841851780")]]
             ),
             disable_web_page_preview=True
         )
@@ -43,7 +42,7 @@ async def sng(bot, message):
             f"**__I Can't Find A Song With `{song}` 🚫__**",
             quote=True,
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Uᴘᴅᴀᴛᴇs", url=CHNL_LNK)]]
+                [[InlineKeyboardButton("Aᴡᴇsᴏᴍᴇ Dᴇᴠᴇʟᴏᴘᴇʀ 😎", url="tg://user?id=841851780")]]
             )
         )
 
@@ -61,5 +60,9 @@ def lyrics(song: str) -> str:
     return (
         f"<blockquote>**🎶 __Successfully Extracted Lyrics Of {song}__**</blockquote>\n\n"
         f"`{fin['lyrics']}`"
-        "\n\n\n<blockquote>**__Join @NeonFiles ✨__**</blockquote>"
     )
+
+
+# Dont Remove Credits
+# Join @NeonFiles
+# Developer @MyselfNeon

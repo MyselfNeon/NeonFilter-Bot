@@ -1,14 +1,10 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-import requests
-import uuid
-import html
+import requests, asyncio, uuid, html
 
 API_URL = "https://apis.xditya.me/lyrics?song="
-OWNER = "https://t.me/myselfneon"
-CHNL_LNK = "https://t.me/NeonFiles"  # keep or import from info
 
-# Simple in-memory cache for the current lyrics pages (uid -> data)
+# Cache to store lyrics and translations
 LYRICS_CACHE = {}
 
 
@@ -23,24 +19,12 @@ def get_lyrics_from_api(song: str) -> str:
 
 
 def translate_to_hindi(text: str) -> str:
-    """
-    Translate English -> Hindi using the public Google translate endpoint.
-    Note: it's unofficial and may be rate-limited; for production use the
-    official Google Cloud Translate API.
-    """
-    # If text is huge you may want to chunk it. For simplicity we translate whole text.
+    """Translate English -> Hindi using Google translate endpoint."""
     url = "https://translate.googleapis.com/translate_a/single"
-    params = {
-        "client": "gtx",
-        "sl": "en",
-        "tl": "hi",
-        "dt": "t",
-        "q": text
-    }
+    params = {"client": "gtx", "sl": "en", "tl": "hi", "dt": "t", "q": text}
     resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
     j = resp.json()
-    # j[0] is list of segments: [[translated_segment, original_segment, ...], ...]
     translated = "".join(segment[0] for segment in j[0])
     return translated
 
@@ -48,6 +32,24 @@ def translate_to_hindi(text: str) -> str:
 def format_html(title: str, lyrics: str) -> str:
     """Return HTML-safe formatted message (title + pre block for lyrics)."""
     return f"<b>🎶 {html.escape(title)}</b>\n\n<pre>{html.escape(lyrics)}</pre>\n\n<b>✨ Join @NeonFiles</b>"
+
+
+async def show_progress(msg, text="Translating"):
+    """Fake progress bar animation."""
+    steps = [
+        "[░░░░░░░░░░] 0%",
+        "[▓░░░░░░░░░] 10%",
+        "[▓▓░░░░░░░░] 30%",
+        "[▓▓▓░░░░░░░] 50%",
+        "[▓▓▓▓▓░░░░░] 70%",
+        "[▓▓▓▓▓▓▓▓▓] 100%"
+    ]
+    for step in steps:
+        try:
+            await msg.edit_text(f"⏳ {text} {step}")
+            await asyncio.sleep(0.4)  # delay between steps
+        except Exception:
+            break
 
 
 @Client.on_message(filters.command("lyrics") & filters.private)
@@ -62,44 +64,29 @@ async def fetch_lyrics(bot: Client, message):
     try:
         english_lyrics = get_lyrics_from_api(song)
     except Exception:
-        return await loading.edit_text(
-            f"**__I Can't Find A Song With `{song}` 🚫__**",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✨ Updates", url=CHNL_LNK)]])
-        )
+        return await loading.edit_text(f"**__I Can't Find A Song With `{song}` 🚫__**")
 
-    # try translating; fallback to english if translation fails
-    try:
-        hindi_lyrics = translate_to_hindi(english_lyrics)
-    except Exception:
-        hindi_lyrics = english_lyrics  # fallback
-
-    # cache under a short uid (used in callback_data)
     uid = uuid.uuid4().hex[:12]
-    LYRICS_CACHE[uid] = {"song": song, "english": english_lyrics, "hindi": hindi_lyrics}
+    LYRICS_CACHE[uid] = {"song": song, "english": english_lyrics, "hindi": None}
 
-    # initial page = HINDI
-    hindi_text = format_html(f"{song} — हिंदी", hindi_lyrics)
+    # Initial page = Hindi (but still English text until translation is requested)
+    hindi_text = format_html(f"{song} — हिंदी", english_lyrics)
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Owner", url=OWNER),
-         InlineKeyboardButton("English", callback_data=f"lang|english|{uid}")]
+        [InlineKeyboardButton("English", callback_data=f"lang|english|{uid}"),
+         InlineKeyboardButton("Close", callback_data=f"close|{uid}")]
     ])
 
-    await loading.edit_text(hindi_text, reply_markup=keyboard, disable_web_page_preview=True, parse_mode="html")
+    await loading.edit_text(hindi_text, reply_markup=keyboard,
+                            disable_web_page_preview=True, parse_mode="html")
 
 
 @Client.on_callback_query()
 async def language_toggle(bot: Client, query: CallbackQuery):
-    """
-    callback_data format:
-      - lang|english|<uid>
-      - lang|hindi|<uid>
-      - close|<uid>
-    """
     if not query.data:
         return await query.answer()
 
     parts = query.data.split("|")
-    await query.answer()  # remove 'loading' on client
+    await query.answer()
 
     if parts[0] == "lang" and len(parts) == 3:
         target = parts[1]
@@ -116,23 +103,33 @@ async def language_toggle(bot: Client, query: CallbackQuery):
                 [InlineKeyboardButton("Hindi", callback_data=f"lang|hindi|{uid}"),
                  InlineKeyboardButton("Close", callback_data=f"close|{uid}")]
             ])
-            await query.message.edit_text(text, reply_markup=kb, disable_web_page_preview=True, parse_mode="html")
+            await query.message.edit_text(text, reply_markup=kb,
+                                          disable_web_page_preview=True, parse_mode="html")
 
         elif target == "hindi":
+            # Show progress while translating
+            prog_msg = query.message
+            await show_progress(prog_msg, "Translating")
+
+            if cached["hindi"] is None:
+                try:
+                    cached["hindi"] = translate_to_hindi(cached["english"])
+                except Exception:
+                    cached["hindi"] = cached["english"]  # fallback
+
             text = format_html(f"{song} — हिंदी", cached["hindi"])
             kb = InlineKeyboardMarkup([
-                [InlineKeyboardButton("Owner", url=OWNER),
-                 InlineKeyboardButton("English", callback_data=f"lang|english|{uid}")]
+                [InlineKeyboardButton("English", callback_data=f"lang|english|{uid}"),
+                 InlineKeyboardButton("Close", callback_data=f"close|{uid}")]
             ])
-            await query.message.edit_text(text, reply_markup=kb, disable_web_page_preview=True, parse_mode="html")
+            await prog_msg.edit_text(text, reply_markup=kb,
+                                     disable_web_page_preview=True, parse_mode="html")
 
     elif parts[0] == "close":
-        uid = parts[1] if len(parts) > 1 else None
-        # delete message and clear cache for this uid
         try:
             await query.message.delete()
         except Exception:
             pass
+        uid = parts[1] if len(parts) > 1 else None
         if uid and uid in LYRICS_CACHE:
             del LYRICS_CACHE[uid]
-            

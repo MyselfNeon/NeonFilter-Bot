@@ -1,3 +1,4 @@
+#Telegraph.py
 import os
 import requests
 import aiohttp
@@ -101,8 +102,8 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_uploads and "file_sent" not in active_uploads[user_id]:
         active_uploads.pop(user_id, None)
         timeout_msg = await query.message.edit_text(
-            "**⏰ __Time's Up !!\n\nYou did not Send any File in 30 sec.__**\n"
-            "**__Start a New Upload /telegraph__**"
+            "**⏰ Time's Up !!\nYou did not Send any File in 30 sec.**\n"
+            "**Start a New Upload /telegraph**"
         )
         await asyncio.sleep(20)
         try:
@@ -122,21 +123,21 @@ async def telegraph_file_handler(bot: Client, message: Message):
     active_uploads[user_id]["file_sent"] = True
     site = active_uploads[user_id]["site"]
 
-    status_msg = await message.reply_text("**__Downloading Your File ...__ ⬇️**")
+    status_msg = await message.reply_text("**__Downloading Your File...__ ⬇️**")
     file_path = await message.download()
 
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
-        await status_msg.edit_text(f"**❌ __File Too Large (>{MAX_SIZE/1024/1024} MB).\n\nUpload Canceled__ ❌**")
+        await status_msg.edit_text(f"**❌ File Too Large (>{MAX_SIZE/1024/1024} MB).\n\nUpload Canceled ❌**")
         os.remove(file_path)
         active_uploads.pop(user_id)
         return
 
-    await status_msg.edit_text("**__Uploading Now ...__ ⬆️**")
+    await status_msg.edit_text("**__Uploading Now...__ ⬆️**")
 
     try:
         link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
         if not link:
-            await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
+            await status_msg.edit_text("**❌ Upload Failed 🥲**")
             return
 
         # Save to DB with date + site
@@ -146,14 +147,14 @@ async def telegraph_file_handler(bot: Client, message: Message):
         # Log to channel
         try:
             caption_text = (
-                f"**🛜 __New Upload Detected__**\n\n"
-                f"**👤 __User : {message.from_user.mention} (`{user_id}`)__**\n"
-                f"**🆔 __Username : @{message.from_user.username if message.from_user.username else 'N/A'}__**\n"
-                f"**▶️ __Generated Link 🖇️closeink}__**"
+                f"**🛜 New Upload Detected**\n\n"
+                f"**👤 User : {message.from_user.mention} (`{user_id}`)**\n"
+                f"**🆔 Username : @{message.from_user.username if message.from_user.username else 'N/A'}**\n"
+                f"**▶️ Link :** {link}"
             )
             await bot.send_message(LOG_CHANNEL, caption_text, disable_web_page_preview=True)
         except Exception as e:
-            print(f"**__Failed to Log Upload: {e}__**")
+            print(f"Failed to Log Upload: {e}")
 
         # Send link to user
         await status_msg.edit_text(
@@ -194,9 +195,9 @@ async def telegraph_cancel(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id in active_uploads:
         active_uploads.pop(user_id)
-        await message.reply_text("**❌ __Upload Canceled Successfully 🤧__**")
+        await message.reply_text("**❌ __Upload Canceled Successfully__ 🤧**")
     else:
-        await message.reply_text("**🤷 __No Active Uploads. Use /telegraph to Start.__**")
+        await message.reply_text("**🤷 __No Active Uploads. Use /telegraph to Start__.**")
 
 # -------------------
 # /telegraphhelp
@@ -224,7 +225,7 @@ async def telegraph_help(bot: Client, message: Message):
 async def telegraph_list(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in ADMINS:
-        return await message.reply_text("**- __You Are Not Authorized ❌__**")
+        return await message.reply_text("**- __You Are Not Authorized__ ❌**")
 
     await send_telelist_page(bot, message.chat.id, 0)
 
@@ -255,7 +256,7 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
 
     await bot.send_message(
         chat_id,
-        f"**📝 __Uploaded Links (Page {page+1})\n\n{formatted_list}__**",
+        f"**📝 __Uploaded Links (Page {page+1}) 🖇️\n\n{formatted_list}__**",
         disable_web_page_preview=True,
         reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None
     )

@@ -43,7 +43,7 @@ def upload_to_envs(file_path: str):
                 return response.text.strip()
             return None
     except Exception as e:
-        print(f"Error Uploading to Envs:\n{e}")
+        print(f"**__Error Uploading to Envs:\n{e}__**")
         return None
 
 async def upload_to_catbox(file_path: str):
@@ -56,7 +56,7 @@ async def upload_to_catbox(file_path: str):
                 async with session.post(CATBOX_API, data=data) as resp:
                     return await resp.text()
     except Exception as e:
-        print(f"Error Uploading to Catbox:\n{e}")
+        print(f"**__Error Uploading to Catbox:\n{e}__**")
         return None
 
 # -------------------
@@ -102,8 +102,8 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_uploads and "file_sent" not in active_uploads[user_id]:
         active_uploads.pop(user_id, None)
         timeout_msg = await query.message.edit_text(
-            "**⏰ Time's Up !!\nYou did not Send any File in 30 sec.**\n"
-            "**Start a New Upload /telegraph**"
+            "**⏰ __Time's Up !!\n\nYou did not Send any File in 30 Sec.__**\n"
+            "**__Start a New Upload /telegraph__**"
         )
         await asyncio.sleep(20)
         try:
@@ -123,7 +123,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
     active_uploads[user_id]["file_sent"] = True
     site = active_uploads[user_id]["site"]
 
-    status_msg = await message.reply_text("**__Downloading Your File...__ ⬇️**")
+    status_msg = await message.reply_text("**__Downloading Your File ...__ ⬇️**")
     file_path = await message.download()
 
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
@@ -132,29 +132,29 @@ async def telegraph_file_handler(bot: Client, message: Message):
         active_uploads.pop(user_id)
         return
 
-    await status_msg.edit_text("**__Uploading Now...__ ⬆️**")
+    await status_msg.edit_text("**__Uploading Now ...__ ⬆️**")
 
     try:
         link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)
         if not link:
-            await status_msg.edit_text("**❌ Upload Failed 🥲**")
+            await status_msg.edit_text("**❌ __Upload Failed__ 🥲**")
             return
 
         # Save to DB with date + site
         site_name = "Catbox" if "catbox.moe" in link else "Envs"
         await telelist_col.insert_one({"link": link, "site": site_name, "date": format_date()})
 
-        # Log to channel
+        # Log To Channel
         try:
             caption_text = (
-                f"**🛜 New Upload Detected**\n\n"
-                f"**👤 User : {message.from_user.mention} (`{user_id}`)**\n"
-                f"**🆔 Username : @{message.from_user.username if message.from_user.username else 'N/A'}**\n"
-                f"**▶️ Link :** {link}"
+                f"**🛜 __New Upload Detected__**\n\n"
+                f"**👤 __User : {message.from_user.mention} (`{user_id}`)__**\n"
+                f"**🆔 __Username : @{message.from_user.username if message.from_user.username else 'N/A'}__**\n"
+                f"**▶️ __Generating Link 🖇️\n- {link}__**"
             )
             await bot.send_message(LOG_CHANNEL, caption_text, disable_web_page_preview=True)
         except Exception as e:
-            print(f"Failed to Log Upload: {e}")
+            print(f"**__Failed to Log Upload: {e}__**")
 
         # Send link to user
         await status_msg.edit_text(

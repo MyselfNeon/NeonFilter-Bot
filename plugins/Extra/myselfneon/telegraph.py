@@ -205,16 +205,16 @@ async def telegraph_cancel(bot: Client, message: Message):
 @Client.on_message(filters.command("telegraphhelp") & filters.private)
 async def telegraph_help(bot: Client, message: Message):
     help_text = (
-        "**🛠️ 𝐓𝐄𝐋𝐄𝐆𝐑𝐀𝐏𝐇 𝐏𝐋𝐔𝐆𝐈𝐍**\n\n"
-        "1️⃣ /telegraph - Start a New Upload Session.\n"
-        "- Choose the Site.\n"
-        "- Send File (Photo, Video, Document, Audio).\n\n"
-        "2️⃣ /tcancel - Cancel Current Upload Session.\n\n"
-        "3️⃣ /telegraphhelp - Show this Help.\n\n"
-        "📌 Features:\n"
-        "- Tracks Active Uploads per User.\n"
-        "- Catbox Size Limit: 200 MB.\n\n"
-        "🔥 Powered By @NeonFiles 🔥"
+        "<blockquote>**🛠️ 𝐓𝐄𝐋𝐄𝐆𝐑𝐀𝐏𝐇 𝐏𝐋𝐔𝐆𝐈𝐍**</blockquote>\n\n"
+        "1️⃣ __/telegraph \n- **Start a New Upload Session.__**\n"
+        "**__- Choose the Desired Site.__**\n"
+        "**__- After Selecting, Send Your File \n  (Photo, Video, Document, Audio).__**\n\n"
+        "2️⃣ __/tcancel \n- **Cancel An Active Upload Session.__**\n"
+        "**__- Use This If You Made A Mistake Or Changed Your Mind.__**\n\n"
+        "3️⃣ __/telegraphhelp \n- **Show This Help Message.__**\n\n"
+        "**📌 __Additional Features:__**\n"
+        "**- __Active Uploads Are Tracked Per User To Prevent Multiple Uploads At Once.__**\n"
+        "**- __File Size Limit For Catbox: 200 MB.__\n\n🔥 __Powered By @NeonFiles__ 🔥**\n"
     )
     await message.reply_text(help_text)
 

@@ -123,7 +123,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
     active_uploads[user_id]["file_sent"] = True
     site = active_uploads[user_id]["site"]
 
-    status_msg = await message.reply_text("**__Downloading Your File ...__ ⬇️**")
+    status_msg = await message.reply_text("**__Downloading Your File ...__ ⚡⬇️**")
     file_path = await message.download()
 
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
@@ -132,7 +132,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
         active_uploads.pop(user_id)
         return
 
-    await status_msg.edit_text("**__Uploading Now ...__ ⬆️**")
+    await status_msg.edit_text("**__Uploading Now ...__ 🚀⬆️**")
 
     try:
         link = upload_to_envs(file_path) if site == "envs" else await upload_to_catbox(file_path)

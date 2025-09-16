@@ -145,21 +145,19 @@ async def telegraph_file_handler(bot: Client, message: Message):
         # -----------------------------
         await telelist_col.insert_one({"link": link})
 
-
-# -----------------------------
-# Log Upload to LOG_CHANNEL with only text
-# -----------------------------
-try:
-    caption_text = (
-        f"**🛜 __New Upload Detected__**\n\n"
-        f"**👤 __User : {message.from_user.mention} (`{user_id}`)__**\n"
-        f"**🆔 __Username : @{message.from_user.username if message.from_user.username else 'N/A'}__**\n"
-        f"**▶️ __Generated Link__ 🖇️ \n __{link}__**"
-    )
-
-    await bot.send_message(LOG_CHANNEL, caption_text, disable_web_page_preview=True)
-except Exception as e:
-    print(f"**__Failed to Log Upload: {e}__**")
+        # -----------------------------
+        # Log Upload to LOG_CHANNEL (text only, no files)
+        # -----------------------------
+        try:
+            caption_text = (
+                f"**🛜 __New Upload Detected__**\n\n"
+                f"**👤 __User : {message.from_user.mention} (`{user_id}`)__**\n"
+                f"**🆔 __Username : @{message.from_user.username if message.from_user.username else 'N/A'}__**\n"
+                f"**▶️ __Generated Link__ 🖇️ \n __{link}__**"
+            )
+            await bot.send_message(LOG_CHANNEL, caption_text, disable_web_page_preview=True)
+        except Exception as e:
+            print(f"**__Failed to Log Upload: {e}__**")
 
         # -----------------------------
         # Send final link to user

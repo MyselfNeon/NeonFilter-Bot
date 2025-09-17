@@ -16,7 +16,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 MAX_SIZE = 200 * 1024 * 1024  # Local max file size 200 MB
 CATBOX_API = "https://catbox.moe/user/api.php"
 ENVS_UPLOAD_URL = "https://envs.sh"
-LINKS_PER_PAGE = 15
+LINKS_PER_PAGE = 10
 
 # Track active uploads per user
 active_uploads = {}

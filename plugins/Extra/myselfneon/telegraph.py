@@ -227,15 +227,15 @@ async def telegraph_list(bot: Client, message: Message):
     if user_id not in ADMINS:
         return await message.reply_text("**- __You Are Not Authorized__ ❌**")
 
-    await send_telelist_page(bot, message.chat.id, 0)
+    await send_telelist_page(message, 0)
 
 
-async def send_telelist_page(bot: Client, chat_id: int, page: int):
+async def send_telelist_page(message: Message, page: int):
     cursor = telelist_col.find({})
     docs = [doc async for doc in cursor]
 
     if not docs:
-        return await bot.send_message(chat_id, "**📂 __No Uploads Found Yet !!__**")
+        return await message.reply("**📂 __No Uploads Found Yet !!__**")
 
     total_pages = (len(docs) + LINKS_PER_PAGE - 1) // LINKS_PER_PAGE
     start = page * LINKS_PER_PAGE
@@ -260,12 +260,20 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
 
     keyboard = [buttons]
 
-    await bot.send_message(
-        chat_id,
-        f"**📝 __Uploaded Links (Page {page+1}/{total_pages}) 🖇️\n\n{formatted_list}__**",
-        disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
+    # If command triggered (fresh message)
+    if isinstance(message, Message):
+        await message.reply(
+            f"**📝 __Uploaded Links (Page {page+1}/{total_pages}) 🖇️\n\n{formatted_list}__**",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    else:
+        # If callback query (edit old message)
+        await message.edit_text(
+            f"**📝 __Uploaded Links (Page {page+1}/{total_pages}) 🖇️\n\n{formatted_list}__**",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
 
 # -------------------
 # Callback handler for pagination
@@ -278,9 +286,7 @@ async def telelist_page_callback(bot: Client, query: CallbackQuery):
 
     action, page = query.data.split("_")[1], int(query.data.split("_")[2])
 
-    await query.message.delete()
-    await send_telelist_page(bot, query.message.chat.id, page)
-
+    await send_telelist_page(query.message, page)
 
 # -------------------
 # Ignore clicks on "Page X/Y" silently

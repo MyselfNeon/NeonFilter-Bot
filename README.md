@@ -170,7 +170,7 @@ Join My <a href='https://t.me/neonfiles'>Update Channel</a> For More Update Rega
 ### _Special Thanks_  🙏
  - <b>Thanks To [Pyrogram Library](https://github.com/pyrogram/pyrogram) & [Pyrofork Library](https://github.com/Mayuri-Chan/pyrofork) open-source.
  - Thanks To [Neon An](https://t.me/MyselfNeon) To Modify And Add Amazing Features in Repo
- - Thanks To Everyone who have contributed In This repo</b>
+ - Thanks To Everyone who have Contributed In This Repo ❤️</b>
 
 ### _Note_ 📝
  
@@ -185,6 +185,7 @@ Selling The Codes To Other People For Money Is *Strictly Prohibited*.</b>
 </pre>
 </p>
 </details>
+
 
 
 

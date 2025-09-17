@@ -227,15 +227,18 @@ async def telegraph_list(bot: Client, message: Message):
     if user_id not in ADMINS:
         return await message.reply_text("**- __You Are Not Authorized__ ❌**")
 
-    await send_telelist_page(message, 0)
+    await send_telelist_page(bot, message.chat.id, 0, new_msg=True)
 
 
-async def send_telelist_page(message: Message, page: int):
+async def send_telelist_page(bot: Client, chat_id: int, page: int, new_msg: bool = False, query: CallbackQuery = None):
     cursor = telelist_col.find({})
     docs = [doc async for doc in cursor]
 
     if not docs:
-        return await message.reply("**📂 __No Uploads Found Yet !!__**")
+        if new_msg:
+            return await bot.send_message(chat_id, "**📂 __No Uploads Found Yet !!__**")
+        else:
+            return await query.message.edit_text("**📂 __No Uploads Found Yet !!__**")
 
     total_pages = (len(docs) + LINKS_PER_PAGE - 1) // LINKS_PER_PAGE
     start = page * LINKS_PER_PAGE
@@ -252,28 +255,19 @@ async def send_telelist_page(message: Message, page: int):
     if page > 0:
         buttons.append(InlineKeyboardButton("⬅️ Pʀᴇᴠ", callback_data=f"telelist_prev_{page-1}"))
 
-    # Page indicator (ignored when clicked)
     buttons.append(InlineKeyboardButton(f"📄 Pᴀɢᴇ {page+1}/{total_pages}", callback_data="telelist_ignore"))
 
     if end < len(docs):
         buttons.append(InlineKeyboardButton("Nᴇxᴛ ➡️", callback_data=f"telelist_next_{page+1}"))
 
-    keyboard = [buttons]
+    keyboard = InlineKeyboardMarkup([buttons])
 
-    # If command triggered (fresh message)
-    if isinstance(message, Message):
-        await message.reply(
-            f"**📝 __Uploaded Links (Page {page+1}/{total_pages}) 🖇️\n\n{formatted_list}__**",
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+    text = f"**📝 __Uploaded Links (Page {page+1}/{total_pages}) 🖇️\n\n{formatted_list}__**"
+
+    if new_msg:
+        await bot.send_message(chat_id, text, disable_web_page_preview=True, reply_markup=keyboard)
     else:
-        # If callback query (edit old message)
-        await message.edit_text(
-            f"**📝 __Uploaded Links (Page {page+1}/{total_pages}) 🖇️\n\n{formatted_list}__**",
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+        await query.message.edit_text(text, disable_web_page_preview=True, reply_markup=keyboard)
 
 # -------------------
 # Callback handler for pagination
@@ -286,14 +280,15 @@ async def telelist_page_callback(bot: Client, query: CallbackQuery):
 
     action, page = query.data.split("_")[1], int(query.data.split("_")[2])
 
-    await send_telelist_page(query.message, page)
+    await send_telelist_page(bot, query.message.chat.id, page, new_msg=False, query=query)
+
 
 # -------------------
 # Ignore clicks on "Page X/Y" silently
 # -------------------
 @Client.on_callback_query(filters.regex(r"^telelist_ignore$"))
 async def telelist_ignore_callback(bot: Client, query: CallbackQuery):
-    pass  # absolutely nothing happens
+    pass  # do nothing
 
 
 # Dont remove Credits

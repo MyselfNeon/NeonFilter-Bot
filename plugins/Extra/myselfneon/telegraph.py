@@ -229,6 +229,7 @@ async def telegraph_list(bot: Client, message: Message):
 
     await send_telelist_page(bot, message.chat.id, 0)
 
+
 async def send_telelist_page(bot: Client, chat_id: int, page: int):
     cursor = telelist_col.find({})
     docs = [doc async for doc in cursor]
@@ -236,6 +237,7 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
     if not docs:
         return await bot.send_message(chat_id, "**📂 __No Uploads Found Yet !!__**")
 
+    total_pages = (len(docs) + LINKS_PER_PAGE - 1) // LINKS_PER_PAGE
     start = page * LINKS_PER_PAGE
     end = start + LINKS_PER_PAGE
     page_docs = docs[start:end]
@@ -245,20 +247,24 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
         for idx, doc in enumerate(page_docs)
     ])
 
-    keyboard = []
+    # Inline buttons (Prev | Page X/Y | Next)
     buttons = []
     if page > 0:
         buttons.append(InlineKeyboardButton("⬅️ Pʀᴇᴠ", callback_data=f"telelist_prev_{page-1}"))
+
+    # Page indicator (ignored when clicked)
+    buttons.append(InlineKeyboardButton(f"📄 Page {page+1}/{total_pages}", callback_data="telelist_ignore"))
+
     if end < len(docs):
         buttons.append(InlineKeyboardButton("Nᴇxᴛ ➡️", callback_data=f"telelist_next_{page+1}"))
-    if buttons:
-        keyboard.append(buttons)
+
+    keyboard = [buttons]
 
     await bot.send_message(
         chat_id,
-        f"**📝 __Uploaded Links (Page {page+1}) 🖇️\n\n{formatted_list}__**",
+        f"**📝 __Uploaded Links (Page {page+1}/{total_pages}) 🖇️\n\n{formatted_list}__**",
         disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 # -------------------
@@ -274,6 +280,14 @@ async def telelist_page_callback(bot: Client, query: CallbackQuery):
 
     await query.message.delete()
     await send_telelist_page(bot, query.message.chat.id, page)
+
+
+# -------------------
+# Ignore clicks on "Page X/Y" silently
+# -------------------
+@Client.on_callback_query(filters.regex(r"^telelist_ignore$"))
+async def telelist_ignore_callback(bot: Client, query: CallbackQuery):
+    pass  # absolutely nothing happens
 
 
 # Dont remove Credits

@@ -253,7 +253,7 @@ async def send_telelist_page(bot: Client, chat_id: int, page: int):
         buttons.append(InlineKeyboardButton("⬅️ Pʀᴇᴠ", callback_data=f"telelist_prev_{page-1}"))
 
     # Page indicator (ignored when clicked)
-    buttons.append(InlineKeyboardButton(f"📄 Page {page+1}/{total_pages}", callback_data="telelist_ignore"))
+    buttons.append(InlineKeyboardButton(f"📄 Pᴀɢᴇ {page+1}/{total_pages}", callback_data="telelist_ignore"))
 
     if end < len(docs):
         buttons.append(InlineKeyboardButton("Nᴇxᴛ ➡️", callback_data=f"telelist_next_{page+1}"))

@@ -26,7 +26,7 @@ async def allowed(_, __, message):
 async def gen_link_s(bot, message):
     neo = await bot.ask(
         chat_id=message.from_user.id,
-        text="Now Send Me Your Message Which You Want To Store."
+        text="**__Now Send Me Your Message Which You Want To Store.__**"
     )
     file_type = neo.media
     if file_type not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.AUDIO, enums.MessageMediaType.DOCUMENT]:
@@ -37,20 +37,20 @@ async def gen_link_s(bot, message):
     string = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
     string += file_id
     outstr = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
-    await message.reply(f"Here is your Link:\nhttps://t.me/{temp.U_NAME}?start={outstr}")    
+    await message.reply(f"**__Here is Your Link :\n\nhttps://t.me/{temp.U_NAME}?start={outstr}__**")    
 
 
 @Client.on_message(filters.command(['batch', 'pbatch']) & filters.create(allowed))
 async def gen_link_batch(bot, message):
     if " " not in message.text:
         return await message.reply(
-            "Use correct format.\nExample <code>/batch https://t.me/VJ_Botz/10 https://t.me/VJ_Botz/20</code>."
+            "**__Use Correct Format.\n\nExample <code>/batch https://t.me/NeonFiles/01 https://t.me/NeonFiles/20</code>__**"
         )
 
     links = message.text.strip().split(" ")
     if len(links) != 3:
         return await message.reply(
-            "Use correct format.\nExample <code>/batch https://t.me/VJ_Botz/10 https://t.me/VJ_Botz/20</code>."
+            "**__Use Correct Format.\n\nExample <code>/batch https://t.me/NeonFiles/01 https://t.me/NeonFiles/20</code>__**"
         )
 
     cmd, first, last = links
@@ -60,7 +60,7 @@ async def gen_link_batch(bot, message):
 
     match = regex.match(first)
     if not match:
-        return await message.reply('Invalid link')
+        return await message.reply('**❌ __Invalid Link__**')
     f_chat_id = match.group(4)
     f_msg_id = int(match.group(5))
     if f_chat_id.isnumeric():
@@ -68,28 +68,28 @@ async def gen_link_batch(bot, message):
 
     match = regex.match(last)
     if not match:
-        return await message.reply('Invalid link')
+        return await message.reply('**❌ __Invalid Link__**')
     l_chat_id = match.group(4)
     l_msg_id = int(match.group(5))
     if l_chat_id.isnumeric():
         l_chat_id = int("-100" + l_chat_id)
 
     if f_chat_id != l_chat_id:
-        return await message.reply("Chat ids not matched.")
+        return await message.reply("**__Chat IDs Not Matched__**")
 
     try:
         chat_id = (await bot.get_chat(f_chat_id)).id
     except ChannelInvalid:
         return await message.reply(
-            'This may be a private channel / group. Make me an admin over there to index the files.'
+            '**__This may be a Private Channel / Group. Make me an Admin Over There to Index the Files.__**'
         )
     except (UsernameInvalid, UsernameNotModified):
-        return await message.reply('Invalid Link specified.')
+        return await message.reply('**__Invalid Link Specified__**')
     except Exception as e:
-        return await message.reply(f'Errors - {e}')
+        return await message.reply(f'**__Errors - {e}__**')
 
     sts = await message.reply(
-        "Generating link for your message.\nThis may take time depending upon number of messages"
+        "**__Generating Link for Your Message.\nThis May take Time Depending Upon Number of Messages__**"
     )
 
     if chat_id in FILE_STORE_CHANNEL:
@@ -135,16 +135,17 @@ async def gen_link_batch(bot, message):
         LOG_CHANNEL,
         f"batchmode_{message.from_user.id}.json",
         file_name="Batch.json",
-        caption="⚠️Generated for filestore."
+        caption="**__⚠️ Generated for Filestore.__**"
     )
     os.remove(f"batchmode_{message.from_user.id}.json")
 
     file_id, ref = unpack_new_file_id(post.document.file_id)
     await sts.edit(
-        f"Here is your link\nContains `{og_msg}` files.\n https://t.me/{temp.U_NAME}?start=BATCH-{file_id}"
+        f"**__Here is Your Link\nContains `{og_msg}` Files.\n https://t.me/{temp.U_NAME}?start=BATCH-{file_id}__**"
     )
 
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

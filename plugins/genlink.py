@@ -36,17 +36,19 @@ async def gen_link_s(bot, message):
         # Safely get file object (video, audio, document)
         file_obj = neo.document or neo.video or neo.audio
         if not file_obj:
-            return await neo.reply("Send me only video, audio, or document.")
+            return await neo.reply("Send only video, audio, or document.")
 
         # Check protected content
         if getattr(neo, "has_protected_content", False) and neo.from_user.id not in ADMINS:
             return await neo.reply("Protected content cannot be stored.")
 
-        # Get file_id for link
-        file_id, ref = unpack_new_file_id(file_obj.file_id)
+        # Get file_id safely (avoid too many values to unpack)
+        file_ids = unpack_new_file_id(file_obj.file_id)
+        file_id = file_ids[0]  # just take the first value
+
+        # Generate link
         prefix = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
         outstr = base64.urlsafe_b64encode(f"{prefix}{file_id}".encode("ascii")).decode().strip("=")
-
         await message.reply(f"Here is your Link:\nhttps://t.me/{temp.U_NAME}?start={outstr}")
 
     except Exception as e:
@@ -160,4 +162,3 @@ async def gen_link_batch(bot, message):
     await sts.edit(
         f"Here is your link\nContains `{og_msg}` files.\n https://t.me/{temp.U_NAME}?start=BATCH-{file_id}"
         )
-    

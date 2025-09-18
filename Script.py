@@ -162,6 +162,7 @@ OTHER DB :-
 **- __Aᴅᴅᴇᴅ Bʏ - {}__**"""
 
     LOG_TEXT_P = """**#NewUser 👤**
+**- __@NeonFilterBot__**  
 **- __Usᴇʀ ID - <code>{}</code>__**
 **- __Usᴇʀ - {}__**"""
 

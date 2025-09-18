@@ -95,7 +95,7 @@ async def gen_link_batch(bot, message):
     if chat_id in FILE_STORE_CHANNEL:
         string = f"{f_msg_id}_{l_msg_id}_{chat_id}_{cmd.lower().strip()}"
         b_64 = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
-        return await sts.edit(f"**__Here is Your Link \n\nhttps://t.me/{temp.U_NAME}?start=DSTORE-{b_64}__**")
+        return await sts.edit(f"**__Here is Your Link 🖇️\n\nhttps://t.me/{temp.U_NAME}?start=DSTORE-{b_64}__**")
 
     FRMT = "**__Generating Link...\nTotal Messages: `{total}`\nDone: `{current}`\nRemaining: `{rem}`\nStatus: `{sts}`__**"
 
@@ -148,5 +148,6 @@ async def gen_link_batch(bot, message):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 

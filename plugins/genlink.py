@@ -1,21 +1,23 @@
-import re
-import os
 import json
+import os
 import base64
-import logging
-import tempfile
-from pyrogram import filters, Client, enums
-from pyrogram.errors import ChannelInvalid, UsernameInvalid, UsernameNotModified
-from info import ADMINS, LOG_CHANNEL, FILE_STORE_CHANNEL, PUBLIC_FILE_STORE
-from database.ia_filterdb import unpack_new_file_id
+import uuid
+from pyrogram import Client, filters
+from info import ADMINS, PUBLIC_FILE_STORE
 from utils import temp
+from database.ia_filterdb import unpack_new_file_id
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+BATCH_STORAGE = "batch_links.json"
+if os.path.exists(BATCH_STORAGE):
+    with open(BATCH_STORAGE, "r") as f:
+        BATCHES = json.load(f)
+else:
+    BATCHES = {}
 
-# --------------------------
-# Helper: check allowed users
-# --------------------------
+def save_batches():
+    with open(BATCH_STORAGE, "w") as f:
+        json.dump(BATCHES, f)
+
 async def allowed(_, __, message):
     if PUBLIC_FILE_STORE:
         return True
@@ -24,139 +26,64 @@ async def allowed(_, __, message):
     return False
 
 # --------------------------
-# Single file link
-# --------------------------
-@Client.on_message(filters.command(['link', 'plink']) & filters.create(allowed))
-async def gen_link_s(bot, message):
-    try:
-        await message.reply("**__Now Send Me Your File (Video, Audio, Document) 😊__**")
-        neo = await bot.listen(message.chat.id)  # using pyromod.listen
-
-        # Get file object safely
-        file_obj = None
-        if neo.document:
-            file_obj = neo.document
-        elif neo.video:
-            file_obj = neo.video
-        elif neo.audio:
-            file_obj = neo.audio
-        else:
-            return await neo.reply("**__Send only Video, Audio, or Document.__**")
-
-        if getattr(neo, "has_protected_content", False) and neo.from_user.id not in ADMINS:
-            return await neo.reply("**__Protected content cannot be stored.__**")
-
-        # Take only the first value from unpack_new_file_id
-        file_id = unpack_new_file_id(file_obj.file_id)[0]
-        prefix = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
-        b64_string = base64.urlsafe_b64encode(f"{prefix}{file_id}".encode()).decode().strip("=")
-
-        await message.reply(f"Here is your Link:\nhttps://t.me/{temp.U_NAME}?start={b64_string}")
-    except Exception as e:
-        logger.error(f"Error in gen_link_s: {e}")
-        await message.reply(f"❌ Error: {e}")
-
-# --------------------------
-# Batch link
+# Batch link generator
 # --------------------------
 @Client.on_message(filters.command(['batch', 'pbatch']) & filters.create(allowed))
-async def gen_link_batch(bot, message):
-    try:
-        parts = message.text.strip().split(" ")
-        if len(parts) != 3:
-            return await message.reply(
-                "**__Use correct Format ✅\n\nExample__**\n<code>/batch https://t.me/NeonFiles/10 https://t.me/NeonFiles/20</code>"
-            )
+async def gen_link_batch(bot: Client, message):
+    await message.reply("**__Send me the first message of the batch.__**")
+    first_msg = await bot.listen(message.chat.id)
+    first_id = first_msg.text if first_msg.text else first_msg.message_id
 
-        cmd, first, last = parts
-        regex = re.compile(r"(https://)?(t\.me/|telegram\.me/|telegram\.dog/)(c/)?([\w\d_]+)/(\d+)$")
+    await message.reply("**__Now send me the last message of the batch.__**")
+    last_msg = await bot.listen(message.chat.id)
+    last_id = last_msg.text if last_msg.text else last_msg.message_id
 
-        # Helper to parse link
-        def parse_link(link):
-            m = regex.match(link)
-            if not m:
-                return None, None
-            chat_id = m.group(4)
-            msg_id = int(m.group(5))
-            if chat_id.isnumeric():
-                chat_id = int("-100" + chat_id)
-            return chat_id, msg_id
+    # Iterate and store messages
+    f_msg_id = int(first_id)
+    l_msg_id = int(last_id)
+    chat_id = first_msg.chat.id
+    outlist = []
 
-        f_chat_id, f_msg_id = parse_link(first)
-        l_chat_id, l_msg_id = parse_link(last)
+    async for neo in bot.iter_messages(chat_id, l_msg_id, f_msg_id, reverse=True):
+        if neo.empty or neo.service:
+            continue
+        file_obj = neo.document or neo.video or neo.audio
+        if file_obj:
+            caption = getattr(neo, 'caption', '')
+            if caption:
+                caption = caption.html if hasattr(caption, 'html') else str(caption)
+            outlist.append({
+                "file_id": unpack_new_file_id(file_obj.file_id)[0],
+                "caption": caption,
+                "title": getattr(file_obj, "file_name", ""),
+                "size": file_obj.file_size
+            })
 
-        if not f_chat_id or not l_chat_id:
-            return await message.reply("**__Invalid link ❌__**")
+    if not outlist:
+        return await message.reply("**__No media found in this range.__**")
 
-        if f_chat_id != l_chat_id:
-            return await message.reply("**__Chat IDs do not match.__**")
+    token = str(uuid.uuid4())
+    BATCHES[token] = {
+        "files": outlist,
+        "protect": message.text.lower().strip() == "/pbatch"
+    }
+    save_batches()
 
-        # Verify channel access
-        try:
-            chat_id = (await bot.get_chat(f_chat_id)).id
-        except ChannelInvalid:
-            return await message.reply("**__Private Channel / group. Make me admin to index files.__**")
-        except (UsernameInvalid, UsernameNotModified):
-            return await message.reply("**__Invalid link.__**")
-        except Exception as e:
-            return await message.reply(f"❌ Error: {e}")
+    await message.reply(f"Here is your batch link containing `{len(outlist)}` files:\nhttps://t.me/{temp.U_NAME}?start={token}")
 
-        sts = await message.reply("**__Generating Link. This may take some time...__**")
+# --------------------------
+# Start handler for batch
+# --------------------------
+@Client.on_message(filters.command("start"))
+async def start_handler(bot: Client, message):
+    start_param = message.text.split(" ", 1)
+    if len(start_param) < 2:
+        return await message.reply("**__Welcome! Send a file link to get files.__**")
+    token = start_param[1]
 
-        if chat_id in FILE_STORE_CHANNEL:
-            # For file store channels, just encode
-            string = f"{f_msg_id}_{l_msg_id}_{chat_id}_{cmd.lower().strip()}"
-            b64 = base64.urlsafe_b64encode(string.encode()).decode().strip("=")
-            return await sts.edit(f"Here is your link: https://t.me/{temp.U_NAME}?start=DSTORE-{b64}")
-
-        # Otherwise, iterate messages and store metadata
-        outlist = []
-        og_msg = 0
-
-        async for neo in bot.iter_messages(chat_id, l_msg_id, f_msg_id, reverse=True):
-            if neo.empty or neo.service:
-                continue
-            if not neo.media:
-                continue
-
-            file_obj = None
-            if neo.document:
-                file_obj = neo.document
-            elif neo.video:
-                file_obj = neo.video
-            elif neo.audio:
-                file_obj = neo.audio
-
-            if file_obj:
-                caption = getattr(neo, 'caption', '')
-                if caption:
-                    caption = caption.html if hasattr(caption, 'html') else str(caption)
-                outlist.append({
-                    "file_id": file_obj.file_id,
-                    "caption": caption,
-                    "title": getattr(file_obj, "file_name", ""),
-                    "size": file_obj.file_size,
-                    "protect": cmd.lower().strip() == "/pbatch"
-                })
-                og_msg += 1
-
-        # Save temp JSON
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as out:
-            json.dump(outlist, out)
-            tmp_path = out.name
-
-        post = await bot.send_document(
-            LOG_CHANNEL,
-            tmp_path,
-            file_name="Batch.json",
-            caption=f"⚠️Generated for filestore by {message.from_user.first_name}"
-        )
-        os.remove(tmp_path)
-
-        file_id = unpack_new_file_id(post.document.file_id)[0]
-        await sts.edit(f"Here is your link\nContains `{og_msg}` files.\nhttps://t.me/{temp.U_NAME}?start=BATCH-{file_id}")
-
-    except Exception as e:
-        logger.error(f"Error in gen_link_batch: {e}")
-        await message.reply(f"❌ Error: {e}")
-        
+    if token in BATCHES:
+        batch = BATCHES[token]
+        for f in batch["files"]:
+            await message.reply_document(f["file_id"], caption=f.get("caption", ""))
+    else:
+        await message.reply("**__No file found for this link.__**")

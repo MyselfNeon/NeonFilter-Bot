@@ -162,8 +162,8 @@ OTHER DB :-
 **- __Aᴅᴅᴇᴅ Bʏ - {}__**"""
 
     LOG_TEXT_P = """**#NewUser 👤**
-**- __@NeonFilterBot__**  
-**- __Usᴇʀ ID - <code>{}</code>__**
+**- __@ZeroFilterBot__**  
+\n**- __Usᴇʀ ID - <code>{}</code>__**
 **- __Usᴇʀ - {}__**"""
 
     ALRT_TXT = """<b><i>Hello {}

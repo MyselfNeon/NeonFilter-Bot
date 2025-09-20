@@ -11,10 +11,19 @@ from Neon.util.render_template import render_page
 
 routes = web.RouteTableDef()
 
+# Root route with styled HTML message
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
-    return web.json_response("|| ZeroFilterBot ||")
+    return web.Response(
+        text="""
+        <body style="background-color:black; color:#39FF14; display:flex; justify-content:center; align-items:flex-start; height:100vh; margin:0; font-family:sans-serif; padding-top:20vh; font-size:4rem;">
+            Coded By @MyselfNeon
+        </body>
+        """,
+        content_type="text/html"
+    )
 
+# Watch route for dynamic page rendering
 @routes.get(r"/watch/{path:\S+}", allow_head=True)
 async def stream_handler(request: web.Request):
     try:
@@ -37,6 +46,7 @@ async def stream_handler(request: web.Request):
         logging.critical(e.with_traceback(None))
         raise web.HTTPInternalServerError(text=str(e))
 
+# Catch-all route for media streaming
 @routes.get(r"/{path:\S+}", allow_head=True)
 async def stream_handler(request: web.Request):
     try:

@@ -150,7 +150,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
                 f"**🛜 __New Upload Detected__**\n\n"
                 f"**👤 __User : {message.from_user.mention} (`{user_id}`)__**\n"
                 f"**🆔 __Username : @{message.from_user.username if message.from_user.username else 'N/A'}__**\n"
-                f"**▶️ __Generating Link 🖇️\n- {link}__**"
+                f"**▶️ __Generated Link 🖇️\n {link}__**"
             )
             await bot.send_message(LOG_CHANNEL, caption_text, disable_web_page_preview=True)
         except Exception as e:

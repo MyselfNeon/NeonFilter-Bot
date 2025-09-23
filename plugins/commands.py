@@ -72,7 +72,7 @@ async def start(client, message):
         if CLONE_MODE == True:
             buttons.append([InlineKeyboardButton('Cʀᴇᴀᴛᴇ Oᴡɴ Cʟᴏɴᴇ Bᴏᴛ', callback_data='clone')])
         reply_markup = InlineKeyboardMarkup(buttons)
-        m=await message.reply_sticker("CAACAgIAAxkBAAIx3GjSK2w0tMxe5ts2VOwvohH2vB5KAALdAAMw1J0RjVUlFacabq8eBA") 
+        m=await message.reply_sticker("CAACAgIAAxkBAAIytGjS6CGkbAhRRWRpi22BQqDlRI9mAAJEGQACCOHZSVKp6_XqghKoHgQ") 
         await asyncio.sleep(1)
         await m.delete()
         await message.reply_photo(
@@ -213,7 +213,7 @@ async def start(client, message):
             if CLONE_MODE == True:
                 buttons.append([InlineKeyboardButton('😎 Cʀᴇᴀᴛᴇ Oᴡɴ Cʟᴏɴᴇ Bᴏᴛ 😎', callback_data='clone')])
             reply_markup = InlineKeyboardMarkup(buttons)
-            m=await message.reply_sticker("CAACAgIAAxkBAAIx3GjSK2w0tMxe5ts2VOwvohH2vB5KAALdAAMw1J0RjVUlFacabq8eBA") 
+            m=await message.reply_sticker("CAACAgIAAxkBAAIytGjS6CGkbAhRRWRpi22BQqDlRI9mAAJEGQACCOHZSVKp6_XqghKoHgQ") 
             await asyncio.sleep(1)
             await m.delete()
             await message.reply_photo(
@@ -1406,5 +1406,6 @@ async def purge_requests(client, message):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 

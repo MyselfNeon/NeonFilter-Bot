@@ -352,7 +352,7 @@ You can use this Module to find and StickerID or Sticker by ID.
 \nTap /sticker to know how to Use me.  
 \nUsage :  
 • /sticker - To get any Sticker ID  
-• /sticker `<ID>` - To get Stickers by ID</i></b>""" 
+• /sticker [ID] - To get Stickers by ID</i></b>""" 
   
     FONT_TXT= """<b>ᴜꜱᴀɢᴇ 
   

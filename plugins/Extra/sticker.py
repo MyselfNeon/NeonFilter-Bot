@@ -14,18 +14,18 @@ async def sticker_handler(bot, message):
             try:
                 await bot.send_sticker(message.chat.id, sid)
             except Exception as e:
-                await message.reply_text(f"**❌ Failed to send sticker `{sid}`!**\nError: `{e}`")
+                await message.reply_text(f"**❌ __Failed to send Sticker `{sid}`!\nError:** `{e}`__")
         return
 
     # No arguments → ask user to send a sticker
     try:
-        s_msg = await bot.ask(chat_id=message.from_user.id, text="**🌐 Please send a sticker to get its ID**")
+        s_msg = await bot.ask(chat_id=message.from_user.id, text="**🌐 __Please Send a Sticker to get its ID__**")
         if s_msg.sticker:
             await s_msg.reply_text(
-                f"**⁉️ Sticker ID:**\n`{s_msg.sticker.file_id}`\n\n"
-                f"**🆔 Unique ID:**\n`{s_msg.sticker.file_unique_id}`"
+                f"**⁉️ __Sticker ID:__**\n`{s_msg.sticker.file_id}`\n\n"
+                f"**🆔 __Unique ID:__**\n`{s_msg.sticker.file_unique_id}`"
             )
         else:
-            await s_msg.reply_text("**❌ That is not a sticker. Please send a valid sticker.**")
+            await s_msg.reply_text("**❌ __That is not a Sticker.\nPlease send a valid Sticker.__**")
     except Exception as e:
-        await message.reply_text(f"**❌ Error:** {e}")
+        await message.reply_text(f"**❌ __Error:** {e}__")

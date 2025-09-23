@@ -1376,7 +1376,7 @@ async def check_plans_cmd(client, message):
             [InlineKeyboardButton("❌ Cʟᴏsᴇ / Dᴇʟᴇᴛᴇ ❌", callback_data="close_data")]
         ]
         reply_markup = InlineKeyboardMarkup(btn)
-        m=await message.reply_sticker("CAACAgIAAxkBAAIBTGVjQbHuhOiboQsDm35brLGyLQ28AAJ-GgACglXYSXgCrotQHjibHgQ")         
+        m=await message.reply_sticker("CAACAgIAAxkBAAIxq2jSBFmFCPWv4Fx8EODz8du8XtDuAALqGAACpTuJSqyiyv1WtTBrHgQ")         
         await message.reply_text(f"**__😢 You Don't Have Any Premium Subscription.\n\n Check Out Our Premium /plan__**",reply_markup=reply_markup)
         await asyncio.sleep(2)
         await m.delete()
@@ -1406,3 +1406,4 @@ async def purge_requests(client, message):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

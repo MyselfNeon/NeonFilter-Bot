@@ -347,9 +347,12 @@ yᴏᴜ ᴄᴀɴ ᴄᴏɴᴠᴇʀᴛ ᴀ ᴀᴜᴅɪᴏ ꜰɪʟᴇ ꜰʀᴏᴍ �
 • ꜱʜᴀʀᴇ ᴜꜱ ꜰᴏʀ ᴍᴏʀᴇ ꜰᴇᴀᴛᴜʀᴇꜱ 
 </b>""" 
   
-    STICKER_TXT = """<b><i><blockquote>‣ Sticker ID Module</blockquote>
-You can use this module to find and stickerid. 
-Tap /stickerid to know how to use me.</i></b>""" 
+    STICKER_TXT = """<b><i><blockquote>‣ Sticker Module</blockquote>
+You can use this Module to find and StickerID or Sticker by ID. 
+\nTap /sticker to know how to Use me.  
+\nUsage :  
+• /sticker - To get any Sticker ID  
+• /sticker <ID> - To get Stickers by ID</i></b>""" 
   
     FONT_TXT= """<b>ᴜꜱᴀɢᴇ 
   

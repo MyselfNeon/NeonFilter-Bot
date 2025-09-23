@@ -7,11 +7,21 @@
 _**Watch on Telegram as [ZeroFilter-Bot](https://t.me/zerofilterbot)**_
 
 ![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=ZERO+FILTER+BOT+!!;CREATED+BY+MYSELFNEON+⚡;CODED+WITH+ADVANCED+FEATURES+📝&color=00FF00)
-<a href="https://github.com/MyselfNeon/NeonFilter-Bot/blob/master/LICENSE"> <img src="https://img.shields.io/badge/License- GPL 2.0 license -blueviolet?style=for-the-badge" alt="License" /> </a>
-<a href="https://www.python.org/"> <img src="https://img.shields.io/badge/Written%20in-Python-skyblue?style=for-the-badge&logo=python" alt="Python" /> </a>
-<a href="https://pypi.org/project/Pyrogram/"> <img src="https://img.shields.io/pypi/v/pyrogram?color=white&label=pyrogram&logo=python&logoColor=blue&style=for-the-badge" /></a>
-<a href="https://github.com/Myselfneon/NeonFilter-Bot"> <img src="https://img.shields.io/github/repo-size/myselfneon/NeonFilter-bot?color=skyblue&logo=github&logoColor=blue&style=for-the-badge" /></a>
-<a href="https://github.com/MyselfNeon/NeonFilter-Bot"> <img src="https://img.shields.io/github/last-commit/MyselfNeon/NeonFilter-Bot?color=black&logo=github&logoColor=black&style=for-the-badge" /></a>
+<a href="https://github.com/MyselfNeon/NeonFilter-Bot/blob/master/LICENSE">
+  <img src="https://img.shields.io/badge/License-GPL%202.0-blue?style=for-the-badge&logo=gnu&logoColor=white" alt="License" />
+</a>
+<a href="https://www.python.org/">
+  <img src="https://img.shields.io/badge/Python-Powered-skyblue?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+</a>
+<a href="https://pypi.org/project/Pyrogram/">
+  <img src="https://img.shields.io/badge/Pyrogram-v2.0-lightgrey?style=for-the-badge&logo=python&logoColor=blue" alt="Pyrogram" />
+</a>
+<a href="https://github.com/MyselfNeon/NeonFilter-Bot">
+  <img src="https://img.shields.io/badge/GitHub-Repo-black?style=for-the-badge&logo=github&logoColor=white" alt="Repo Size" />
+</a>
+<a href="https://github.com/MyselfNeon/NeonFilter-Bot">
+  <img src="https://img.shields.io/badge/Last-Commit-black?style=for-the-badge&logo=github&logoColor=white" alt="Last Commit" />
+</a>
 
 ### _Main Features_  🌟
 <b><i>
@@ -214,6 +224,7 @@ Selling The Codes To Other People For Money Is *Strictly Prohibited*.</b>
 </pre>
 </p>
 </details>
+
 
 
 

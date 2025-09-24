@@ -1,3 +1,4 @@
+#Commands.py
 import os, string, logging, random, asyncio, time, datetime, re, sys, json, base64
 from Script import script
 from pyrogram import Client, filters, enums
@@ -51,7 +52,7 @@ async def start(client, message):
                 InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
                 InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('😎 Aʙᴏᴜᴛ', callback_data='about')
             ],[
                 InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ Aɴᴅ Rᴇғᴇʀʀᴀʟ', callback_data='subscription')
             ],[
@@ -65,7 +66,7 @@ async def start(client, message):
                 InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
                 InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('😎 Aʙᴏᴜᴛ', callback_data='about')
             ],[
                 InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
             ]]
@@ -114,9 +115,9 @@ async def start(client, message):
                     text = "**🕵️ ʏᴏᴜ ᴅᴏ ɴᴏᴛ ᴊᴏɪɴ ᴍʏ ʙᴀᴄᴋᴜᴘ ᴄʜᴀɴɴᴇʟ ғɪʀsᴛ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ᴛʜᴇɴ ᴛʀʏ ᴀɢᴀɪɴ**"
                 else:
                     await db.set_msg_command(message.from_user.id, com=message.command[1])
-                    text = "**🕵️ ʏᴏᴜ ᴅᴏ ɴᴏᴛ ᴊᴏɪɴ ᴍʏ ʙᴀᴄᴋᴜᴘ ᴄʜᴀɴɴᴇʟ ғɪʀsᴛ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ**"
+                    text = "**🕵️ __Yᴏᴜ Dᴏ Nᴏᴛ Jᴏɪɴ Mʏ Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ Fɪʀsᴛ Jᴏɪɴ Cʜᴀɴɴᴇʟ__**"
             else:
-                text = "**🕵️ ʏᴏᴜ ᴅᴏ ɴᴏᴛ ᴊᴏɪɴ ᴍʏ ʙᴀᴄᴋᴜᴘ ᴄʜᴀɴɴᴇʟ ғɪʀsᴛ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ᴛʜᴇɴ ᴛʀʏ ᴀɢᴀɪɴ**"
+                text = "**🕵️ __Yᴏᴜ Dᴏ Nᴏᴛ Jᴏɪɴ Mʏ Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ Fɪʀsᴛ Jᴏɪɴ Cʜᴀɴɴᴇʟ Tʜᴇɴ Tʀʏ Aɢᴀɪɴ__**"
             await client.send_message(
                 chat_id=message.from_user.id,
                 text=text,
@@ -137,7 +138,7 @@ async def start(client, message):
                 InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
                 InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('😎 Aʙᴏᴜᴛ', callback_data='about')
             ],[
                 InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ Aɴᴅ Rᴇғᴇʀʀᴀʟ', callback_data='subscription')
             ],[
@@ -151,7 +152,7 @@ async def start(client, message):
                 InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
                 InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('😎 Aʙᴏᴜᴛ', callback_data='about')
             ],[
                 InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
             ]]
@@ -192,7 +193,7 @@ async def start(client, message):
                     InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
                 ],[
                     InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
-                    InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
+                    InlineKeyboardButton('😎 Aʙᴏᴜᴛ', callback_data='about')
                 ],[
                     InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ Aɴᴅ Rᴇғᴇʀʀᴀʟ', callback_data='subscription')
                 ],[
@@ -206,7 +207,7 @@ async def start(client, message):
                     InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
                 ],[
                     InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
-                    InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
+                    InlineKeyboardButton('😎 Aʙᴏᴜᴛ', callback_data='about')
                 ],[
                     InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
                 ]]
@@ -1402,11 +1403,6 @@ async def purge_requests(client, message):
         )
 
 
-
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-
-
-
-

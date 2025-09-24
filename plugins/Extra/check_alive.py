@@ -1,3 +1,4 @@
+#CheckAlive.py
 import time
 from pyrogram import Client, filters
 
@@ -16,16 +17,15 @@ async def check_alive(_, message):
     )
     await message.reply_text(alive_text)
 
-
 # ===========================
 # 🔹 PING COMMAND
 # ===========================
 @Client.on_message(filters.command("ping", CMD_PREFIXES))
 async def ping(_, message):
     start_time = time.time()
-    temp_msg = await message.reply_text("...")
+    temp_msg = await message.reply_text("•••")
     end_time = time.time()
 
     elapsed_ms = (end_time - start_time) * 1000
-    await temp_msg.edit(f"**__Your Ping !!**\n\n  `{elapsed_ms:.3f} ms 🔥__")
+    await temp_msg.edit(f"**__Your Ping !!__**\n\n __{elapsed_ms:.3f} ms__ 🔥")
     

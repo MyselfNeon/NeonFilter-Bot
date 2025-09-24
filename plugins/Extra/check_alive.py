@@ -29,12 +29,12 @@ async def check_alive(_, message):
 # ===========================
 # Some witty pong responses
 PONG_REPLIES = [
-    "⚡ Faster than your WiFi!",
-    "🔥 Still alive and kicking!",
-    "🍕 Powered by vibes & pizza!",
-    "🚀 Zooming through cyberspace!",
-    "💡 Running smooth as butter!",
-    "🎯 Sharp & on point!"
+    "⚡ Faster Than Your Wifi !",
+    "🔥 Still Alive And Kicking !",
+    "🍕 Powered By Vibes & Pizza !",
+    "🚀 Zooming Through Cyberspace !!",
+    "💡 Running Smooth As Butter !",
+    "🎯 Sharp & On Point !"
 ]
 
 @Client.on_message(filters.command("ping", CMD_PREFIXES))

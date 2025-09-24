@@ -1829,7 +1829,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
                 InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('😎 Aʙᴏᴜᴛ', callback_data='about')
             ],[
                 InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ Aɴᴅ Rᴇғᴇʀʀᴀʟ', callback_data='subscription')
             ],[
@@ -1843,7 +1843,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 InlineKeyboardButton('🍿 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
             ],[
                 InlineKeyboardButton('🆘 Hᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('📖 Aʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('😎 Aʙᴏᴜᴛ', callback_data='about')
             ],[
                 InlineKeyboardButton('🔔 Jᴏɪɴ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
             ]]
@@ -3288,6 +3288,7 @@ async def global_filters(client, message, text=False):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

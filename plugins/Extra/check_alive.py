@@ -1,9 +1,16 @@
-#CheckAlive.py
+# CheckAlive.py
 import time
+import random
+from datetime import datetime
 from pyrogram import Client, filters
 
 # Command prefixes
 CMD_PREFIXES = ["/", "."]
+
+# ===========================
+# 🔹 START TIME (for uptime)
+# ===========================
+START_TIME = datetime.now()
 
 # ===========================
 # 🔹 ALIVE COMMAND
@@ -20,12 +27,40 @@ async def check_alive(_, message):
 # ===========================
 # 🔹 PING COMMAND
 # ===========================
+# Some witty pong responses
+PONG_REPLIES = [
+    "⚡ Faster than your WiFi!",
+    "🔥 Still alive and kicking!",
+    "🍕 Powered by vibes & pizza!",
+    "🚀 Zooming through cyberspace!",
+    "💡 Running smooth as butter!",
+    "🎯 Sharp & on point!"
+]
+
 @Client.on_message(filters.command("ping", CMD_PREFIXES))
 async def ping(_, message):
+    # Measure response speed
     start_time = time.time()
-    temp_msg = await message.reply_text("•••")
+    temp_msg = await message.reply_text("**🏓 __Pinging ...__**")
     end_time = time.time()
 
     elapsed_ms = (end_time - start_time) * 1000
-    await temp_msg.edit(f"**__Your Ping !!__**\n\n __{elapsed_ms:.3f} ms__ 🔥")
-    
+
+    # Calculate uptime
+    uptime = datetime.now() - START_TIME
+    uptime_str = str(uptime).split('.')[0]  # hh:mm:ss format
+
+    # Pick a random witty line
+    witty_line = random.choice(PONG_REPLIES)
+
+    # Build fun response
+    ping_text = (
+        f"**🏓 __Pong !!__**\n\n"
+        f"⏱️ **__Ping:__** __{elapsed_ms:.2f} ms__\n"
+        f"⏳ **__Uptime:__** __{uptime_str}__\n\n"
+        f"**__{witty_line}__**\n"
+        f"**__@neonfiles__**"
+    )
+
+    await temp_msg.edit(ping_text)
+

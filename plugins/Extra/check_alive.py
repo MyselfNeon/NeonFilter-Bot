@@ -27,5 +27,5 @@ async def ping(_, message):
     end_time = time.time()
 
     elapsed_ms = (end_time - start_time) * 1000
-    await temp_msg.edit(f"Pong!\n`{elapsed_ms:.3f} ms`")
+    await temp_msg.edit(f"**__Your Ping !!**\n\n  `{elapsed_ms:.3f} ms 🔥__")
     

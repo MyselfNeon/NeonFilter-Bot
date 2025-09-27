@@ -11,7 +11,7 @@ import uuid
 import traceback
 
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 # Try to use imageio-ffmpeg if available for a bundled ffmpeg binary.
 try:
@@ -243,7 +243,10 @@ async def run_task(client: Client, task_id: str):
             thumb = None
 
         try:
-            await client.send_video(chat_id, video=dest, caption=f"**🎬 __Nᴀᴍᴇ:** {fname}\n**📦 Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__", thumb=thumb, supports_streaming=True)
+            if task.get("format") == "doc":
+                await client.send_document(chat_id, document=dest, caption=f"**📦 __Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__")
+            else:
+                await client.send_video(chat_id, video=dest, caption=f"**🎬 __Nᴀᴍᴇ:** {fname}\n**📦 Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__", thumb=thumb, supports_streaming=True)
         except Exception:
             try:
                 await client.send_document(chat_id, document=dest, caption=f"**📦 __Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__")
@@ -363,30 +366,42 @@ async def cmd_dl(client: Client, msg: Message):
             "start_time": time.time()
         }
         try:
-            m = await msg.reply(make_task_text(TASKS[tid]))
+            keyboard = InlineKeyboardMarkup(
+                [[
+                    InlineKeyboardButton("🎬 Video", callback_data=f"format_video_{tid}"),
+                    InlineKeyboardButton("📂 Document", callback_data=f"format_doc_{tid}")
+                ]]
+            )
+            m = await msg.reply("**Choose format for this link:**", reply_markup=keyboard)
         except Exception:
             m = await msg.reply("**__Starting Task...__**")
         TASKS[tid]["message"] = m
         CANCEL_FLAGS[tid] = False
         created += 1
 
-        async def schedule_task(client, tid):
-            sem = USER_SEMAPHORES.get(user_id)
-            await sem.acquire()
-            if CANCEL_FLAGS.get(tid):
-                TASKS[tid]["status"] = "Cancelled ❌"
-                try:
-                    await TASKS[tid]["message"].edit_text(make_task_text(TASKS[tid]))
-                except:
-                    pass
-                sem.release()
-                return
-            TASKS[tid]["start_time"] = time.time()
-            await run_task(client, tid)
+    await msg.reply(f"**✅ __Added {created} Task(s). Each Link Needs Format Selection.__**")
 
-        asyncio.create_task(schedule_task(client, tid))
+# ---------- CALLBACKS ----------
+@Client.on_callback_query(filters.regex(r"^format_(video|doc)_(.+)"))
+async def cb_format(client: Client, cq: CallbackQuery):
+    _, fmt, tid = cq.data.split("_", 2)
+    task = TASKS.get(tid)
+    if not task:
+        await cq.answer("Task not found or expired", show_alert=True)
+        return
 
-    await msg.reply(f"**✅ __Added {created} Task(s). Each Link Has Its Own Progress Message.__**")
+    task["format"] = fmt
+    try:
+        await task["message"].edit_text(make_task_text(task))
+    except:
+        pass
+
+    sem = USER_SEMAPHORES.get(task["user_id"])
+    if sem:
+        await sem.acquire()
+    task["start_time"] = time.time()
+    asyncio.create_task(run_task(client, tid))
+    await cq.answer(f"Selected {fmt.title()}")
 
 @Client.on_message(filters.regex(r"^/cancel_([0-9a-fA-F]+)") & filters.private)
 async def cmd_cancel(client: Client, msg: Message):

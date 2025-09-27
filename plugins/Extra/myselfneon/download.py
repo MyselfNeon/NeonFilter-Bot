@@ -11,7 +11,7 @@ import uuid
 import traceback
 
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 # Try to use imageio-ffmpeg if available for a bundled ffmpeg binary.
 try:
@@ -39,6 +39,7 @@ PROGRESS_LEN = 13  # 13-block progress bar
 USER_SEMAPHORES = {}   # user_id -> asyncio.Semaphore
 TASKS = {}             # task_id -> task dict
 CANCEL_FLAGS = {}      # task_id -> bool
+UPLOAD_CHOICES = {}    # task_id -> "video" / "document"
 
 # ---------- HELP TEXT ----------
 HELP_TEXT = (
@@ -67,6 +68,12 @@ def clean_title(name: str) -> str:
     if len(name) > MAX_TITLE_LEN:
         name = name[:MAX_TITLE_LEN].rstrip() + "..."
     return name
+
+def safe_filename(fname: str) -> str:
+    """Ensure filename is clean; if broken, return default name."""
+    if not fname or fname.strip() == "" or any(c in fname for c in ["\n", "\r", "/", "\\"]):
+        return "Default_MyselfNeon"
+    return fname
 
 def progress_bar_13(done: int, total: int) -> str:
     length = PROGRESS_LEN
@@ -184,8 +191,11 @@ async def run_task(client: Client, task_id: str):
         except: pass
         return
 
-    raw_name = url.split("/")[-1].split("?")[0] or f"video_{int(time.time())}.mp4"
-    fname = clean_title(raw_name)
+    raw_name = url.split("/")[-1].split("?")[0] or ""
+    ext = os.path.splitext(raw_name)[1] or ".mp4"
+    base = safe_filename(os.path.splitext(raw_name)[0])
+    fname = f"{base}{ext}"
+
     dest = os.path.join(DOWNLOAD_DIR, fname)
     task["fname"] = fname
     task["status"] = "Downloading"
@@ -221,7 +231,7 @@ async def run_task(client: Client, task_id: str):
             try:
                 await task["message"].edit_text(make_task_text(task))
             except: pass
-            comp = dest.replace(".mp4", "_compressed.mp4")
+            comp = dest.replace(ext, f"_compressed{ext}")
             ff = get_ffmpeg_bin()
             try:
                 subprocess.run([ff, "-i", dest, "-b:v", "1M", comp], check=False)
@@ -242,11 +252,19 @@ async def run_task(client: Client, task_id: str):
         except:
             thumb = None
 
+        upload_mode = UPLOAD_CHOICES.get(task_id, "video")
         try:
-            if task.get("format") == "doc":
-                await client.send_document(chat_id, document=dest, caption=f"**📦 __Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__")
+            if upload_mode == "video":
+                await client.send_video(
+                    chat_id, video=dest,
+                    caption=f"**🎬 __Nᴀᴍᴇ:** {fname}\n**📦 Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__",
+                    thumb=thumb, supports_streaming=True
+                )
             else:
-                await client.send_video(chat_id, video=dest, caption=f"**🎬 __Nᴀᴍᴇ:** {fname}\n**📦 Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__", thumb=thumb, supports_streaming=True)
+                await client.send_document(
+                    chat_id, document=dest,
+                    caption=f"**🎬 __Nᴀᴍᴇ:** {fname}\n**📦 Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__"
+                )
         except Exception:
             try:
                 await client.send_document(chat_id, document=dest, caption=f"**📦 __Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__")
@@ -266,7 +284,6 @@ async def run_task(client: Client, task_id: str):
             await task["message"].edit_text(make_task_text(task))
         except: pass
 
-        # 🆕 delete progress/queued message after 10 sec
         try:
             await asyncio.sleep(10)
             await task["message"].delete()
@@ -292,6 +309,7 @@ async def run_task(client: Client, task_id: str):
             except: pass
         TASKS.pop(task_id, None)
         CANCEL_FLAGS.pop(task_id, None)
+        UPLOAD_CHOICES.pop(task_id, None)
 
 # ---------- UI ----------
 def make_task_text(task: dict) -> str:
@@ -365,43 +383,45 @@ async def cmd_dl(client: Client, msg: Message):
             "_last_update": 0,
             "start_time": time.time()
         }
-        try:
-            keyboard = InlineKeyboardMarkup(
-                [[
-                    InlineKeyboardButton("🎬 Video", callback_data=f"format_video_{tid}"),
-                    InlineKeyboardButton("📂 Document", callback_data=f"format_doc_{tid}")
-                ]]
-            )
-            m = await msg.reply("**Choose format for this link:**", reply_markup=keyboard)
-        except Exception:
-            m = await msg.reply("**__Starting Task...__**")
+        m = await msg.reply(
+            "**Choose Upload Type:**",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("🎥 Video", callback_data=f"video_{tid}"),
+                InlineKeyboardButton("📂 Document", callback_data=f"document_{tid}")
+            ]])
+        )
         TASKS[tid]["message"] = m
         CANCEL_FLAGS[tid] = False
         created += 1
 
-    await msg.reply(f"**✅ __Added {created} Task(s). Each Link Needs Format Selection.__**")
+    await msg.reply(f"**✅ __Added {created} Task(s). Please choose format for each.__**")
 
-# ---------- CALLBACKS ----------
-@Client.on_callback_query(filters.regex(r"^format_(video|doc)_(.+)"))
-async def cb_format(client: Client, cq: CallbackQuery):
-    _, fmt, tid = cq.data.split("_", 2)
+@Client.on_callback_query(filters.regex(r"^(video|document)_[0-9a-fA-F]+$"))
+async def cb_upload_type(client: Client, query):
+    choice, tid = query.data.split("_", 1)
+    if tid not in TASKS:
+        await query.answer("Task not found or already finished.", show_alert=True)
+        return
+    UPLOAD_CHOICES[tid] = choice
+    await query.message.edit("**Starting Task...**")
+    asyncio.create_task(schedule_task(client, tid))
+
+async def schedule_task(client, tid):
     task = TASKS.get(tid)
     if not task:
-        await cq.answer("Task not found or expired", show_alert=True)
         return
-
-    task["format"] = fmt
-    try:
-        await task["message"].edit_text(make_task_text(task))
-    except:
-        pass
-
     sem = USER_SEMAPHORES.get(task["user_id"])
-    if sem:
-        await sem.acquire()
-    task["start_time"] = time.time()
-    asyncio.create_task(run_task(client, tid))
-    await cq.answer(f"Selected {fmt.title()}")
+    await sem.acquire()
+    if CANCEL_FLAGS.get(tid):
+        TASKS[tid]["status"] = "Cancelled ❌"
+        try:
+            await TASKS[tid]["message"].edit_text(make_task_text(TASKS[tid]))
+        except:
+            pass
+        sem.release()
+        return
+    TASKS[tid]["start_time"] = time.time()
+    await run_task(client, tid)
 
 @Client.on_message(filters.regex(r"^/cancel_([0-9a-fA-F]+)") & filters.private)
 async def cmd_cancel(client: Client, msg: Message):
@@ -418,7 +438,6 @@ async def cmd_cancel(client: Client, msg: Message):
         pass
     await msg.reply(f"**__Requested Cancel For Task {tid[:8]}.__**")
 
-    # 🆕 Delete progress message after 3 sec when cancelled
     async def delayed_delete():
         await asyncio.sleep(3)
         try:

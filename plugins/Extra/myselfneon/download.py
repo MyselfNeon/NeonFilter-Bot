@@ -227,7 +227,7 @@ async def run_task(client: Client, task_id: str):
         except: pass
 
         if task["total"] > 2 * 1024 * 1024 * 1024:
-            task["status"] = "Compressing"
+            task["status"] = "Compressing 📦"
             try:
                 await task["message"].edit_text(make_task_text(task))
             except: pass
@@ -241,7 +241,7 @@ async def run_task(client: Client, task_id: str):
             except Exception:
                 pass
 
-        task["status"] = "Uploading"
+        task["status"] = "Uploading 🚀"
         try:
             await task["message"].edit_text(make_task_text(task))
         except: pass
@@ -431,7 +431,7 @@ async def cmd_cancel(client: Client, msg: Message):
         await msg.reply("**❌ __Task Not Found Or Finished.__**")
         return
     CANCEL_FLAGS[tid] = True
-    task["status"] = "Cancelling..."
+    task["status"] = "Cancelling... 🥹"
     try:
         await task["message"].edit_text(make_task_text(task))
     except:

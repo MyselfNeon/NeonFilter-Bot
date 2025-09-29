@@ -91,7 +91,7 @@ async def who_is(client, message):
             ).strftime("%d %b %Y | %I:%M %p")
             message_out_str += (
                 "<b><i>🎭 Jᴏɪɴᴇᴅ Tʜɪs Cʜᴀᴛ Oɴ :</i></b>\n"
-                f"{joined_date}\n"
+                f"<b><i>{joined_date}</i></b>\n"
             )
         except UserNotParticipant:
             pass
@@ -214,4 +214,5 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 

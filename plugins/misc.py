@@ -20,7 +20,7 @@ async def showid(client, message):
         username = message.from_user.username
         dc_id = message.from_user.dc_id or ""
         await message.reply_text(
-            f"<b>👤 Fɪʀsᴛ Nᴀᴍᴇ :</b> {first}\n<b>📌 Lᴀsᴛ Nᴀᴍᴇ :</b> {last}\n<b>🔖 UsᴇʀNᴀᴍᴇ :</b> {username}\n<b>🆔 Tᴇʟᴇɢʀᴀᴍ ID :</b> <code>{user_id}</code>\n<b>🏢 Dᴀᴛᴀ Cᴇɴᴛʀᴇ :</b> {dc_id}",
+            f"**__👤 Fɪʀsᴛ Nᴀᴍᴇ : {first}\n📌 Lᴀsᴛ Nᴀᴍᴇ : {last}\n🔖 UsᴇʀNᴀᴍᴇ : {username}\n🆔 Tᴇʟᴇɢʀᴀᴍ ID : <code>{user_id}</code>\n🏢 Dᴀᴛᴀ Cᴇɴᴛʀᴇ : {dc_id}__**",
             quote=True,
             parse_mode=enums.ParseMode.HTML
         )
@@ -28,26 +28,26 @@ async def showid(client, message):
     elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         _id = ""
         _id += (
-            "<b>📝 Cʜᴀᴛ ID :</b> "
+            "**__📝 Cʜᴀᴛ ID :__** "
             f"<code>{message.chat.id}</code>\n"
         )
         if message.reply_to_message:
             _id += (
-                "<b>👤 Usᴇʀ ID :</b> "
+                "**__👤 Usᴇʀ ID :__** "
                 f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
-                "<b>🆔 Rᴇᴘʟɪᴇᴅ Usᴇʀ ID :</b> "
+                "**__🆔 Rᴇᴘʟɪᴇᴅ Usᴇʀ ID :__** "
                 f"<code>{message.reply_to_message.from_user.id if message.reply_to_message.from_user else 'Anonymous'}</code>\n"
             )
             file_info = get_file_id(message.reply_to_message)
         else:
             _id += (
-                "<b>🔖 Usᴇʀ ID :</b> "
+                "**__🔖 Usᴇʀ ID :__** "
                 f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
             )
             file_info = get_file_id(message)
         if file_info:
             _id += (
-                f"<b>{file_info.message_type} :</b> "
+                f"**__{file_info.message_type} :__** "
                 f"<code>{file_info.file_id}</code>\n"
             )
         await message.reply_text(
@@ -75,15 +75,15 @@ async def who_is(client, message):
     if from_user is None:
         return await status_message.edit_text("no valid user_id / message specified")
     message_out_str = ""
-    message_out_str += f"<b>👤 Fɪʀsᴛ Nᴀᴍᴇ :</b> {from_user.first_name}\n"
-    last_name = from_user.last_name or "<b>Nᴏɴᴇ</b>"
-    message_out_str += f"<b>📌 Lᴀsᴛ Nᴀᴍᴇ :</b> {last_name}\n"
-    message_out_str += f"<b>🆔 Tᴇʟᴇɢʀᴀᴍ ID :</b> <code>{from_user.id}</code>\n"
-    username = from_user.username or "<b>Nᴏɴᴇ</b>"
+    message_out_str += f"**__👤 Fɪʀsᴛ Nᴀᴍᴇ : {from_user.first_name}__**\n"
+    last_name = from_user.last_name or "**__Nᴏɴᴇ__**"
+    message_out_str += f"**__📌 Lᴀsᴛ Nᴀᴍᴇ : {last_name}__**\n"
+    message_out_str += f"**__🆔 Tᴇʟᴇɢʀᴀᴍ ID :__** <code>{from_user.id}</code>\n"
+    username = from_user.username or "**__Nᴏɴᴇ__**"
     dc_id = from_user.dc_id or "[User Doesn't Have A Valid DP]"
-    message_out_str += f"<b>🏢 Dᴀᴛᴀ Cᴇɴᴛʀᴇ :</b> <code>{dc_id}</code>\n"
-    message_out_str += f"<b>🔖 Usᴇʀ Nᴀᴍᴇ :</b> @{username}\n"
-    message_out_str += f"<b>🖇️ Usᴇʀ Lɪɴᴋ :</b> <a href='tg://user?id={from_user.id}'>Cʟɪᴄᴋ Hᴇʀᴇ</a>\n"
+    message_out_str += f"**__🏢 Dᴀᴛᴀ Cᴇɴᴛʀᴇ : {dc_id}__**\n"
+    message_out_str += f"**__🔖 Usᴇʀ Nᴀᴍᴇ : @{username}__**\n"
+    message_out_str += f"**__🖇️ Usᴇʀ Lɪɴᴋ : <a href='tg://user?id={from_user.id}'>Cʟɪᴄᴋ Hᴇʀᴇ</a>__**\n"
     if message.chat.type in ((enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL)):
         try:
             chat_member_p = await message.chat.get_member(from_user.id)
@@ -91,7 +91,7 @@ async def who_is(client, message):
                 chat_member_p.joined_date or datetime.now()
             ).strftime("%Y.%m.%d %H:%M:%S")
             message_out_str += (
-                "<b>🎭 Jᴏɪɴᴇᴅ Tʜɪs Cʜᴀᴛ Oɴ :</b> "
+                "**🎭 __Jᴏɪɴᴇᴅ Tʜɪs Cʜᴀᴛ Oɴ : __**"
                 f"{joined_date}\n"
             )
         except UserNotParticipant:
@@ -132,7 +132,7 @@ async def who_is(client, message):
 @Client.on_message(filters.command(["imdb", 'search']))
 async def imdb_search(client, message):
     if ' ' in message.text:
-        k = await message.reply_text('Searching ImDB')
+        k = await message.reply_text('**__Searching ImDB__**')
         r, title = message.text.split(None, 1)
         movies = await get_poster(title, bulk=True)
         if not movies:
@@ -216,3 +216,4 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

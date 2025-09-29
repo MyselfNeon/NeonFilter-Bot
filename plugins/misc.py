@@ -46,7 +46,7 @@ async def showid(client, message):
             file_info = get_file_id(message)
         if file_info:
             _id += (
-                f"<b><i>{file_info.message_type}</i></b>ing
+                f"<b><i>{file_info.message_type}</b> : </i>"
                 f"<code>{file_info.file_id}</code>\n"
             )
         await message.reply_text(
@@ -214,4 +214,5 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 

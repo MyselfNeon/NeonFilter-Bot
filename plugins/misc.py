@@ -89,7 +89,7 @@ async def who_is(client, message):
             chat_member_p = await message.chat.get_member(from_user.id)
             joined_date = (
                 chat_member_p.joined_date or datetime.now()
-            ).strftime("%Y.%m.%d %H:%M:%S")
+            ).strftime("%d %B %Y | %I:%M %p")
             message_out_str += (
                 "**🎭 __Jᴏɪɴᴇᴅ Tʜɪs Cʜᴀᴛ Oɴ : __**"
                 f"{joined_date}\n"
@@ -216,4 +216,5 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 

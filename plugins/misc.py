@@ -73,15 +73,15 @@ async def who_is(client, message):
     if from_user is None:
         return await status_message.edit("no valid user_id / message specified")
     message_out_str = ""
-    message_out_str += f"<b><i>➲ First Name :</b> {from_user.first_name}</i>\n"
-    last_name = from_user.last_name or "<b>None</b>"
-    message_out_str += f"<b><i>➲ Last Name :</b> {last_name}\n"
-    message_out_str += f"<b><i>➲ Telegram ID :</b> <code>{from_user.id}</i></code>\n"
-    username = from_user.username or "<b><i>None</i></b>"
+    message_out_str += f"<b><i>👤 Fɪʀsᴛ Nᴀᴍᴇ :</b> {from_user.first_name}</i>\n"
+    last_name = from_user.last_name or "<b>Nᴏɴᴇ</b>"
+    message_out_str += f"<b><i>📌 :</b> {last_name}\n"
+    message_out_str += f"<b><i>🆔 Tᴇʟᴇɢʀᴀᴍ ID :</b> <code>{from_user.id}</i></code>\n"
+    username = from_user.username or "<b><i>Nᴏɴᴇ</i></b>"
     dc_id = from_user.dc_id or "[User Doesn't Have A Valid DP]"
-    message_out_str += f"<b><i>➲ Data Centre : <code>{dc_id}</code></b></i>\n"
-    message_out_str += f"<b><i>➲ User Name :</b> @{username}</i>\n"
-    message_out_str += f"<b><i>➲ User 𝖫𝗂𝗇𝗄 :</b> <a href='tg://user?id={from_user.id}'><b>Click Here</b></a></i>\n"
+    message_out_str += f"<b><i>🏢 Dᴀᴛᴀ Cᴇɴᴛʀᴇ : <code>{dc_id}</code></b></i>\n"
+    message_out_str += f"<b><i>🔖 Usᴇʀ Nᴀᴍᴇ :</b> @{username}</i>\n"
+    message_out_str += f"<b><i>🖇️ Usᴇʀ Lɪɴᴋ :</b> <a href='tg://user?id={from_user.id}'><b>Cʟɪᴄᴋ Hᴇʀᴇ</b></a></i>\n"
     if message.chat.type in ((enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL)):
         try:
             chat_member_p = await message.chat.get_member(from_user.id)
@@ -89,7 +89,7 @@ async def who_is(client, message):
                 chat_member_p.joined_date or datetime.now()
             ).strftime("%Y.%m.%d %H:%M:%S")
             message_out_str += (
-                "<b><i>➲ Joined this Chat on :</b></i>"
+                "<b><i>🎭 Jᴏɪɴᴇᴅ Tʜɪs Cʜᴀᴛ Oɴ :</b></i>"
                 f"{joined_date}"
                 "</i>\n"
             )
@@ -214,3 +214,4 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

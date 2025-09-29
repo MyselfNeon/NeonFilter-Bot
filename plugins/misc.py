@@ -20,27 +20,27 @@ async def showid(client, message):
         username = message.from_user.username
         dc_id = message.from_user.dc_id or ""
         await message.reply_text(
-            f"<b><i>➲ First Name:</b> {first}\n<b>➲ Last Name:</b> {last}\n<b>➲ Username:</b> {username}\n<b>➲ Telegram ID:</b> <code>{user_id}</code>\n<b>➲ Data Centre:</b> <code>{dc_id}</code></i>",
+            f"<b><i>👤 Fɪʀsᴛ Nᴀᴍᴇ :</b> {first}\n<b>📌 Lᴀsᴛ Nᴀᴍᴇ :</b> {last}\n<b>🔖 UsᴇʀNᴀᴍᴇ :</b> {username}\n<b>🆔 Tᴇʟᴇɢʀᴀᴍ ID :</b> <code>{user_id}</code>\n<b>🏢 Dᴀᴛᴀ Cᴇɴᴛʀᴇ :</b> {dc_id}</i>",
             quote=True
         )
 
     elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         _id = ""
         _id += (
-            "<b><i>➲ Chat ID</b></i>: "
+            "<b><i>📝 Cʜᴀᴛ ID</b></i> : "
             f"<code>{message.chat.id}</code>\n"
         )
         if message.reply_to_message:
             _id += (
-                "<b><i>➲ User ID</i></b>: "
+                "<b><i>👤 Usᴇʀ ID</i></b> : "
                 f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
-                "<b><i>➲ Replied User ID</i></b>: "
+                "<b><i>🆔 Rᴇᴘʟɪᴇᴅ Usᴇʀ ID</i></b> : "
                 f"<code>{message.reply_to_message.from_user.id if message.reply_to_message.from_user else 'Anonymous'}</code>\n"
             )
             file_info = get_file_id(message.reply_to_message)
         else:
             _id += (
-                "<b><i>➲ User ID</i></b>: "
+                "<b><i>🔖 Usᴇʀ ID</i></b> : "
                 f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
             )
             file_info = get_file_id(message)
@@ -58,10 +58,10 @@ async def showid(client, message):
 async def who_is(client, message):
     # https://github.com/SpEcHiDe/PyroGramBot/blob/master/pyrobot/plugins/admemes/whois.py#L19
     status_message = await message.reply_text(
-        "**__Fetching User Info...__**"
+        "**__⌛ Fetching User Info...__**"
     )
     await status_message.edit(
-        "**__Processing User Info...__**"
+        "**__⏳ Processing User Info...__**"
     )
     from_user = None
     from_user_id, _ = extract_user(message)
@@ -75,7 +75,7 @@ async def who_is(client, message):
     message_out_str = ""
     message_out_str += f"<b><i>👤 Fɪʀsᴛ Nᴀᴍᴇ :</b> {from_user.first_name}</i>\n"
     last_name = from_user.last_name or "<b>Nᴏɴᴇ</b>"
-    message_out_str += f"<b><i>📌 :</b> {last_name}\n"
+    message_out_str += f"<b><i>📌 Lᴀsᴛ Nᴀᴍᴇ :</b> {last_name}\n"
     message_out_str += f"<b><i>🆔 Tᴇʟᴇɢʀᴀᴍ ID :</b> <code>{from_user.id}</i></code>\n"
     username = from_user.username or "<b><i>Nᴏɴᴇ</i></b>"
     dc_id = from_user.dc_id or "[User Doesn't Have A Valid DP]"
@@ -214,4 +214,5 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 

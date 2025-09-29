@@ -1,3 +1,4 @@
+#Mics.py
 import os, logging, time
 from pyrogram import Client, filters, enums
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
@@ -19,33 +20,33 @@ async def showid(client, message):
         username = message.from_user.username
         dc_id = message.from_user.dc_id or ""
         await message.reply_text(
-            f"<b>➲ First Name:</b> {first}\n<b>➲ Last Name:</b> {last}\n<b>➲ Username:</b> {username}\n<b>➲ Telegram ID:</b> <code>{user_id}</code>\n<b>➲ Data Centre:</b> <code>{dc_id}</code>",
+            f"<b><i>➲ First Name:</b> {first}\n<b>➲ Last Name:</b> {last}\n<b>➲ Username:</b> {username}\n<b>➲ Telegram ID:</b> <code>{user_id}</code>\n<b>➲ Data Centre:</b> <code>{dc_id}</code></i>",
             quote=True
         )
 
     elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         _id = ""
         _id += (
-            "<b>➲ Chat ID</b>: "
+            "<b><i>➲ Chat ID</b></i>: "
             f"<code>{message.chat.id}</code>\n"
         )
         if message.reply_to_message:
             _id += (
-                "<b>➲ User ID</b>: "
+                "<b><i>➲ User ID</i></b>: "
                 f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
-                "<b>➲ Replied User ID</b>: "
+                "<b><i>➲ Replied User ID</i></b>: "
                 f"<code>{message.reply_to_message.from_user.id if message.reply_to_message.from_user else 'Anonymous'}</code>\n"
             )
             file_info = get_file_id(message.reply_to_message)
         else:
             _id += (
-                "<b>➲ User ID</b>: "
+                "<b><i>➲ User ID</i></b>: "
                 f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
             )
             file_info = get_file_id(message)
         if file_info:
             _id += (
-                f"<b>{file_info.message_type}</b>: "
+                f"<b><i>{file_info.message_type}</i></b>ing
                 f"<code>{file_info.file_id}</code>\n"
             )
         await message.reply_text(
@@ -57,10 +58,10 @@ async def showid(client, message):
 async def who_is(client, message):
     # https://github.com/SpEcHiDe/PyroGramBot/blob/master/pyrobot/plugins/admemes/whois.py#L19
     status_message = await message.reply_text(
-        "`Fetching user info...`"
+        "**__Fetching User Info...__**"
     )
     await status_message.edit(
-        "`Processing user info...`"
+        "**__Processing User Info...__**"
     )
     from_user = None
     from_user_id, _ = extract_user(message)
@@ -72,15 +73,15 @@ async def who_is(client, message):
     if from_user is None:
         return await status_message.edit("no valid user_id / message specified")
     message_out_str = ""
-    message_out_str += f"<b>➲First Name:</b> {from_user.first_name}\n"
+    message_out_str += f"<b><i>➲ First Name :</b> {from_user.first_name}</i>\n"
     last_name = from_user.last_name or "<b>None</b>"
-    message_out_str += f"<b>➲Last Name:</b> {last_name}\n"
-    message_out_str += f"<b>➲Telegram ID:</b> <code>{from_user.id}</code>\n"
-    username = from_user.username or "<b>None</b>"
+    message_out_str += f"<b><i>➲ Last Name :</b> {last_name}\n"
+    message_out_str += f"<b><i>➲ Telegram ID :</b> <code>{from_user.id}</i></code>\n"
+    username = from_user.username or "<b><i>None</i></b>"
     dc_id = from_user.dc_id or "[User Doesn't Have A Valid DP]"
-    message_out_str += f"<b>➲Data Centre:</b> <code>{dc_id}</code>\n"
-    message_out_str += f"<b>➲User Name:</b> @{username}\n"
-    message_out_str += f"<b>➲User 𝖫𝗂𝗇𝗄:</b> <a href='tg://user?id={from_user.id}'><b>Click Here</b></a>\n"
+    message_out_str += f"<b><i>➲ Data Centre : <code>{dc_id}</code></b></i>\n"
+    message_out_str += f"<b><i>➲ User Name :</b> @{username}</i>\n"
+    message_out_str += f"<b><i>➲ User 𝖫𝗂𝗇𝗄 :</b> <a href='tg://user?id={from_user.id}'><b>Click Here</b></a></i>\n"
     if message.chat.type in ((enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL)):
         try:
             chat_member_p = await message.chat.get_member(from_user.id)
@@ -88,9 +89,9 @@ async def who_is(client, message):
                 chat_member_p.joined_date or datetime.now()
             ).strftime("%Y.%m.%d %H:%M:%S")
             message_out_str += (
-                "<b>➲Joined this Chat on:</b> <code>"
+                "<b><i>➲ Joined this Chat on :</b></i>"
                 f"{joined_date}"
-                "</code>\n"
+                "</i>\n"
             )
         except UserNotParticipant:
             pass
@@ -210,4 +211,6 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
     await quer_y.answer()
         
 
-        
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

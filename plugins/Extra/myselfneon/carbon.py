@@ -1,13 +1,13 @@
 # carbon_plugin.py
 # Standalone Carbon plugin for Pyrogram
-# Supports /carbon and /helpcarbon commands with optional flags
+# Works like your Pass Manager plugin
 
 import html
 import logging
 from urllib.parse import quote_plus
-from pyrogram import filters
-from pyrogram.types import Message
 import aiohttp
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,7 @@ DEFAULTS = {
     "language": "auto",
 }
 
+
 def parse_flags(text: str):
     """Parse --flag=value style flags"""
     parts = text.strip().split()
@@ -34,6 +35,7 @@ def parse_flags(text: str):
         else:
             remaining.append(p)
     return flags, " ".join(remaining)
+
 
 async def fetch_carbon_image(code, theme=None, fontSize=None, language=None, bg=None):
     theme = theme or DEFAULTS["theme"]
@@ -64,69 +66,67 @@ async def fetch_carbon_image(code, theme=None, fontSize=None, language=None, bg=
                 logger.exception("Error fetching from %s: %s", base, e)
     return None
 
-# ---- STANDALONE HANDLERS ----
-def register(app):
-    @app.on_message(filters.command("carbon") & ~filters.edited)
-    async def carbon_handler(client, message: Message):
-        if message.reply_to_message and (message.reply_to_message.text or message.reply_to_message.caption):
-            raw_input = message.reply_to_message.text or message.reply_to_message.caption
+
+# ====================== CARBON COMMAND ======================
+@Client.on_message(filters.command("carbon") & ~filters.edited)
+async def carbon_command(client: Client, message: Message):
+    if message.reply_to_message and (message.reply_to_message.text or message.reply_to_message.caption):
+        raw_input = message.reply_to_message.text or message.reply_to_message.caption
+    else:
+        raw_input = message.text.partition(" ")[2].strip()
+
+    if not raw_input:
+        return await message.reply("⚠️ Reply to a message or provide text. Example: `/carbon print('Hello')`")
+
+    flags, text = parse_flags(raw_input)
+    if not text:
+        text = raw_input
+
+    theme = flags.get("theme") or DEFAULTS["theme"]
+    fontSize = int(flags.get("fontSize", DEFAULTS["fontSize"]))
+    language = flags.get("language") or DEFAULTS["language"]
+    bg = flags.get("bg")
+
+    if len(text) > 4000:
+        return await message.reply("⚠️ Text too long (limit 4000 characters)")
+
+    status = await message.reply("⏳ Generating carbon image...")
+
+    code_payload = html.unescape(text)
+    img_bytes = await fetch_carbon_image(code_payload, theme=theme, fontSize=fontSize, language=language, bg=bg)
+
+    if not img_bytes:
+        return await status.edit("❌ Failed to generate the carbon image. Try again later.")
+
+    try:
+        if len(img_bytes) > 5 * 1024 * 1024:
+            await message.reply_document(img_bytes, caption="Here is your carbon image")
         else:
-            raw_input = message.text.partition(" ")[2].strip()
-        if not raw_input:
-            return await message.reply_text("Please reply to a message or pass the text. Example: /carbon print('hello')")
+            await message.reply_photo(img_bytes, caption="Here is your carbon image")
+        await status.delete()
+    except Exception as e:
+        logger.exception("Error sending carbon image: %s", e)
+        await status.edit(f"❌ Error sending image: {e}")
 
-        flags, text = parse_flags(raw_input)
-        if not text:
-            text = raw_input
 
-        theme = flags.get("theme") or DEFAULTS["theme"]
-        fontSize = int(flags.get("fontSize", DEFAULTS["fontSize"]))
-        language = flags.get("language") or DEFAULTS["language"]
-        bg = flags.get("bg")
+# ====================== HELPCARBON COMMAND ======================
+@Client.on_message(filters.command("helpcarbon"))
+async def help_carbon(client: Client, message: Message):
+    help_text = """
+**🔹 CARBON IMAGE GENERATOR 🔹**
 
-        if len(text) > 4000:
-            return await message.reply_text("Text is too long (limit 4000 characters).")
+• Reply to a message with `/carbon` or send `/carbon <your code>` to generate an image.
 
-        status = await message.reply_text("⏳ Generating carbon image...")
+**Optional Flags (space-separated anywhere in the text):**
+• `--theme=dracula|monokai|one-light|nord` (default: dracula)
+• `--fontSize=NUMBER` (default: 16)
+• `--language=LANG` (default: auto)
+• `--bg=#HEX` or `rgba(r,g,b,a)` for background color
 
-        code_payload = html.unescape(text)
-        img_bytes = await fetch_carbon_image(code_payload, theme=theme, fontSize=fontSize, language=language, bg=bg)
+**Example:**
+`/carbon --theme=one-light --fontSize=14 print('Hello World!')`
 
-        if not img_bytes:
-            return await status.edit("❌ Failed to generate the carbon image. Try again later.")
-
-        try:
-            if len(img_bytes) > 5 * 1024 * 1024:
-                await client.send_document(chat_id=message.chat.id, document=img_bytes, caption="Here is your carbon image.")
-            else:
-                await client.send_photo(chat_id=message.chat.id, photo=img_bytes, caption="Here is your carbon image.")
-            await status.delete()
-        except Exception as e:
-            logger.exception("Error sending carbon image: %s", e)
-            await status.edit(f"❌ Generated image but failed to send it. Error: {e}")
-
-    @app.on_message(filters.command("helpcarbon") & ~filters.edited)
-    async def help_carbon(client, message: Message):
-        help_text = (
-            "**/carbon** - Generate a Carbon-style code image.\n\n"
-            "Usage:\n"
-            "• Reply to a message with `/carbon`\n"
-            "• Or send `/carbon your code here`\n\n"
-            "Optional flags (space-separated, anywhere in text):\n"
-            "• `--theme=dracula|monokai|one-light|dracula|nord` (default: dracula)\n"
-            "• `--fontSize=NUMBER` (default: 16)\n"
-            "• `--language=LANG` (default: auto)\n"
-            "• `--bg=#HEX` or `rgba(r,g,b,a)` (background color)\n\n"
-            "Example:\n"
-            "`/carbon --theme=one-light --fontSize=14 print('Hello World!')`"
-        )
-        await message.reply_text(help_text)
-
-# ---- AUTO-REGISTER ON IMPORT ----
-try:
-    app  # if 'app' exists in global scope
-except NameError:
-    pass  # do nothing
-else:
-    register(app)
+**Powered By @NeonFiles**
+"""
+    await message.reply(help_text)
     

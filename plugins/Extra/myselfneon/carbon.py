@@ -1,6 +1,6 @@
 # carbon_plugin.py
-# Telegram /carbon command plugin with /helpcarbon
-# Works in reply or with inline text. Supports flags: --theme, --fontSize, --language, --bg
+# Standalone Carbon plugin for Pyrogram
+# Supports /carbon and /helpcarbon commands with optional flags
 
 import html
 import logging
@@ -64,8 +64,8 @@ async def fetch_carbon_image(code, theme=None, fontSize=None, language=None, bg=
                 logger.exception("Error fetching from %s: %s", base, e)
     return None
 
-# ---- MAIN HANDLERS ----
-def register_carbon_handler(app):
+# ---- STANDALONE HANDLERS ----
+def register(app):
     @app.on_message(filters.command("carbon") & ~filters.edited)
     async def carbon_handler(client, message: Message):
         if message.reply_to_message and (message.reply_to_message.text or message.reply_to_message.caption):
@@ -121,4 +121,12 @@ def register_carbon_handler(app):
             "`/carbon --theme=one-light --fontSize=14 print('Hello World!')`"
         )
         await message.reply_text(help_text)
-      
+
+# ---- AUTO-REGISTER ON IMPORT ----
+try:
+    app  # if 'app' exists in global scope
+except NameError:
+    pass  # do nothing
+else:
+    register(app)
+    

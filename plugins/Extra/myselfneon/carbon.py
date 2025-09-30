@@ -68,7 +68,7 @@ async def fetch_carbon_image(code, theme=None, fontSize=None, language=None, bg=
 
 
 # ====================== CARBON COMMAND ======================
-@Client.on_message(filters.command("carbon") & ~filters.edited)
+@Client.on_message(filters.command("carbon") & ~filters.edited_messages)
 async def carbon_command(client: Client, message: Message):
     if message.reply_to_message and (message.reply_to_message.text or message.reply_to_message.caption):
         raw_input = message.reply_to_message.text or message.reply_to_message.caption
@@ -110,7 +110,7 @@ async def carbon_command(client: Client, message: Message):
 
 
 # ====================== HELPCARBON COMMAND ======================
-@Client.on_message(filters.command("helpcarbon"))
+@Client.on_message(filters.command("helpcarbon") & ~filters.edited_messages)
 async def help_carbon(client: Client, message: Message):
     help_text = """
 **🔹 CARBON IMAGE GENERATOR 🔹**

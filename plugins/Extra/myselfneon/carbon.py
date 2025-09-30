@@ -1,6 +1,6 @@
 # carbon_plugin.py
-# Standalone Carbon plugin for Pyrogram
-# Works like your Pass Manager plugin
+# Standalone Carbon plugin for Pyrogram v2
+# Works with /carbon and /helpcarbon commands
 
 import html
 import logging
@@ -67,9 +67,10 @@ async def fetch_carbon_image(code, theme=None, fontSize=None, language=None, bg=
     return None
 
 
-# ====================== CARBON COMMAND ======================
-@Client.on_message(filters.command("carbon") & ~filters.edited_messages)
+# ====================== /CARBON COMMAND ======================
+@Client.on_message(filters.command("carbon"))
 async def carbon_command(client: Client, message: Message):
+    # Get text from reply or command
     if message.reply_to_message and (message.reply_to_message.text or message.reply_to_message.caption):
         raw_input = message.reply_to_message.text or message.reply_to_message.caption
     else:
@@ -109,8 +110,8 @@ async def carbon_command(client: Client, message: Message):
         await status.edit(f"❌ Error sending image: {e}")
 
 
-# ====================== HELPCARBON COMMAND ======================
-@Client.on_message(filters.command("helpcarbon") & ~filters.edited_messages)
+# ====================== /HELPCARBON COMMAND ======================
+@Client.on_message(filters.command("helpcarbon"))
 async def help_carbon(client: Client, message: Message):
     help_text = """
 **🔹 CARBON IMAGE GENERATOR 🔹**
@@ -129,4 +130,3 @@ async def help_carbon(client: Client, message: Message):
 **Powered By @NeonFiles**
 """
     await message.reply(help_text)
-    

@@ -1,7 +1,7 @@
 # whois.py
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from pyrogram.errors import UserNotFound
+from pyrogram.errors import RPCError  # updated import
 from datetime import datetime
 
 WHOIS_TXT = """<b>ᴡʜᴏɪꜱ ᴍᴏᴅᴜʟᴇ
@@ -26,8 +26,9 @@ def format_status(user):
 
 @Client.on_message(filters.command("whois"))
 async def whois(client: Client, message: Message):
-    # Determine target user
     target_user = None
+
+    # Check if command is a reply
     if message.reply_to_message:
         target_user = message.reply_to_message.from_user
     elif len(message.command) >= 2:
@@ -37,7 +38,7 @@ async def whois(client: Client, message: Message):
                 target_user = await client.get_users(int(query))
             else:
                 target_user = await client.get_users(query)
-        except UserNotFound:
+        except RPCError:  # handles "user not found" and other RPC errors
             return await message.reply_text("❌ User not found.")
         except Exception as e:
             return await message.reply_text(f"❌ Error: {e}")
@@ -47,7 +48,7 @@ async def whois(client: Client, message: Message):
     if not target_user:
         return await message.reply_text("❌ Could not fetch user information.")
 
-    # Try to fetch detailed info in groups (restricted/admin info)
+    # Optional: group restrictions
     restrictions = []
     try:
         if message.chat.type in ["supergroup", "group"]:
@@ -61,7 +62,6 @@ async def whois(client: Client, message: Message):
     except:
         pass
 
-    # Compose user info
     text = f"""
 <b>👤 User Info</b>
 ID: <code>{target_user.id}</code>
@@ -71,7 +71,6 @@ DC ID: {target_user.dc_id}
 Language Code: {target_user.language_code or 'None'}
 Bio: {target_user.bio or 'None'}
 Status: {format_status(target_user)}
-Last Seen: {target_user.last_online if hasattr(target_user, 'last_online') else 'Hidden'}
 Restrictions: {', '.join(restrictions) if restrictions else 'None'}
 """
 

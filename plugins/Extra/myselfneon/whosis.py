@@ -1,16 +1,21 @@
-# whois.py
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pyrogram.errors import RPCError  # updated import
 from datetime import datetime
 
-WHOIS_TXT = """<b>ᴡʜᴏɪꜱ ᴍᴏᴅᴜʟᴇ
+WHOIS_TXT = """<b>🆘 WHOIS Help
 
-ɴᴏᴛᴇ:- ɢɪᴠᴇ ᴀ ᴜꜱᴇʀ ᴅᴇᴛᴀɪʟꜱ
-Usage:
-/whois &lt;username or user_id&gt; - ɢɪᴠᴇ ᴀ ᴜꜱᴇʀ ꜰᴜʟʟ ᴅᴇᴛᴀɪʟꜱ 📑
-Or reply to a user’s message with /whois
-</b>"""
+This command gives details about a Telegram user.
+
+<b>Usage:</b>
+/whois <username or user_id> - Get full details of a user 📑  
+Reply to a user’s message with /whois - Get their details  
+
+<b>Examples:</b>
+/whois neon  
+/whois 123456789  
+(Or reply to any user’s message with /whois)</b>
+"""
 
 def format_status(user):
     status = []
@@ -39,10 +44,11 @@ async def whois(client: Client, message: Message):
             else:
                 target_user = await client.get_users(query)
         except RPCError:  # handles "user not found" and other RPC errors
-            return await message.reply_text("❌ User not found.")
+            return await message.reply_text("❌ User not found. Use /whoishelp for usage.")
         except Exception as e:
             return await message.reply_text(f"❌ Error: {e}")
     else:
+        # If no arguments provided
         return await message.reply_text(WHOIS_TXT, parse_mode="html", quote=True)
 
     if not target_user:
@@ -79,3 +85,9 @@ Restrictions: {', '.join(restrictions) if restrictions else 'None'}
         await message.reply_photo(photo=target_user.photo.big_file_id, caption=text, parse_mode="html")
     else:
         await message.reply_text(text, parse_mode="html", quote=True)
+
+# New help command
+@Client.on_message(filters.command("whoishelp"))
+async def whoishelp(_, message: Message):
+    await message.reply_text(WHOIS_TXT, parse_mode="html", quote=True)
+    

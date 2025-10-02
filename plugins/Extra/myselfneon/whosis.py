@@ -90,4 +90,3 @@ Restrictions: {', '.join(restrictions) if restrictions else 'None'}
 @Client.on_message(filters.command("whoishelp"))
 async def whoishelp(_, message: Message):
     await message.reply_text(WHOIS_TXT, parse_mode="html", quote=True)
-    

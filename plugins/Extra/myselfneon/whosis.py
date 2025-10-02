@@ -82,7 +82,7 @@ Name: {target_user.first_name or 'None'} {target_user.last_name or ''}
 Username: @{target_user.username or 'None'}
 DC ID: {getattr(target_user, 'dc_id', 'N/A')}
 Language Code: {getattr(target_user, 'language_code', 'None')}
-Bio: {target_user.bio or 'None'}
+Bio: {target_user.about or 'None'}
 Status: {format_status(target_user)}
 Restrictions: {', '.join(restrictions) if restrictions else 'None'}
 """

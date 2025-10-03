@@ -18,9 +18,11 @@ START_TIME = datetime.now()
 @Client.on_message(filters.command("alive", CMD_PREFIXES))
 async def check_alive(_, message):
     alive_text = (
-        "**__Guess what? You're Super Lucky 🍀\n\n"
-        "I'm alive and ready to Vibe ❤️‍🔥\n\n"
-        "Hit /start and Let's Roll !!__**"
+        "**__🟢 System Online !!\n"
+        "🍀 Luck : Overflowing\n"
+        "❤️‍🔥 Spirit : Unbreakable\n\n"
+        "✌️ I'm Alive and Ready to Vibe\n"
+        "🪬 Summon Me With /start Command.__**"
     )
     await message.reply_text(alive_text)
 

@@ -22,7 +22,7 @@ async def check_alive(_, message):
         "🍀 Luck : Overflowing\n"
         "❤️‍🔥 Spirit : Unbreakable\n\n"
         "✌️ I'm Alive and Ready to Vibe\n"
-        "🪬 Summon Me With /start Command__**"
+        "🪬 Summon With /start Command !!__**"
     )
     await message.reply_text(alive_text)
 

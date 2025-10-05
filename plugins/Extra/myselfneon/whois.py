@@ -3,7 +3,6 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InputMediaPhoto
 from datetime import datetime
 import os
-import asyncio
 
 WHOIS_TXT = """<b>📇 ᴡʜᴏɪꜱ ᴍᴏᴅᴜʟᴇ</b>
 
@@ -24,20 +23,23 @@ async def whois_help(client: Client, message: Message):
 @Client.on_message(filters.command("whois") & filters.private)
 async def whois_user(client: Client, message: Message):
     try:
-        # Determine target user
-        if message.reply_to_message:
+        # Determine the target user
+        if message.reply_to_message and message.reply_to_message.from_user:
             user = message.reply_to_message.from_user
         elif len(message.command) > 1:
             target = message.command[1]
             if target.startswith("@"):
                 user = await client.get_users(target)
             else:
-                user_id = int(target)
-                user = await client.get_users(user_id)
+                try:
+                    user_id = int(target)
+                    user = await client.get_users(user_id)
+                except ValueError:
+                    return await message.reply("❌ Invalid user ID or username!")
         else:
             return await message.reply(WHOIS_TXT)
 
-        # ====================== BUILD USER INFO ======================
+        # ====================== BUILD INFO CARD ======================
         text = f"<b>👤 USER INFO</b>\n\n"
         text += f"🆔 <b>User ID:</b> <code>{user.id}</code>\n"
         text += f"📛 <b>Name:</b> {user.first_name or 'N/A'}"
@@ -46,16 +48,11 @@ async def whois_user(client: Client, message: Message):
         else:
             text += "\n"
 
-        if user.username:
-            text += f"🔗 <b>Username:</b> @{user.username}\n"
-        else:
-            text += "🔗 <b>Username:</b> None\n"
-
+        text += f"🔗 <b>Username:</b> @{user.username if user.username else 'None'}\n"
         text += f"🤖 <b>Bot:</b> {'Yes' if user.is_bot else 'No'}\n"
         text += f"✅ <b>Verified:</b> {'Yes' if user.is_verified else 'No'}\n"
         text += f"💎 <b>Premium:</b> {'Yes' if getattr(user,'is_premium',False) else 'No'}\n"
 
-        # Language
         if getattr(user, "language_code", None):
             text += f"🌐 <b>Language:</b> {user.language_code.upper()}\n"
 
@@ -68,7 +65,7 @@ async def whois_user(client: Client, message: Message):
             pass
         text += f"💬 <b>Bio:</b> {bio}\n"
 
-        # Online status
+        # Status
         status = getattr(user, "status", "Hidden / Unavailable")
         text += f"🕓 <b>Status:</b> {status}\n"
 
@@ -80,13 +77,14 @@ async def whois_user(client: Client, message: Message):
         other_photos_paths = []
 
         if total_photos > 0:
-            # Main profile photo (first one)
-            main_photo_path = await client.download_media(photos.photos[0][-1].file_id, file_name=f"whois_{user.id}_main.jpg")
-
-            # Rest of the photos
+            # Main profile photo
+            main_photo_path = await client.download_media(photos.photos[0][-1].file_id,
+                                                          file_name=f"whois_{user.id}_main.jpg")
+            # Remaining photos
             for photo_set in photos.photos[1:]:
-                largest_photo = photo_set[-1]  # choose largest size
-                path = await client.download_media(largest_photo.file_id, file_name=f"whois_{user.id}_{largest_photo.file_id}.jpg")
+                largest_photo = photo_set[-1]
+                path = await client.download_media(largest_photo.file_id,
+                                                   file_name=f"whois_{user.id}_{largest_photo.file_id}.jpg")
                 other_photos_paths.append(path)
 
         # ====================== SEND MAIN INFO ======================
@@ -101,7 +99,7 @@ async def whois_user(client: Client, message: Message):
         if other_photos_paths:
             media_group = [InputMediaPhoto(f) for f in other_photos_paths]
             await client.send_media_group(chat_id=message.chat.id, media=media_group)
-            # cleanup
+            # Cleanup
             for f in other_photos_paths:
                 try: os.remove(f)
                 except: pass

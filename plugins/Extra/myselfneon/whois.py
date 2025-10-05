@@ -1,7 +1,9 @@
 # ====================== PLUGINS/WHOIS.PY ======================
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.types import Message, InputMediaPhoto
 from datetime import datetime
+import os
+import asyncio
 
 WHOIS_TXT = """<b>📇 ᴡʜᴏɪꜱ ᴍᴏᴅᴜʟᴇ</b>
 
@@ -13,11 +15,16 @@ __Use to get Telegram user details.__
 • Reply to a message with /whois
 """
 
-# ====================== MAIN HANDLER ======================
+# ====================== HELP COMMAND ======================
+@Client.on_message(filters.command("whoishelp") & filters.private)
+async def whois_help(client: Client, message: Message):
+    await message.reply(WHOIS_TXT)
+
+# ====================== MAIN WHOIS HANDLER ======================
 @Client.on_message(filters.command("whois") & filters.private)
 async def whois_user(client: Client, message: Message):
     try:
-        # determine target
+        # Determine target user
         if message.reply_to_message:
             user = message.reply_to_message.from_user
         elif len(message.command) > 1:
@@ -25,11 +32,8 @@ async def whois_user(client: Client, message: Message):
             if target.startswith("@"):
                 user = await client.get_users(target)
             else:
-                try:
-                    user_id = int(target)
-                    user = await client.get_users(user_id)
-                except ValueError:
-                    return await message.reply("**❌ Invalid user ID or username!**")
+                user_id = int(target)
+                user = await client.get_users(user_id)
         else:
             return await message.reply(WHOIS_TXT)
 
@@ -47,47 +51,60 @@ async def whois_user(client: Client, message: Message):
         else:
             text += "🔗 <b>Username:</b> None\n"
 
-        text += f"🧾 <b>DC ID:</b> {user.dc_id or 'Unknown'}\n"
-        text += f"🤖 <b>Is Bot:</b> {'Yes' if user.is_bot else 'No'}\n"
-        text += f"✅ <b>Is Verified:</b> {'Yes' if user.is_verified else 'No'}\n"
-        text += f"🚫 <b>Is Scam:</b> {'Yes' if user.is_scam else 'No'}\n"
-        text += f"📵 <b>Is Fake:</b> {'Yes' if user.is_fake else 'No'}\n"
+        text += f"🤖 <b>Bot:</b> {'Yes' if user.is_bot else 'No'}\n"
+        text += f"✅ <b>Verified:</b> {'Yes' if user.is_verified else 'No'}\n"
+        text += f"💎 <b>Premium:</b> {'Yes' if getattr(user,'is_premium',False) else 'No'}\n"
 
-        # premium check
-        text += f"💎 <b>Is Premium:</b> {'Yes' if getattr(user, 'is_premium', False) else 'No'}\n"
-
-        # language, if available
+        # Language
         if getattr(user, "language_code", None):
             text += f"🌐 <b>Language:</b> {user.language_code.upper()}\n"
 
-        # status line
-        if getattr(user, "status", None):
-            text += f"🕓 <b>Status:</b> {user.status}\n"
-
-        # bio if retrievable
+        # Bio
+        bio = "N/A"
         try:
-            full = await client.get_chat(user.id)
-            if getattr(full, "bio", None):
-                text += f"\n💬 <b>Bio:</b>\n{full.bio}"
+            chat = await client.get_chat(user.id)
+            bio = getattr(chat, "bio", "N/A") or "N/A"
         except Exception:
             pass
+        text += f"💬 <b>Bio:</b> {bio}\n"
 
-        # last seen formatting
-        if getattr(user, "last_online_date", None):
-            time_ago = datetime.fromtimestamp(user.last_online_date)
-            text += f"\n🕰️ <b>Last Online:</b> {time_ago.strftime('%Y-%m-%d %H:%M:%S')}"
+        # Online status
+        status = getattr(user, "status", "Hidden / Unavailable")
+        text += f"🕓 <b>Status:</b> {status}\n"
 
-        # profile photo (if available)
-        if user.photo:
-            photo = await client.download_media(user.photo.big_file_id)
-            await message.reply_photo(photo, caption=text)
+        # ====================== PROFILE PHOTOS ======================
+        photos = await client.get_profile_photos(user.id)
+        total_photos = getattr(photos, "total_count", 0)
+
+        main_photo_path = None
+        other_photos_paths = []
+
+        if total_photos > 0:
+            # Main profile photo (first one)
+            main_photo_path = await client.download_media(photos.photos[0][-1].file_id, file_name=f"whois_{user.id}_main.jpg")
+
+            # Rest of the photos
+            for photo_set in photos.photos[1:]:
+                largest_photo = photo_set[-1]  # choose largest size
+                path = await client.download_media(largest_photo.file_id, file_name=f"whois_{user.id}_{largest_photo.file_id}.jpg")
+                other_photos_paths.append(path)
+
+        # ====================== SEND MAIN INFO ======================
+        if main_photo_path:
+            await message.reply_photo(photo=main_photo_path, caption=text)
+            try: os.remove(main_photo_path)
+            except: pass
         else:
             await message.reply(text)
 
-    except Exception as e:
-        await message.reply(f"**⚠️ Error:** `{e}`\n\nMight be an invalid username or restricted account.")
+        # ====================== SEND OTHER PHOTOS AS ALBUM ======================
+        if other_photos_paths:
+            media_group = [InputMediaPhoto(f) for f in other_photos_paths]
+            await client.send_media_group(chat_id=message.chat.id, media=media_group)
+            # cleanup
+            for f in other_photos_paths:
+                try: os.remove(f)
+                except: pass
 
-# ====================== HELP COMMAND ======================
-@Client.on_message(filters.command("whoishelp") & filters.private)
-async def whois_help(client: Client, message: Message):
-    await message.reply(WHOIS_TXT)
+    except Exception as e:
+        await message.reply(f"⚠️ Error: {e}")

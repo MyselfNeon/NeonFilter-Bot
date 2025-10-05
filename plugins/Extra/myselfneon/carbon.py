@@ -8,7 +8,7 @@ import asyncio
 # ====================== CARBON GENERATOR ======================
 async def make_carbon(text: str):
     """Generate a carbon image using the Carbon API."""
-    carbon_api = "https://carbonara.solutions/api/cook"
+    carbon_api = "https://carbon-api.vercel.app/api/carbon"
     async with aiohttp.ClientSession() as session:
         async with session.post(carbon_api, json={"code": text}) as resp:
             if resp.status == 200:

@@ -45,7 +45,7 @@ async def remove_password(client: Client, message: Message):
                 await status.delete()
                 await message.reply_document(
                     unlocked_path,
-                    caption="**__File Unlocked Successfully__ ✅**"
+                    caption="**✅ __File Unlocked Successfully__**"
                 )
             except pikepdf.PasswordError:
                 await status.edit("❌ **__Wrong PDF Password Or Unable To Remove__**")
@@ -99,14 +99,14 @@ async def remove_password(client: Client, message: Message):
             else:
                 buttons.append([InlineKeyboardButton("📂 Sᴇɴᴅ ZIP", callback_data="send_zip")])
                 buttons.append([InlineKeyboardButton("📄 Sᴇɴᴅ Fɪʟᴇs", callback_data="send_files")])
-                await status.edit("**__ZIP Unlocked Successfully__ ✅\n__Choose How To Receive Files__**",
+                await status.edit("**✅ __ZIP Unlocked Successfully\nChoose How To Receive Files__**",
                                   reply_markup=InlineKeyboardMarkup(buttons))
 
         else:
             await status.edit("⚠️ **__Only Pdf And Zip Files Are Supported__**")
 
     except Exception as e:
-        await status.edit(f"🚫 **Error: \n__{e}__**")
+        await status.edit(f"🚫 **__Error:** \n{e}__")
 
     finally:
         if os.path.exists(file_path):
@@ -163,7 +163,7 @@ async def add_password(client: Client, message: Message):
             await status.edit("⚠️ **__Only PDF And ZIP Files Are Supported__**")
 
     except Exception as e:
-        await status.edit(f"🚫 **Error: \n__{e}__**")
+        await status.edit(f"🚫 **__Error:** \n{e}__")
 
     finally:
         shutil.rmtree(base_dir, ignore_errors=True)

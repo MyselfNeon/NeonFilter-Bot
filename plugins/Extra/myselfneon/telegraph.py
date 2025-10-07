@@ -71,10 +71,12 @@ async def telegraph_start(bot: Client, message: Message):
             "**__You Already have an Active Upload.\nFinish or Cancel it with /tcancel__**"
         )
 
+    # Added Telegraph Button
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("Eɴᴠs.sʜ 🌐", callback_data="telegraph_envs"),
-             InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")]
+             InlineKeyboardButton("Cᴀᴛʙᴏx 📦", callback_data="telegraph_catbox")],
+            [InlineKeyboardButton("Tᴇʟᴇɢʀᴀᴘʜ 📝", callback_data="telegraph_tele")]
         ]
     )
     await message.reply_text(
@@ -91,11 +93,19 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_uploads:
         return await query.answer("Finish or Cancel your Current Upload First.", show_alert=True)
 
-    site = query.data.split("_")[1]  # envs or catbox
+    site = query.data.split("_")[1]  # envs, catbox, or tele
     active_uploads[user_id] = {"site": site, "message": query.message}
 
     await query.answer()
-    await query.message.edit_text("**__Now Send me your File (Photo, Video, Document, Audio)\n\n/tcancel to Abort the Process__**")
+
+    if site == "tele":
+        await query.message.edit_text(
+            "**__Send Your File Or Text To Upload To Telegraph Anonymously\n\n/tcancel to Abort__**"
+        )
+    else:
+        await query.message.edit_text(
+            "**__Now Send me your File (Photo, Video, Document, Audio)\n\n/tcancel to Abort the Process__**"
+        )
 
     # 30-second timeout for inactivity
     await asyncio.sleep(30)
@@ -114,7 +124,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
 # -------------------
 # File handler
 # -------------------
-@Client.on_message(filters.private & (filters.document | filters.photo | filters.video | filters.audio))
+@Client.on_message(filters.private & (filters.document | filters.photo | filters.video | filters.audio | filters.text))
 async def telegraph_file_handler(bot: Client, message: Message):
     user_id = message.from_user.id
     if user_id not in active_uploads:
@@ -124,6 +134,53 @@ async def telegraph_file_handler(bot: Client, message: Message):
     site = active_uploads[user_id]["site"]
 
     status_msg = await message.reply_text("**__Downloading Your File ...__ ⚡⬇️**")
+
+    # Handle Telegraph Upload Separately
+    if site == "tele":
+        from telegraph import Telegraph, upload_file
+
+        telegraph = Telegraph()
+        telegraph.create_account(short_name="AnonUpload")  # Anonymous account
+
+        try:
+            file_url = None
+            if message.document or message.video or message.audio or message.photo:
+                file_path = await message.download()
+                uploaded_files = upload_file(file_path)
+                file_url = f"https://telegra.ph{uploaded_files[0]}"
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+
+            # Create a Telegraph page with optional text + file
+            html_content = f"<p>{message.text or message.caption or 'File uploaded anonymously'}</p>"
+            if file_url:
+                html_content += f'<p><img src="{file_url}"></p>'
+
+            response = telegraph.create_page(
+                title="Anonymous Upload",
+                html_content=html_content
+            )
+            link = response["url"]
+
+            await status_msg.edit_text(
+                f"**✅ Upload Completed !!\n\nYour Telegraph Link 🖇️\n{link}**",
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("Oᴘᴇɴ 👀", url=link),
+                      InlineKeyboardButton("Cʟᴏsᴇ ❌", callback_data="close")]]
+                )
+            )
+
+        except Exception as e:
+            await status_msg.edit_text(f"**❌ __Telegraph Upload Failed :\n{e}__**")
+
+        finally:
+            active_uploads.pop(user_id, None)
+        return  # Skip other uploads for Telegraph
+
+    # -------------------
+    # Existing Envs / Catbox logic
+    # -------------------
     file_path = await message.download()
 
     if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
@@ -289,8 +346,3 @@ async def telelist_page_callback(bot: Client, query: CallbackQuery):
 @Client.on_callback_query(filters.regex(r"^telelist_ignore$"))
 async def telelist_ignore_callback(bot: Client, query: CallbackQuery):
     pass  # do nothing
-
-
-# Dont remove Credits
-# Developer Telegram @MyselfNeon
-# Update channel - @NeonFiles

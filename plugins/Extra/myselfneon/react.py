@@ -3,8 +3,8 @@ from pyrogram import Client, filters
 import re
 import random
 
-# 👑 Only allow specific users (replace your Telegram ID)
-ALLOWED_USERS = [841851780]  # <-- your user ID here
+# 👑 Only allow specific users (replace with your Telegram ID)
+ALLOWED_USERS = [841851780]  # <-- your ID here
 
 @Client.on_message(filters.command("react") & filters.user(ALLOWED_USERS))
 async def react_command(client, message):
@@ -12,11 +12,10 @@ async def react_command(client, message):
     Usage:
     /react <post_link> <count> <emojis>
 
-    Examples:
+    Example:
     /react https://t.me/yy_channel/123 10 ❤️
     /react https://t.me/yy_channel/123 10 😎❤️🔥
     """
-
     try:
         # --- Parse user input ---
         parts = message.text.split(" ", 3)
@@ -31,12 +30,13 @@ async def react_command(client, message):
         count = int(parts[2])
         emojis_str = parts[3].strip()
 
-        # Extract emojis (Unicode-safe)
-        emojis = re.findall(r"\X", emojis_str, flags=re.UNICODE)
+        # --- Extract emojis safely ---
+        # Split each Unicode character manually (emoji-safe)
+        emojis = [e for e in emojis_str if not e.isspace()]
         if not emojis:
             return await message.reply_text("⚠️ No valid emojis found!")
 
-        # Extract chat username and message ID
+        # --- Extract chat username and message ID ---
         match = re.search(r"t\.me/([^/]+)/(\d+)", post_link)
         if not match:
             return await message.reply_text("⚠️ Invalid post link format!")
@@ -44,30 +44,32 @@ async def react_command(client, message):
         chat_username = match.group(1)
         message_id = int(match.group(2))
 
-        # --- Check access first ---
+        # --- Check if bot has access ---
         try:
-            chat = await client.get_chat(chat_username)
+            await client.get_chat(chat_username)
         except Exception:
             return await message.reply_text(
                 f"⚠️ I can’t access @{chat_username}.\n"
-                f"➡️ Add me as an **admin or member** in that channel first."
+                f"➡️ Add me as a **member or admin** in that channel first."
             )
 
-        # --- Generate reaction list ---
+        # --- Build reaction list ---
         if len(emojis) == 1:
             reaction_list = [emojis[0]] * count
         else:
             reaction_list = [random.choice(emojis) for _ in range(count)]
 
-        # --- Apply reactions ---
+        # --- Send reactions ---
         await client.set_message_reaction(
             chat_id=f"@{chat_username}",
             message_id=message_id,
             reaction=reaction_list
         )
 
-        # --- Cleanup + confirm ---
+        # --- Clean up ---
         await message.delete()
+
+        # --- Confirmation message ---
         await client.send_message(
             message.chat.id,
             f"✅ **Added {count} reactions** to "

@@ -47,5 +47,5 @@ imageio-ffmpeg>=0.4.10
 
 PyPDF2
 gTTS
-telegraph
+
 

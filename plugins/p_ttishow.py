@@ -22,11 +22,11 @@ async def save_group(bot, message):
             await db.add_chat(message.chat.id, message.chat.title)
         if message.chat.id in temp.BANNED_CHATS:
             buttons = [[
-                InlineKeyboardButton('Support', url=f'https://t.me/{SUPPORT_CHAT}')
+                InlineKeyboardButton('Sᴜᴘᴘᴏʀᴛ', url=f'https://t.me/{SUPPORT_CHAT}')
             ]]
             reply_markup=InlineKeyboardMarkup(buttons)
             k = await message.reply(
-                text='<b>CHAT NOT ALLOWED 🐞\n\nMy admins has restricted me from working here ! If you want to know more about it contact support..</b>',
+                text='<b>CHAT NOT ALLOWED 🐞\n\n__My Admins has Restricted me from Working here ! If you want to know more About it Contact Support..__</b>',
                 reply_markup=reply_markup,
             )
             try:
@@ -43,7 +43,7 @@ async def save_group(bot, message):
         ]]
         reply_markup=InlineKeyboardMarkup(buttons)
         await message.reply_text(
-            text=f"<b>Thankyou For Adding Me In {message.chat.title} ❣️\n\nIf you have any questions & doubts about using me contact support.</b>",
+            text=f"<b>__Thankyou For Adding Me In {message.chat.title} ❣️\n\nIf you have any Questions & Doubts about Using me Contact Support.__</b>",
             reply_markup=reply_markup
         )
     else:
@@ -73,7 +73,7 @@ async def save_group(bot, message):
 @Client.on_message(filters.command('leave') & filters.user(ADMINS))
 async def leave_a_chat(bot, message):
     if len(message.command) == 1:
-        return await message.reply('Give me a chat id')
+        return await message.reply('**__Give me a Chat ID__**')
     chat = message.command[1]
     try:
         chat = int(chat)
@@ -89,7 +89,7 @@ async def leave_a_chat(bot, message):
         reply_markup=InlineKeyboardMarkup(buttons)
         await bot.send_message(
             chat_id=chat,
-            text='<b>Hello Friends, \nMy admin has told me to leave from group, so i go! If you wanna add me again contact my Support Group or My Owner</b>',
+            text='<b>__Hello Friends, \nMy Admin has Told me to Leave from Group, so i go! If you wanna Add me again Contact my Support Group or My Owner__</b>',
             reply_markup=reply_markup,
         )
 
@@ -101,26 +101,26 @@ async def leave_a_chat(bot, message):
 @Client.on_message(filters.command('disable') & filters.user(ADMINS))
 async def disable_chat(bot, message):
     if len(message.command) == 1:
-        return await message.reply('Give me a chat id')
+        return await message.reply('**__Give me a Chat ID__**')
     r = message.text.split(None)
     if len(r) > 2:
         reason = message.text.split(None, 2)[2]
         chat = message.text.split(None, 2)[1]
     else:
         chat = message.command[1]
-        reason = "No reason Provided"
+        reason = "**__No Reason Provided__**"
     try:
         chat_ = int(chat)
     except:
-        return await message.reply('Give Me A Valid Chat ID')
+        return await message.reply('**__Give Me A Valid Chat ID__**')
     cha_t = await db.get_chat(int(chat_))
     if not cha_t:
-        return await message.reply("Chat Not Found In DB")
+        return await message.reply("**__Chat Not Found In DB__**")
     if cha_t['is_disabled']:
-        return await message.reply(f"This chat is already disabled:\nReason-<code> {cha_t['reason']} </code>")
+        return await message.reply(f"**__This Chat is Already Disabled:\nReason-<code> {cha_t['reason']} </code>__**")
     await db.disable_chat(int(chat_), reason)
     temp.BANNED_CHATS.append(int(chat_))
-    await message.reply('Chat Successfully Disabled')
+    await message.reply('**__Chat Successfully Disabled__**')
     try:
         buttons = [[
             InlineKeyboardButton('Support', url=f'https://t.me/{SUPPORT_CHAT}')
@@ -302,7 +302,7 @@ async def list_chats(bot, message):
     chats = await db.get_all_chats()
     out = "**__Chats Saved In DB Are:__**\n\n"
     async for chat in chats:
-        out += f"**__Title__:** `{chat['title']}`\n**- __ID__:** `{chat['id']}`"
+        out += f"**📝 __Title__:** `{chat['title']}`\n**🆔 __ID__:** `{chat['id']}`"
         if chat['chat_status']['is_disabled']:
             out += '( Disabled Chat )'
         out += '\n'
@@ -312,3 +312,4 @@ async def list_chats(bot, message):
         with open('chats.txt', 'w+') as outfile:
             outfile.write(out)
         await message.reply_document('chats.txt', caption="List Of Chats")
+

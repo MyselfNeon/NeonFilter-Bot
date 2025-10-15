@@ -306,7 +306,7 @@ async def list_chats(bot, message):
         out += f"**📝 __Title__:** `{chat['title']}`\n**🆔 __ID__:** `{chat['id']}`"
         if chat['chat_status']['is_disabled']:
             out += '( Disabled Chat )'
-        out += '\n'
+        out += '\n\n'
     try:
         await raju.edit_text(out)
     except MessageTooLong:
@@ -318,3 +318,4 @@ async def list_chats(bot, message):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

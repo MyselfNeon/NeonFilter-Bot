@@ -255,14 +255,14 @@ async def unban_a_user(bot, message):
             return await message.reply(f"{k.mention} is not yet banned.")
         await db.remove_ban(k.id)
         temp.BANNED_USERS.remove(k.id)
-        await message.reply(f"Successfully unbanned {k.mention}")
+        await message.reply(f"Successfully Unbanned {k.mention}")
     
 # -------------------
-# Fixed /users command (JSON output)
+# Users command (JSON output).      
 # -------------------
 @Client.on_message(filters.command('users') & filters.user(ADMINS))
 async def list_users(bot, message):
-    raju = await message.reply('Getting list of all users...')
+    raju = await message.reply('**__Getting List of All Users...__**')
     try:
         users_cursor = await db.get_all_users()
         users = []
@@ -276,7 +276,7 @@ async def list_users(bot, message):
             })
 
         if not users:
-            return await raju.edit('No users found in DB.')
+            return await raju.edit('**__No Users found in DB.__**')
 
         # Save to JSON
         file_path = 'Users.json'
@@ -285,24 +285,24 @@ async def list_users(bot, message):
 
         # Edit first message to include total users (👥 on new line)
         await raju.edit(
-            "List of all users are below -\n"
-            f"👥 Total Registered Users: {len(users)}"
-            f"🛰 System Status: Active ✅"
+            "**__List of all Users are Below -__**\n"
+            f"**__👥 Total Registered Users: {len(users)}__**\n"
+            f"**__🛰 System Status: Active ✅__**"
         )
 
         # Send file after editing
-        await message.reply_document(file_path, caption="Users List")
+        await message.reply_document(file_path, caption="**👥 __Users List__**")
 
     except Exception as e:
-        await raju.edit(f"Error fetching users: {e}")
+        await raju.edit(f"**__Error Fetching Users:** {e}__")
 
 @Client.on_message(filters.command('chats') & filters.user(ADMINS))
 async def list_chats(bot, message):
-    raju = await message.reply('Getting List Of chats')
+    raju = await message.reply('**__Getting List Of Chats__**')
     chats = await db.get_all_chats()
-    out = "Chats Saved In DB Are:\n\n"
+    out = "**__Chats Saved In DB Are:__**\n\n"
     async for chat in chats:
-        out += f"**Title:** `{chat['title']}`\n**- ID:** `{chat['id']}`"
+        out += f"**__Title__:** `{chat['title']}`\n**- __ID__:** `{chat['id']}`"
         if chat['chat_status']['is_disabled']:
             out += '( Disabled Chat )'
         out += '\n'
@@ -312,5 +312,3 @@ async def list_chats(bot, message):
         with open('chats.txt', 'w+') as outfile:
             outfile.write(out)
         await message.reply_document('chats.txt', caption="List Of Chats")
-
-

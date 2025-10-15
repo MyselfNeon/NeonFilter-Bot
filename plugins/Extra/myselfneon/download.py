@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import cv2
 import uuid
+import ssl
 import traceback
 
 from pyrogram import Client, filters
@@ -34,12 +35,13 @@ CLEANUP_INTERVAL = 1800  # remove leftover files every 30 minutes
 
 MAX_TITLE_LEN = 80
 PROGRESS_LEN = 13  # 13-block progress bar
+CHUNK_SIZE = 64 * 1024  # 64 KB
 
 # ---------- GLOBAL STATE ----------
-USER_SEMAPHORES = {}   # user_id -> asyncio.Semaphore
-TASKS = {}             # task_id -> task dict
-CANCEL_FLAGS = {}      # task_id -> bool
-UPLOAD_CHOICES = {}    # task_id -> "video" / "document"
+USER_SEMAPHORES = {}
+TASKS = {}
+CANCEL_FLAGS = {}
+UPLOAD_CHOICES = {}
 
 # ---------- HELP TEXT ----------
 HELP_TEXT = (
@@ -47,30 +49,29 @@ HELP_TEXT = (
     "**🛜** __/dl yourlink - **Start Download For the Link (Supports Multiple Links)__**\n\n"
     "**- __Each Link Shows A Progress Bar__**\n"
     "**- __To Cancel A Task, Type The Cancel Command Shown Below The Progress Message (e.g. /cancel_id)__**\n\n"
-    "**❌ __M3U/M3U8 Links Not Suppored.__**"
+    "**❌ __M3U/M3U8 Links Not Suppored.__"
 )
 
 # ---------- UTIL HELPERS ----------
 def human_readable(size: int) -> str:
     if size is None:
         return "0 B"
-    units = ["B","KB","MB","GB","TB"]
+    units = ["B", "KB", "MB", "GB", "TB"]
     i = 0
     s = float(size)
-    while s >= 1024 and i < len(units)-1:
+    while s >= 1024 and i < len(units) - 1:
         s /= 1024
         i += 1
     return f"{s:.2f} {units[i]}"
 
 def clean_title(name: str) -> str:
-    name = name.replace('_',' ').replace('-',' ').replace('%20',' ')
+    name = name.replace('_', ' ').replace('-', ' ').replace('%20', ' ')
     name = ' '.join(word.capitalize() for word in name.split())
     if len(name) > MAX_TITLE_LEN:
         name = name[:MAX_TITLE_LEN].rstrip() + "..."
     return name
 
 def safe_filename(fname: str) -> str:
-    """Ensure filename is clean; if broken, return default name."""
     if not fname or fname.strip() == "" or any(c in fname for c in ["\n", "\r", "/", "\\"]):
         return "Default_MyselfNeon"
     return fname
@@ -78,9 +79,8 @@ def safe_filename(fname: str) -> str:
 def progress_bar_13(done: int, total: int) -> str:
     length = PROGRESS_LEN
     if total is None or total == 0:
-        blocks = "□" * length
-        return f"[{blocks}] 0.0%"
-    fraction = float(done) / float(max(total,1))
+        return f"[{'□' * length}] 0.0%"
+    fraction = float(done) / float(max(total, 1))
     blocks = ""
     per_block = 1.0 / length
     for i in range(length):
@@ -139,41 +139,130 @@ async def cleanup_loop():
         except:
             pass
 
-# ---------- CORE DOWNLOAD ----------
+# ---------- CORE DOWNLOAD WITH RESUME & SSL FALLBACK ----------
 async def stream_download(url: str, dest: str, task_id: str, progress_cb):
+    """
+    Downloads to `dest`. Supports resuming via Range if server allows it.
+    Automatically retries; on SSL cert verification errors it will retry without verification.
+    """
+    ssl_verify = True
+    headers_base = {
+        "User-Agent": "Mozilla/5.0 (compatible; NeonDownloader/1.0)",
+        "Accept": "*/*",
+        "Accept-Encoding": "identity"  # avoid gzip altering content-length calculations
+    }
+
     for attempt in range(1, MAX_RETRY + 1):
+        if CANCEL_FLAGS.get(task_id):
+            raise asyncio.CancelledError("Cancelled before start")
+
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=None)) as resp:
-                    if resp.status != 200:
-                        raise Exception(f"HTTP {resp.status}")
-                    total = int(resp.headers.get("Content-Length", 0) or 0)
-                    done = 0
+            # Prepare resume info
+            existing = 0
+            if os.path.exists(dest):
+                try:
+                    existing = os.path.getsize(dest)
+                except:
+                    existing = 0
+
+            headers = dict(headers_base)
+            if existing > 0:
+                headers["Range"] = f"bytes={existing}-"
+
+            connector = aiohttp.TCPConnector(ssl=ssl.create_default_context() if ssl_verify else False)
+            timeout = aiohttp.ClientTimeout(total=None)
+            async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+                async with session.get(url, headers=headers) as resp:
+                    # HTTP status handling:
+                    # - 200: full content from start
+                    # - 206: partial content (resume)
+                    # - others: treat as errors
+                    status = resp.status
+                    if status not in (200, 206):
+                        raise Exception(f"HTTP {status}")
+
+                    # Determine total size
+                    total = None
+                    if 'Content-Range' in resp.headers:
+                        # Content-Range: bytes start-end/total
+                        cr = resp.headers.get('Content-Range')
+                        try:
+                            total = int(cr.split("/")[-1])
+                        except Exception:
+                            total = None
+                    else:
+                        # Content-Length may be remaining length for Range or total for full 200
+                        cl = resp.headers.get("Content-Length")
+                        try:
+                            cl = int(cl) if cl is not None else None
+                        except:
+                            cl = None
+                        if status == 200:
+                            total = cl
+                            existing = 0  # server ignored our range header -> we must start from 0
+                        elif status == 206:
+                            # Content-Length here is the remaining bytes
+                            if cl is not None:
+                                total = existing + cl
+
+                    # Open file in appropriate mode
+                    mode = "ab" if (status == 206 and existing > 0) else "wb"
+                    written = existing if mode == "ab" else 0
+
                     start = time.time()
-                    with open(dest, "wb") as f:
-                        async for chunk in resp.content.iter_chunked(64 * 1024):
-                            if CANCEL_FLAGS.get(task_id):
-                                try:
-                                    f.close()
-                                except: pass
-                                raise asyncio.CancelledError("Cancelled by user")
+                    async for chunk in resp.content.iter_chunked(CHUNK_SIZE):
+                        if CANCEL_FLAGS.get(task_id):
+                            raise asyncio.CancelledError("Cancelled by user")
+                        if not chunk:
+                            continue
+                        # write
+                        with open(dest, mode) as f:
                             f.write(chunk)
-                            done += len(chunk)
-                            elapsed = time.time() - start
-                            speed = done / (elapsed + 1e-6)
-                            eta = int((total - done) / (speed + 1e-6)) if total and speed > 0 else -1
-                            try:
-                                await progress_cb(done, total, speed, eta)
-                            except Exception:
-                                pass
-                    return dest, total
+                        mode = "ab"  # after first write, ensure we append
+                        written += len(chunk)
+                        elapsed = time.time() - start
+                        speed = written / (elapsed + 1e-6)
+                        eta = int((total - written) / (speed + 1e-6)) if total and speed > 0 else -1
+                        await progress_cb(written, total, speed, eta)
+                    # finished
+                    final_total = total or written
+                    return dest, final_total
         except asyncio.CancelledError:
+            # bubble up cancellation so the task runner can handle it
             raise
+        except (aiohttp.ClientConnectorCertificateError, aiohttp.ClientSSLError, ssl.SSLCertVerificationError) as sslerr:
+            # SSL verification failed: retry without verification once
+            if ssl_verify:
+                ssl_verify = False
+                task = TASKS.get(task_id)
+                if task:
+                    task["status"] = "⚠️ SSL cert issue, retrying without verification..."
+                    try:
+                        await task["message"].edit_text(make_task_text(task))
+                    except:
+                        pass
+                # small backoff before retrying
+                await asyncio.sleep(1)
+                continue
+            else:
+                # already tried without verification; escalate
+                raise
         except Exception as exc:
+            # other errors: retry up to MAX_RETRY
             if attempt == MAX_RETRY:
                 raise
+            # update status if task exists
+            task = TASKS.get(task_id)
+            if task:
+                task["status"] = f"⚠️ Error, retrying ({attempt}/{MAX_RETRY})..."
+                try:
+                    await task["message"].edit_text(make_task_text(task))
+                except:
+                    pass
             await asyncio.sleep(1)
-    raise Exception("Failed to download")
+            continue
+
+    raise Exception("Failed to download after retries")
 
 # ---------- TASK RUNNER ----------
 async def run_task(client: Client, task_id: str):
@@ -188,7 +277,8 @@ async def run_task(client: Client, task_id: str):
         task["status"] = "**__M3U/M3U8 Not Supported__ ❌**"
         try:
             await task["message"].edit_text(make_task_text(task))
-        except: pass
+        except:
+            pass
         return
 
     raw_name = url.split("/")[-1].split("?")[0] or ""
@@ -198,15 +288,16 @@ async def run_task(client: Client, task_id: str):
 
     dest = os.path.join(DOWNLOAD_DIR, fname)
     task["fname"] = fname
-    task["status"] = "Downloading"
+    task["status"] = "Queued"
     try:
         await task["message"].edit_text(make_task_text(task))
-    except: pass
+    except:
+        pass
 
     try:
         async def progress_cb(done, total, speed, eta):
             task["done"] = done
-            task["total"] = total
+            task["total"] = total or task.get("total", 0)
             task["speed"] = speed
             task["eta"] = eta
             task["elapsed"] = int(time.time() - task["start_time"])
@@ -218,25 +309,35 @@ async def run_task(client: Client, task_id: str):
                 except:
                     pass
 
+        task["status"] = "Downloading"
+        await task["message"].edit_text(make_task_text(task))
+
         path, total = await stream_download(url, dest, task_id, progress_cb)
         task["done"] = os.path.getsize(path)
         task["total"] = total or task["done"]
         task["elapsed"] = int(time.time() - task["start_time"])
+        task["status"] = "Downloaded"
         try:
             await task["message"].edit_text(make_task_text(task))
-        except: pass
+        except:
+            pass
 
-        if task["total"] > 2 * 1024 * 1024 * 1024:
+        # Compress if > 2GB (same as before)
+        if task["total"] and task["total"] > 2 * 1024 * 1024 * 1024:
             task["status"] = "Compressing 📦"
             try:
                 await task["message"].edit_text(make_task_text(task))
-            except: pass
+            except:
+                pass
             comp = dest.replace(ext, f"_compressed{ext}")
             ff = get_ffmpeg_bin()
             try:
                 subprocess.run([ff, "-i", dest, "-b:v", "1M", comp], check=False)
                 if os.path.exists(comp):
-                    os.remove(dest)
+                    try:
+                        os.remove(dest)
+                    except:
+                        pass
                     dest = comp
             except Exception:
                 pass
@@ -244,15 +345,13 @@ async def run_task(client: Client, task_id: str):
         task["status"] = "Uploading 🚀"
         try:
             await task["message"].edit_text(make_task_text(task))
-        except: pass
-
-        thumb = None
-        try:
-            thumb = generate_thumbnail(dest)
         except:
-            thumb = None
+            pass
 
+        thumb = generate_thumbnail(dest)
         upload_mode = UPLOAD_CHOICES.get(task_id, "video")
+
+        sent_ok = False
         try:
             if upload_mode == "video":
                 await client.send_video(
@@ -265,48 +364,58 @@ async def run_task(client: Client, task_id: str):
                     chat_id, document=dest,
                     caption=f"**🎬 __Nᴀᴍᴇ:** {fname}\n**📦 Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__"
                 )
+            sent_ok = True
         except Exception:
             try:
                 await client.send_document(chat_id, document=dest, caption=f"**📦 __Sɪᴢᴇ:** {human_readable(os.path.getsize(dest))}__")
-            except:
-                pass
+                sent_ok = True
+            except Exception:
+                sent_ok = False
 
+        # best-effort cleanup
         try:
             if os.path.exists(dest):
                 os.remove(dest)
-        except: pass
+        except:
+            pass
         if thumb and os.path.exists(thumb):
-            try: os.remove(thumb)
-            except: pass
+            try:
+                os.remove(thumb)
+            except:
+                pass
 
-        task["status"] = "Completed ✅"
+        task["status"] = "Completed ✅" if sent_ok else "Completed (but send failed) ❌"
         try:
             await task["message"].edit_text(make_task_text(task))
-        except: pass
-
-        try:
-            await asyncio.sleep(10)
-            await task["message"].delete()
         except:
             pass
 
+        # let user see result then delete message
+        await asyncio.sleep(10)
+        try:
+            await task["message"].delete()
+        except:
+            pass
         await asyncio.sleep(DELETE_AFTER)
     except asyncio.CancelledError:
         task["status"] = "Cancelled ❌"
         try:
             await task["message"].edit_text(make_task_text(task))
-        except: pass
+        except:
+            pass
     except Exception as exc:
         task["status"] = f"❌ Failed: {exc}"
         try:
             await task["message"].edit_text(make_task_text(task))
-        except: pass
+        except:
+            pass
     finally:
         sem = USER_SEMAPHORES.get(task["user_id"])
         if sem:
             try:
                 sem.release()
-            except: pass
+            except:
+                pass
         TASKS.pop(task_id, None)
         CANCEL_FLAGS.pop(task_id, None)
         UPLOAD_CHOICES.pop(task_id, None)
@@ -403,7 +512,10 @@ async def cb_upload_type(client: Client, query):
         await query.answer("Task not found or already finished.", show_alert=True)
         return
     UPLOAD_CHOICES[tid] = choice
-    await query.message.edit("**Starting Task...**")
+    try:
+        await query.message.edit("**Starting Task...**")
+    except:
+        pass
     asyncio.create_task(schedule_task(client, tid))
 
 async def schedule_task(client, tid):
@@ -452,4 +564,8 @@ async def cmd_help(client: Client, msg: Message):
     await msg.reply(HELP_TEXT)
 
 # ---------- START CLEANUP ----------
-asyncio.get_event_loop().create_task(cleanup_loop())
+try:
+    asyncio.get_event_loop().create_task(cleanup_loop())
+except RuntimeError:
+    # In case event loop isn't running yet (pyrogram loads), we'll ignore here.
+    pass

@@ -264,24 +264,35 @@ async def unban_a_user(bot, message):
 async def list_users(bot, message):
     raju = await message.reply('Getting list of all users...')
     try:
-        users_cursor = await db.get_all_users()  # get async cursor
+        users_cursor = await db.get_all_users()
         users = []
-        async for user in users_cursor:          # collect all users
+
+        async for user in users_cursor:
             users.append({
                 "name": user.get('name', 'Unknown'),
+                "username": user.get('username') if user.get('username') else "N/A",
                 "id": user.get('id'),
-                "ban_status": user.get('ban_status', {'is_banned': False})
+                "ban_status": "❌" if user.get('ban_status', {}).get('is_banned') else "✅"
             })
 
         if not users:
             return await raju.edit('No users found in DB.')
 
         # Save to JSON
-        with open('Users.json', 'w', encoding='utf-8') as f:
+        file_path = 'Users.json'
+        with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(users, f, ensure_ascii=False, indent=2)
 
-        await raju.edit('List of all users are below -')
-        await message.reply_document('Users.json', caption="Users List")
+        # Edit first message to include total users (👥 on new line)
+        await raju.edit(
+            "List of all users are below -\n"
+            f"👥 Total Registered Users: {len(users)}"
+            f"🛰 System Status: Active ✅"
+        )
+
+        # Send file after editing
+        await message.reply_document(file_path, caption="Users List")
+
     except Exception as e:
         await raju.edit(f"Error fetching users: {e}")
 
@@ -301,4 +312,5 @@ async def list_chats(bot, message):
         with open('chats.txt', 'w+') as outfile:
             outfile.write(out)
         await message.reply_document('chats.txt', caption="List Of Chats")
+
 

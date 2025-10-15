@@ -11,6 +11,7 @@ from pyrogram.errors.exceptions.bad_request_400 import MessageTooLong, PeerIdInv
 from utils import get_settings, pub_is_subscribed, get_size, is_subscribed, save_group_settings, temp, verify_user, check_token, check_verification, get_token, get_shortlink, get_tutorial, get_seconds
 from database.connections_mdb import active_connection, mydb
 
+
 @Client.on_message(filters.new_chat_members & filters.group)
 async def save_group(bot, message):
     r_j_check = [u.id for u in message.new_chat_members]
@@ -21,7 +22,6 @@ async def save_group(bot, message):
             await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_G.format(message.chat.title, message.chat.id, total, r_j))       
             await db.add_chat(message.chat.id, message.chat.title)
         if message.chat.id in temp.BANNED_CHATS:
-            # Inspired from a boat of a banana tree
             buttons = [[
                 InlineKeyboardButton('Support', url=f'https://t.me/{SUPPORT_CHAT}')
             ]]
@@ -71,6 +71,7 @@ async def save_group(bot, message):
             await asyncio.sleep(600)
             await (temp.MELCOW['welcome']).delete()
 
+
 @Client.on_message(filters.command('leave') & filters.user(ADMINS))
 async def leave_a_chat(bot, message):
     if len(message.command) == 1:
@@ -98,6 +99,7 @@ async def leave_a_chat(bot, message):
         await message.reply(f"left the chat `{chat}`")
     except Exception as e:
         await message.reply(f'Error - {e}')
+
 
 @Client.on_message(filters.command('disable') & filters.user(ADMINS))
 async def disable_chat(bot, message):
@@ -135,6 +137,7 @@ async def disable_chat(bot, message):
     except Exception as e:
         await message.reply(f"Error - {e}")
 
+
 @Client.on_message(filters.command('enable') & filters.user(ADMINS))
 async def re_enable_chat(bot, message):
     if len(message.command) == 1:
@@ -152,6 +155,7 @@ async def re_enable_chat(bot, message):
     await db.re_enable_chat(int(chat_))
     temp.BANNED_CHATS.remove(int(chat_))
     await message.reply("Chat Successfully re-enabled")
+
 
 @Client.on_message(filters.command('stats') & filters.incoming)
 async def get_ststs(bot, message):
@@ -179,6 +183,7 @@ async def get_ststs(bot, message):
     except Exception as e:
         await rju.edit(f"Error - {e}")
 
+
 @Client.on_message(filters.command('invite') & filters.user(ADMINS))
 async def gen_invite(bot, message):
     if len(message.command) == 1:
@@ -195,6 +200,7 @@ async def gen_invite(bot, message):
     except Exception as e:
         return await message.reply(f'Error {e}')
     await message.reply(f'Here is your Invite Link {link.invite_link}')
+
 
 @Client.on_message(filters.command('ban') & filters.user(ADMINS))
 async def ban_a_user(bot, message):
@@ -227,6 +233,7 @@ async def ban_a_user(bot, message):
         temp.BANNED_USERS.append(k.id)
         await message.reply(f"Successfully banned {k.mention}")
     
+
 @Client.on_message(filters.command('unban') & filters.user(ADMINS))
 async def unban_a_user(bot, message):
     if len(message.command) == 1:
@@ -258,23 +265,102 @@ async def unban_a_user(bot, message):
         temp.BANNED_USERS.remove(k.id)
         await message.reply(f"Successfully unbanned {k.mention}")
     
+
+# ✅ FIXED /users COMMAND (new version)
 @Client.on_message(filters.command('users') & filters.user(ADMINS))
 async def list_users(bot, message):
-    # https://t.me/GetTGLink/4184
-    raju = await message.reply('Getting List Of Users')
+    raju = await message.reply('Getting List Of Users...')
     users = await db.get_all_users()
-    out = "Users Saved In DB Are:\n\n"
+    all_users = []
     async for user in users:
-        out += f"<a href=tg://user?id={user['id']}>{user['name']}</a>"
-        if user['ban_status']['is_banned']:
-            out += '( Banned User )'
-        out += '\n'
+        all_users.append(user)
+
+    if not all_users:
+        return await raju.edit("No users found in database.")
+
+    pages = []
+    lines = []
+    msg_limit = 4000
+
+    for user in all_users:
+        user_id = user["id"]
+        user_name = user.get("name", "Unknown")
+        is_banned = user.get("ban_status", {}).get("is_banned", False)
+        emoji = "🚫" if is_banned else "👤"
+        name_clean = user_name.replace("\n", " ")
+        spaces = " " * (12 - len(name_clean)) if len(name_clean) < 12 else "  "
+        line = f"{emoji} {name_clean}{spaces}[ID={user_id}]"
+        if len("\n".join(lines) + line) >= msg_limit:
+            pages.append("\n".join(lines))
+            lines = []
+        lines.append(line)
+
+    if lines:
+        pages.append("\n".join(lines))
+
+    total_pages = len(pages)
+    current_page = 0
+
+    keyboard = get_pagination_buttons(current_page, total_pages)
+    await raju.edit_text(
+        text=f"<b>👥 Total Users:</b> {len(all_users)}\n\n{pages[current_page]}",
+        reply_markup=keyboard,
+    )
+
+
+@Client.on_callback_query(filters.regex(r"^users_page_"))
+async def users_page_callback(bot, query):
+    _, action, page_str, total_str = query.data.split("_")
+    current_page = int(page_str)
+    total_pages = int(total_str)
+
+    users = await db.get_all_users()
+    all_users = []
+    async for user in users:
+        all_users.append(user)
+
+    pages = []
+    lines = []
+    msg_limit = 4000
+    for user in all_users:
+        user_id = user["id"]
+        user_name = user.get("name", "Unknown")
+        is_banned = user.get("ban_status", {}).get("is_banned", False)
+        emoji = "🚫" if is_banned else "👤"
+        name_clean = user_name.replace("\n", " ")
+        spaces = " " * (12 - len(name_clean)) if len(name_clean) < 12 else "  "
+        line = f"{emoji} {name_clean}{spaces}[ID={user_id}]"
+        if len("\n".join(lines) + line) >= msg_limit:
+            pages.append("\n".join(lines))
+            lines = []
+        lines.append(line)
+    if lines:
+        pages.append("\n".join(lines))
+
+    if action == "next":
+        current_page = (current_page + 1) % total_pages
+    elif action == "prev":
+        current_page = (current_page - 1 + total_pages) % total_pages
+    else:
+        return await query.answer()
+
+    keyboard = get_pagination_buttons(current_page, total_pages)
     try:
-        await raju.edit_text(out)
-    except MessageTooLong:
-        with open('users.txt', 'w+') as outfile:
-            outfile.write(out)
-        await message.reply_document('users.txt', caption="List Of Users")
+        await query.message.edit_text(
+            text=f"<b>👥 Total Users:</b> {len(all_users)}\n\n{pages[current_page]}",
+            reply_markup=keyboard,
+        )
+        await query.answer()
+    except:
+        await query.answer("Nothing to update.")
+
+
+def get_pagination_buttons(current_page, total_pages):
+    prev_btn = InlineKeyboardButton("⬅️ Prev", callback_data=f"users_page_prev_{current_page}_{total_pages}")
+    next_btn = InlineKeyboardButton("Next ➡️", callback_data=f"users_page_next_{current_page}_{total_pages}")
+    page_btn = InlineKeyboardButton(f"Page {current_page + 1}/{total_pages}", callback_data="users_page_ignore")
+    return InlineKeyboardMarkup([[prev_btn, page_btn, next_btn]])
+
 
 @Client.on_message(filters.command('chats') & filters.user(ADMINS))
 async def list_chats(bot, message):

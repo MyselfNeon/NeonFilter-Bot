@@ -263,20 +263,27 @@ async def unban_a_user(bot, message):
 @Client.on_message(filters.command('users') & filters.user(ADMINS))
 async def list_users(bot, message):
     raju = await message.reply('Getting list of all users...')
-    users_cursor = await db.get_all_users()
-    users_list = []
+    try:
+        users_cursor = await db.get_all_users()  # get async cursor
+        users = []
+        async for user in users_cursor:          # collect all users
+            users.append({
+                "name": user.get('name', 'Unknown'),
+                "id": user.get('id'),
+                "ban_status": user.get('ban_status', {'is_banned': False})
+            })
 
-    async for user in users_cursor:
-        status_emoji = '🚫' if user['ban_status']['is_banned'] else '👤'
-        users_list.append(f"{status_emoji} {user['name']} [ID={user['id']}]")
+        if not users:
+            return await raju.edit('No users found in DB.')
 
-    file_name = f"users_{int(time.time())}.json"
-    with open(file_name, "w", encoding="utf-8") as f:
-        json.dump(users_list, f, indent=2, ensure_ascii=False)
+        # Save to JSON
+        with open('Users.json', 'w', encoding='utf-8') as f:
+            json.dump(users, f, ensure_ascii=False, indent=2)
 
-    await raju.edit("List of all users are below -")
-    await message.reply_document(file_name, caption="Users.json")
-    os.remove(file_name)
+        await raju.edit('List of all users are below -')
+        await message.reply_document('Users.json', caption="Users List")
+    except Exception as e:
+        await raju.edit(f"Error fetching users: {e}")
 
 @Client.on_message(filters.command('chats') & filters.user(ADMINS))
 async def list_chats(bot, message):
@@ -294,3 +301,4 @@ async def list_chats(bot, message):
         with open('chats.txt', 'w+') as outfile:
             outfile.write(out)
         await message.reply_document('chats.txt', caption="List Of Chats")
+

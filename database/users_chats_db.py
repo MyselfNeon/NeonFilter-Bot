@@ -1,4 +1,4 @@
-#Users_Chats_DB.py
+#Users_Chat_DB.py
 import re
 from pymongo.errors import DuplicateKeyError
 import motor.motor_asyncio
@@ -261,7 +261,7 @@ class Database:
         expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
         user_data = {"id": user_id, "expiry_time": expiry_time, "has_free_trial": True}
         await self.users.update_one({"id": user_id}, {"$set": user_data}, upsert=True)
-  setgs 
+    
     async def all_premium_users(self):
         count = await self.users.count_documents({
             "expiry_time": {"$gt": datetime.datetime.now()}

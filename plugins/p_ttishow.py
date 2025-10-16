@@ -271,6 +271,7 @@ async def list_users(bot, message):
         async for user in users_cursor:
             users.append({
                 "name": user.get('name', 'Unknown'),
+                # ✅ Username logic added
                 "username": user.get('username') if user.get('username') else "N/A",
                 "id": user.get('id'),
                 "ban_status": "❌" if user.get('ban_status', {}).get('is_banned') else "✅"
@@ -284,14 +285,12 @@ async def list_users(bot, message):
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(users, f, ensure_ascii=False, indent=2)
 
-        # Edit first message to include total users (👥 on new line)
         await raju.edit(
             "**__List of all Users are Below -__**\n"
             f"**__👥 Total Registered Users: {len(users)}__**\n"
             f"**__🛰 System Status: Active ✅__**"
         )
 
-        # Send file after editing
         await message.reply_document(file_path, caption="**👥 __Users List__**")
 
     except Exception as e:
@@ -318,4 +317,3 @@ async def list_chats(bot, message):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-

@@ -4,7 +4,7 @@ from database.users_chats_db import db
 from pyrogram.errors import PeerIdInvalid, FloodWait
 import asyncio
 
-ADMINS = [123456789]  # Replace with your actual admin IDs
+ADMINS = [841851780]  # Replace with your actual admin IDs
 
 @Client.on_message(filters.command("restore_usernames") & filters.user(ADMINS))
 async def restore_usernames(client, message):

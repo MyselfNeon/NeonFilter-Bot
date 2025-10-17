@@ -21,13 +21,12 @@ async def save_group(bot, message):
             await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_G.format(message.chat.title, message.chat.id, total, r_j))       
             await db.add_chat(message.chat.id, message.chat.title)
         if message.chat.id in temp.BANNED_CHATS:
-            # Inspired from a boat of a banana tree
             buttons = [[
-                InlineKeyboardButton('Support', url=f'https://t.me/{SUPPORT_CHAT}')
+                InlineKeyboardButton('Sᴜᴘᴘᴏʀᴛ', url=f'https://t.me/{SUPPORT_CHAT}')
             ]]
             reply_markup=InlineKeyboardMarkup(buttons)
             k = await message.reply(
-                text='<b>CHAT NOT ALLOWED 🐞\n\nMy admins has restricted me from working here ! If you want to know more about it contact support..</b>',
+                text='<b>CHAT NOT ALLOWED 🐞\n\n__My Admins has Restricted me from Working here ! If you want to know more About it Contact Support..__</b>',
                 reply_markup=reply_markup,
             )
             try:
@@ -44,7 +43,7 @@ async def save_group(bot, message):
         ]]
         reply_markup=InlineKeyboardMarkup(buttons)
         await message.reply_text(
-            text=f"<b>Thankyou For Adding Me In {message.chat.title} ❣️\n\nIf you have any questions & doubts about using me contact support.</b>",
+            text=f"<b>__Thankyou For Adding Me In {message.chat.title} ❣️\n\nIf you have any Questions & Doubts about Using me Contact Support.__</b>",
             reply_markup=reply_markup
         )
     else:
@@ -74,7 +73,7 @@ async def save_group(bot, message):
 @Client.on_message(filters.command('leave') & filters.user(ADMINS))
 async def leave_a_chat(bot, message):
     if len(message.command) == 1:
-        return await message.reply('Give me a chat id')
+        return await message.reply('**__Give me a Chat ID__**')
     chat = message.command[1]
     try:
         chat = int(chat)
@@ -90,7 +89,7 @@ async def leave_a_chat(bot, message):
         reply_markup=InlineKeyboardMarkup(buttons)
         await bot.send_message(
             chat_id=chat,
-            text='<b>Hello Friends, \nMy admin has told me to leave from group, so i go! If you wanna add me again contact my Support Group or My Owner</b>',
+            text='<b>__Hello Friends, \nMy Admin has Told me to Leave from Group, so i go! If you wanna Add me again Contact my Support Group or My Owner__</b>',
             reply_markup=reply_markup,
         )
 
@@ -102,26 +101,26 @@ async def leave_a_chat(bot, message):
 @Client.on_message(filters.command('disable') & filters.user(ADMINS))
 async def disable_chat(bot, message):
     if len(message.command) == 1:
-        return await message.reply('Give me a chat id')
+        return await message.reply('**__Give me a Chat ID__**')
     r = message.text.split(None)
     if len(r) > 2:
         reason = message.text.split(None, 2)[2]
         chat = message.text.split(None, 2)[1]
     else:
         chat = message.command[1]
-        reason = "No reason Provided"
+        reason = "**__No Reason Provided__**"
     try:
         chat_ = int(chat)
     except:
-        return await message.reply('Give Me A Valid Chat ID')
+        return await message.reply('**__Give Me A Valid Chat ID__**')
     cha_t = await db.get_chat(int(chat_))
     if not cha_t:
-        return await message.reply("Chat Not Found In DB")
+        return await message.reply("**__Chat Not Found In DB__**")
     if cha_t['is_disabled']:
-        return await message.reply(f"This chat is already disabled:\nReason-<code> {cha_t['reason']} </code>")
+        return await message.reply(f"**__This Chat is Already Disabled:\nReason-<code> {cha_t['reason']} </code>__**")
     await db.disable_chat(int(chat_), reason)
     temp.BANNED_CHATS.append(int(chat_))
-    await message.reply('Chat Successfully Disabled')
+    await message.reply('**__Chat Successfully Disabled__**')
     try:
         buttons = [[
             InlineKeyboardButton('Support', url=f'https://t.me/{SUPPORT_CHAT}')
@@ -129,7 +128,7 @@ async def disable_chat(bot, message):
         reply_markup=InlineKeyboardMarkup(buttons)
         await bot.send_message(
             chat_id=chat_, 
-            text=f'<b>Hello Friends, \nMy admin has told me to leave from group so i go! If you wanna add me again contact my support group.</b> \nReason : <code>{reason}</code>',
+            text=f'<b>__Hello Friends, \nMy Admin has told me to Leave from Group so I go! If you wanna Add me again Contact my Support Group.__</b> \nReason : <code>{reason}</code>',
             reply_markup=reply_markup)
         await bot.leave_chat(chat_)
     except Exception as e:
@@ -138,24 +137,24 @@ async def disable_chat(bot, message):
 @Client.on_message(filters.command('enable') & filters.user(ADMINS))
 async def re_enable_chat(bot, message):
     if len(message.command) == 1:
-        return await message.reply('Give me a chat id')
+        return await message.reply('**__Give me a Chat ID__**')
     chat = message.command[1]
     try:
         chat_ = int(chat)
     except:
-        return await message.reply('Give Me A Valid Chat ID')
+        return await message.reply('**__Give Me A Valid Chat ID__**')
     sts = await db.get_chat(int(chat))
     if not sts:
-        return await message.reply("Chat Not Found In DB !")
+        return await message.reply("**__Chat Not Found In DB !__**")
     if not sts.get('is_disabled'):
-        return await message.reply('This chat is not yet disabled.')
+        return await message.reply('**__This Chat is not yet Disabled.__**')
     await db.re_enable_chat(int(chat_))
     temp.BANNED_CHATS.remove(int(chat_))
-    await message.reply("Chat Successfully re-enabled")
+    await message.reply("**__Chat Successfully Re-enabled__ ✅**")
 
 @Client.on_message(filters.command('stats') & filters.incoming)
 async def get_ststs(bot, message):
-    rju = await message.reply('Fetching stats..')
+    rju = await message.reply('**__Fetching Stats..__**')
     try:
         total_users = await db.total_users_count()
         totl_chats = await db.total_chat_count()
@@ -182,24 +181,24 @@ async def get_ststs(bot, message):
 @Client.on_message(filters.command('invite') & filters.user(ADMINS))
 async def gen_invite(bot, message):
     if len(message.command) == 1:
-        return await message.reply('Give me a chat id')
+        return await message.reply('**__Give me a Chat ID__**')
     chat = message.command[1]
     try:
         chat = int(chat)
     except:
-        return await message.reply('Give Me A Valid Chat ID')
+        return await message.reply('**__Give Me A Valid Chat ID__**')
     try:
         link = await bot.create_chat_invite_link(chat)
     except ChatAdminRequired:
-        return await message.reply("Invite Link Generation Failed, Iam Not Having Sufficient Rights")
+        return await message.reply("**__Invite Link Generation Failed, I am Not Having Sufficient Rights__**")
     except Exception as e:
         return await message.reply(f'Error {e}')
-    await message.reply(f'Here is your Invite Link {link.invite_link}')
+    await message.reply(f'**__Here is your Invite Link {link.invite_link}__**')
 
 @Client.on_message(filters.command('ban') & filters.user(ADMINS))
 async def ban_a_user(bot, message):
     if len(message.command) == 1:
-        return await message.reply('Give me a user id / username')
+        return await message.reply('**__Give me a user ID / Username__**')
     r = message.text.split(None)
     if len(r) > 2:
         reason = message.text.split(None, 2)[2]
@@ -214,23 +213,23 @@ async def ban_a_user(bot, message):
     try:
         k = await bot.get_users(chat)
     except PeerIdInvalid:
-        return await message.reply("This is an invalid user, make sure ia have met him before.")
+        return await message.reply("**__This is an Invalid User, make sure i have met him Before.__**")
     except IndexError:
-        return await message.reply("This might be a channel, make sure its a user.")
+        return await message.reply("**__This might be a Channel, make sure its a User.__**")
     except Exception as e:
         return await message.reply(f'Error - {e}')
     else:
         jar = await db.get_ban_status(k.id)
         if jar['is_banned']:
-            return await message.reply(f"{k.mention} is already banned\nReason: {jar['ban_reason']}")
+            return await message.reply(f"**__{k.mention} is Already Banned__**\nReason: {jar['ban_reason']}")
         await db.ban_user(k.id, reason)
         temp.BANNED_USERS.append(k.id)
-        await message.reply(f"Successfully banned {k.mention}")
+        await message.reply(f"**__Successfully Banned {k.mention}__**")
     
 @Client.on_message(filters.command('unban') & filters.user(ADMINS))
 async def unban_a_user(bot, message):
     if len(message.command) == 1:
-        return await message.reply('Give me a user id / username')
+        return await message.reply('**__Give me a User ID / Username__**')
     r = message.text.split(None)
     if len(r) > 2:
         reason = message.text.split(None, 2)[2]
@@ -245,50 +244,75 @@ async def unban_a_user(bot, message):
     try:
         k = await bot.get_users(chat)
     except PeerIdInvalid:
-        return await message.reply("This is an invalid user, make sure ia have met him before.")
+        return await message.reply("**__This is an Invalid User, make sure ia have met him before.__**")
     except IndexError:
-        return await message.reply("Thismight be a channel, make sure its a user.")
+        return await message.reply("**__This might be a Channel, make sure its a User.__**")
     except Exception as e:
         return await message.reply(f'Error - {e}')
     else:
         jar = await db.get_ban_status(k.id)
         if not jar['is_banned']:
-            return await message.reply(f"{k.mention} is not yet banned.")
+            return await message.reply(f"**__{k.mention} is not yet Banned.__**")
         await db.remove_ban(k.id)
         temp.BANNED_USERS.remove(k.id)
-        await message.reply(f"Successfully unbanned {k.mention}")
+        await message.reply(f"**__Successfully Unbanned {k.mention}__**")
     
+# -------------------
+# Users command (JSON output).      
+# -------------------
 @Client.on_message(filters.command('users') & filters.user(ADMINS))
 async def list_users(bot, message):
-    # https://t.me/GetTGLink/4184
-    raju = await message.reply('Getting List Of Users')
-    users = await db.get_all_users()
-    out = "Users Saved In DB Are:\n\n"
-    async for user in users:
-        out += f"<a href=tg://user?id={user['id']}>{user['name']}</a>"
-        if user['ban_status']['is_banned']:
-            out += '( Banned User )'
-        out += '\n'
+    raju = await message.reply('**__Getting List of All Users...__**')
     try:
-        await raju.edit_text(out)
-    except MessageTooLong:
-        with open('users.txt', 'w+') as outfile:
-            outfile.write(out)
-        await message.reply_document('users.txt', caption="List Of Users")
+        users_cursor = await db.get_all_users()
+        users = []
+
+        async for user in users_cursor:
+            users.append({
+                "name": user.get('name', 'Unknown'),
+                # ✅ Username logic added
+                "username": user.get('username') if user.get('username') else "N/A",
+                "id": user.get('id'),
+                "ban_status": "❌" if user.get('ban_status', {}).get('is_banned') else "✅"
+            })
+
+        if not users:
+            return await raju.edit('**__No Users found in DB.__**')
+
+        # Save to JSON
+        file_path = 'Users.json'
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(users, f, ensure_ascii=False, indent=2)
+
+        await raju.edit(
+            "**__List of all Users are Below -__**\n"
+            f"**__👥 Total Registered Users: {len(users)}__**\n"
+            f"**__🛰 System Status: Active ✅__**"
+        )
+
+        await message.reply_document(file_path, caption="**👥 __Users List__**")
+
+    except Exception as e:
+        await raju.edit(f"**__Error Fetching Users:** {e}__")
 
 @Client.on_message(filters.command('chats') & filters.user(ADMINS))
 async def list_chats(bot, message):
-    raju = await message.reply('Getting List Of chats')
+    raju = await message.reply('**__Getting List Of Chats__**')
     chats = await db.get_all_chats()
-    out = "Chats Saved In DB Are:\n\n"
+    out = "**__Chats Saved In DB Are:__**\n\n"
     async for chat in chats:
-        out += f"**Title:** `{chat['title']}`\n**- ID:** `{chat['id']}`"
+        out += f"**📝 __Title__:** `{chat['title']}`\n**🆔 __ID__:** `{chat['id']}`"
         if chat['chat_status']['is_disabled']:
             out += '( Disabled Chat )'
-        out += '\n'
+        out += '\n\n'
     try:
         await raju.edit_text(out)
     except MessageTooLong:
         with open('chats.txt', 'w+') as outfile:
             outfile.write(out)
         await message.reply_document('chats.txt', caption="List Of Chats")
+
+
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

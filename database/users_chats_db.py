@@ -1,14 +1,8 @@
-#Users_Chat_DB.py
 import re
 from pymongo.errors import DuplicateKeyError
 import motor.motor_asyncio
 from pymongo import MongoClient
-from info import (
-    DATABASE_NAME, USER_DB_URI, OTHER_DB_URI, CUSTOM_FILE_CAPTION, IMDB, IMDB_TEMPLATE, 
-    MELCOW_NEW_USERS, BUTTON_MODE, SPELL_CHECK_REPLY, PROTECT_CONTENT, AUTO_DELETE, 
-    MAX_BTN, AUTO_FFILTER, SHORTLINK_API, SHORTLINK_URL, SHORTLINK_MODE, 
-    TUTORIAL, IS_TUTORIAL
-)
+from info import DATABASE_NAME, USER_DB_URI, OTHER_DB_URI, CUSTOM_FILE_CAPTION, IMDB, IMDB_TEMPLATE, MELCOW_NEW_USERS, BUTTON_MODE, SPELL_CHECK_REPLY, PROTECT_CONTENT, AUTO_DELETE, MAX_BTN, AUTO_FFILTER, SHORTLINK_API, SHORTLINK_URL, SHORTLINK_MODE, TUTORIAL, IS_TUTORIAL
 import time
 import datetime
 
@@ -70,11 +64,10 @@ class Database:
         self.bot = self.db.clone_bots
 
 
-    def new_user(self, id, name, username=None):   # ← added username field
+    def new_user(self, id, name):
         return dict(
-            id=id,
-            name=name,
-            username=username or "None",           # ← added username save logic
+            id = id,
+            name = name,
             file_id=None,
             caption=None,
             message_command=None,
@@ -88,8 +81,8 @@ class Database:
 
     def new_group(self, id, title):
         return dict(
-            id=id,
-            title=title,
+            id = id,
+            title = title,
             chat_status=dict(
                 is_disabled=False,
                 reason="",
@@ -97,12 +90,12 @@ class Database:
             settings=default_setgs
         )
     
-    async def add_user(self, id, name, username=None):  # ← added optional username param
-        user = self.new_user(id, name, username)
+    async def add_user(self, id, name):
+        user = self.new_user(id, name)
         await self.col.insert_one(user)
     
     async def is_user_exist(self, id):
-        user = await self.col.find_one({'id': int(id)})
+        user = await self.col.find_one({'id':int(id)})
         return bool(user)
     
     async def total_users_count(self):
@@ -164,16 +157,18 @@ class Database:
             is_banned=False,
             ban_reason=''
         )
-        user = await self.col.find_one({'id': int(id)})
+        user = await self.col.find_one({'id':int(id)})
         if not user:
             return default
         return user.get('ban_status', default)
 
     async def get_all_users(self):
-        return self.col.find({})    
+        return self.col.find({})
+    
 
     async def delete_user(self, user_id):
         await self.col.delete_many({'id': int(user_id)})
+
 
     async def get_banned(self):
         users = self.col.find({'ban_status.is_banned': True})
@@ -181,44 +176,53 @@ class Database:
         b_chats = [chat['id'] async for chat in chats]
         b_users = [user['id'] async for user in users]
         return b_users, b_chats
+    
+
 
     async def add_chat(self, chat, title):
         chat = self.new_group(chat, title)
-        await self.grp.insert_one(chat)    
+        await self.grp.insert_one(chat)
+    
 
     async def get_chat(self, chat):
-        chat = await self.grp.find_one({'id': int(chat)})
+        chat = await self.grp.find_one({'id':int(chat)})
         return False if not chat else chat.get('chat_status')
     
+
     async def re_enable_chat(self, id):
-        chat_status = dict(
+        chat_status=dict(
             is_disabled=False,
             reason="",
-        )
+            )
         await self.grp.update_one({'id': int(id)}, {'$set': {'chat_status': chat_status}})
         
     async def update_settings(self, id, settings):
         await self.grp.update_one({'id': int(id)}, {'$set': {'settings': settings}})
-            
+        
+    
     async def get_settings(self, id):
-        chat = await self.grp.find_one({'id': int(id)})
+        chat = await self.grp.find_one({'id':int(id)})
         if chat:
             return chat.get('settings', default_setgs)
-        return default_setgs    
+        return default_setgs
+    
 
     async def disable_chat(self, chat, reason="No Reason"):
-        chat_status = dict(
+        chat_status=dict(
             is_disabled=True,
             reason=reason,
-        )
+            )
         await self.grp.update_one({'id': int(chat)}, {'$set': {'chat_status': chat_status}})
     
+
     async def total_chat_count(self):
         count = await self.grp.count_documents({})
         return count
     
+
     async def get_all_chats(self):
         return self.grp.find({})
+
 
     async def get_db_size(self):
         return (await self.db.command("dbstats"))['dataSize']
@@ -235,6 +239,7 @@ class Database:
         if user_data:
             expiry_time = user_data.get("expiry_time")
             if expiry_time is None:
+                # User previously used the free trial, but it has ended.
                 return False
             elif isinstance(expiry_time, datetime.datetime) and datetime.datetime.now() <= expiry_time:
                 return True
@@ -246,6 +251,7 @@ class Database:
         user_id = userid
         user_data = await self.get_user(user_id)        
         expiry_time = user_data.get("expiry_time")
+        # Calculate remaining time
         remaining_time = expiry_time - datetime.datetime.now()
         return remaining_time
 
@@ -262,9 +268,10 @@ class Database:
         user_data = {"id": user_id, "expiry_time": expiry_time, "has_free_trial": True}
         await self.users.update_one({"id": user_id}, {"$set": user_data}, upsert=True)
     
+    
     async def all_premium_users(self):
         count = await self.users.count_documents({
-            "expiry_time": {"$gt": datetime.datetime.now()}
+        "expiry_time": {"$gt": datetime.datetime.now()}
         })
         return count
 
@@ -296,8 +303,5 @@ class Database:
         user = await self.col.find_one({'id': int(id)})
         return user.get('save', False) 
     
-db = Database(USER_DB_URI, DATABASE_NAME)
 
-# Dont remove Credits
-# Developer Telegram @MyselfNeon
-# Update channel - @NeonFiles
+db = Database(USER_DB_URI, DATABASE_NAME)

@@ -16,6 +16,8 @@ API_ID = int(environ.get('API_ID', ''))
 API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
+# Keep-Alive URL
+KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "https://neonfilter-bot-ume4.onrender.com/")  # <-- Add this line
 
 # ============================================================
 # 🔹 START PICTURES
@@ -261,6 +263,7 @@ REACTIONS = [
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

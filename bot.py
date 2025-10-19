@@ -27,7 +27,7 @@ from info import KEEP_ALIVE_URL
 import aiohttp
 
 async def keep_alive():
-    """Send a request every 111 seconds to keep the bot alive (if required)."""
+    """Send a request every 100 seconds to keep the bot alive (if required)."""
     async with aiohttp.ClientSession() as session:
         while True:
             try:
@@ -126,3 +126,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
         
+

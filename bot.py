@@ -22,6 +22,23 @@ from Neon.bot import NeonBot
 from Neon.util.keepalive import ping_server
 from Neon.bot.clients import initialize_clients
 
+# ------------------- Added Keep-Alive Function -------------------
+from info import KEEP_ALIVE_URL
+import aiohttp
+
+async def keep_alive():
+    """Send a request every 111 seconds to keep the bot alive (if required)."""
+    async with aiohttp.ClientSession() as session:
+        while True:
+            try:
+                await session.get(KEEP_ALIVE_URL)
+                logging.info("Sent keep-alive request.")
+            except Exception as e:
+                logging.error(f"Keep-alive request failed: {e}")
+            await asyncio.sleep(100)
+# ----------------------------------------------------------------
+
+
 # ------------------- Updated plugin loader -------------------
 def get_all_plugin_files(root="plugins"):
     """
@@ -59,6 +76,11 @@ async def start():
 
     if ON_HEROKU:
         asyncio.create_task(ping_server())
+
+    # Start keep-alive if KEEP_ALIVE_URL is defined
+    if KEEP_ALIVE_URL:
+        asyncio.create_task(keep_alive())
+
     b_users, b_chats = await db.get_banned()
     temp.BANNED_USERS = b_users
     temp.BANNED_CHATS = b_chats
@@ -104,5 +126,3 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
         
-
-

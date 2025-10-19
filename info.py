@@ -52,7 +52,7 @@ LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001889915480'))
 # This Channel Is For When User Start Your Bot Then Bot Send That User Name And Id In This Log Channel, Same For Group Also.
 
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch
-            for ch in environ.get('CHANNELS', '-1002627138181 -1002487845241').split()]
+            for ch in environ.get('CHANNELS', '-1002627138181 -1002487845241 -1002731949518').split()]
 # This Is File Channel Where You Upload Your File Then Bot Automatically Save It In Database
 
 REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', False))  # True → request to join FSUB
@@ -261,6 +261,7 @@ REACTIONS = [
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

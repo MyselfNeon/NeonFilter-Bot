@@ -85,8 +85,8 @@ DELETE_CHANNELS = [int(dch) if id_pattern.search(dch) else dch
 # 🔹 DATABASE
 # ============================================================
 DATABASE_URI = environ.get('DATABASE_URI', "")
-DATABASE_NAME = environ.get('DATABASE_NAME', "neonpmt03")
-COLLECTION_NAME = environ.get('COLLECTION_NAME', 'neonfiles')
+DATABASE_NAME = environ.get('DATABASE_NAME', "MyselfNeon")
+COLLECTION_NAME = environ.get('COLLECTION_NAME', 'neoncollection')
 
 MULTIPLE_DATABASE = bool(environ.get('MULTIPLE_DATABASE', False))
 
@@ -261,6 +261,7 @@ REACTIONS = [
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

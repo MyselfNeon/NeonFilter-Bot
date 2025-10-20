@@ -3,14 +3,14 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from datetime import datetime
 
-WHOIS_TXT = """<b>📇 ᴡʜᴏɪꜱ ᴍᴏᴅᴜʟᴇ</b>
+WHOIS_TXT = """<b><i><blockquote>🕵️ Whois Module</blockquote></i></b>
 
-__Use to get Telegram user details.__
+**__Use to Get Telegram User Details.__**
 
-<b>Usage:</b>
+<b><i>Usage :</b>
 • /whois @username
 • /whois user_id
-• Reply to a message with /whois
+• Reply to a Message with /whois</i>
 """
 
 # ====================== MAIN HANDLER ======================
@@ -29,14 +29,14 @@ async def whois_user(client: Client, message: Message):
                     user_id = int(target)
                     user = await client.get_users(user_id)
                 except ValueError:
-                    return await message.reply("**❌ Invalid user ID or username!**")
+                    return await message.reply("**__❌ Invalid user ID or Username !__**", quote=True)
         else:
-            return await message.reply(WHOIS_TXT)
+            return await message.reply(WHOIS_TXT, quote=True)
 
         # ====================== BUILD USER INFO ======================
-        text = f"<b>👤 USER INFO</b>\n\n"
-        text += f"🆔 <b>User ID:</b> <code>{user.id}</code>\n"
-        text += f"📛 <b>Name:</b> {user.first_name or 'N/A'}"
+        text = f"<b><i>👤 USER INFO</b>\n\n"
+        text += f"<b><i>🆔 User ID :</b> <code>{user.id}</code>\n"
+        text += f"📛 <b><i>Name :</b> {user.first_name or 'N/A'}"
         if user.last_name:
             text += f" {user.last_name}\n"
         else:
@@ -80,14 +80,14 @@ async def whois_user(client: Client, message: Message):
         # profile photo (if available)
         if user.photo:
             photo = await client.download_media(user.photo.big_file_id)
-            await message.reply_photo(photo, caption=text)
+            await message.reply_photo(photo, caption=text, quote=True)
         else:
-            await message.reply(text)
+            await message.reply(text, quote=True)
 
     except Exception as e:
-        await message.reply(f"**⚠️ Error:** `{e}`\n\nMight be an invalid username or restricted account.")
+        await message.reply(f"**⚠️ Error:** `{e}`\n\nMight be an invalid username or restricted account.", quote=True)
 
 # ====================== HELP COMMAND ======================
 @Client.on_message(filters.command("whoishelp") & filters.private)
 async def whois_help(client: Client, message: Message):
-    await message.reply(WHOIS_TXT)
+    await message.reply(WHOIS_TXT, quote=True)

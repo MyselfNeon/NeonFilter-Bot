@@ -42,7 +42,7 @@ PyLeaves
 
 # --- Audio / Speech ---
 gTTS
-speedtest-cli
+speedtest
 
 # --- Utilities / Extras ---
 jinja2
@@ -62,4 +62,5 @@ git+https://github.com/Joelkb/cinemagoer
 # --- NEW (added for your improved plugin) ---
 # These ensure SSL retry logic & async downloads work perfectly
 async-timeout==4.0.3
+
 

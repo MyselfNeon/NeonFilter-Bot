@@ -35,7 +35,7 @@ async def whois_user(client: Client, message: Message):
 
         # ====================== BUILD USER INFO ======================
         text = f"<b><i><blockquote>👤 USER INFO</blockquote></i></b>\n\n"
-        text += f"<b><i>🆔 User ID -</b> <code>{user.id}</code>\n"
+        text += f"<b><i>🆔 User ID -</i></b> <code>{user.id}</code>\n"
         text += f"📛 <b><i>Name -</b> {user.first_name or 'N/A'}</i>"
         if user.last_name:
             text += f"<i> {user.last_name}</i>\n"

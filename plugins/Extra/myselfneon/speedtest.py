@@ -1,6 +1,6 @@
 # ============================================================
 # 🚀 SPEEDTEST PLUGIN BY NEON
-# Simple, Fast & Clean — Made in the Style of Telegraph.py 😎
+# Full Detailed Version (with Client Info, Server Info, & Share)
 # ============================================================
 
 import asyncio
@@ -10,7 +10,7 @@ from speedtest import Speedtest
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from info import API_ID, API_HASH, BOT_TOKEN  # Import bot creds
+from info import API_ID, API_HASH, BOT_TOKEN
 
 # -------------------
 # Constants
@@ -63,7 +63,7 @@ def speed_convert(size, byte=True):
 # -------------------
 @Client.on_message(filters.command("speedtest"))
 async def run_speedtest(bot: Client, message: Message):
-    status = await message.reply_text("⚡ **Running Speedtest... Please Wait!**")
+    status = await message.reply_text("⚡ <b>Running Speedtest...</b>\nPlease wait a few seconds!")
 
     try:
         test = Speedtest()
@@ -75,25 +75,34 @@ async def run_speedtest(bot: Client, message: Message):
         result = test.results.dict()
         uptime = get_readable_time(time() - BOT_START_TIME)
 
-        # Format result message
+        # Full HTML formatted result
         result_text = f"""
-╭─《 🚀 SPEEDTEST RESULTS 》
-├ **Upload:** `{speed_convert(result['upload'], False)}`
-├ **Download:** `{speed_convert(result['download'], False)}`
-├ **Ping:** `{result['ping']} ms`
-├ **Time:** `{result['timestamp']}`
-├ **Data Sent:** `{get_readable_file_size(int(result['bytes_sent']))}`
-╰ **Data Received:** `{get_readable_file_size(int(result['bytes_received']))}`
+╭─《 🚀 SPEEDTEST INFO 》
+├ <b>Upload:</b> <code>{speed_convert(result['upload'], False)}</code>
+├ <b>Download:</b> <code>{speed_convert(result['download'], False)}</code>
+├ <b>Ping:</b> <code>{result['ping']} ms</code>
+├ <b>Time:</b> <code>{result['timestamp']}</code>
+├ <b>Data Sent:</b> <code>{get_readable_file_size(int(result['bytes_sent']))}</code>
+╰ <b>Data Received:</b> <code>{get_readable_file_size(int(result['bytes_received']))}</code>
 
-╭─《 🌐 SERVER INFO 》
-├ **Name:** `{result['server']['name']}`
-├ **Country:** `{result['server']['country']}, {result['server']['cc']}`
-├ **Sponsor:** `{result['server']['sponsor']}`
-├ **Latency:** `{result['server']['latency']}`
-╰ **Coordinates:** `{result['server']['lat']}, {result['server']['lon']}`
+╭─《 🌐 SPEEDTEST SERVER 》
+├ <b>Name:</b> <code>{result['server']['name']}</code>
+├ <b>Country:</b> <code>{result['server']['country']}, {result['server']['cc']}</code>
+├ <b>Sponsor:</b> <code>{result['server']['sponsor']}</code>
+├ <b>Latency:</b> <code>{result['server']['latency']}</code>
+├ <b>Latitude:</b> <code>{result['server']['lat']}</code>
+╰ <b>Longitude:</b> <code>{result['server']['lon']}</code>
 
-╭─《 ⚙️ BOT STATUS 》
-╰ **Uptime:** `{uptime}`
+╭─《 👤 CLIENT DETAILS 》
+├ <b>IP Address:</b> <code>{result['client']['ip']}</code>
+├ <b>Latitude:</b> <code>{result['client']['lat']}</code>
+├ <b>Longitude:</b> <code>{result['client']['lon']}</code>
+├ <b>Country:</b> <code>{result['client']['country']}</code>
+├ <b>ISP:</b> <code>{result['client']['isp']}</code>
+├ <b>ISP Rating:</b> <code>{result['client']['isprating']}</code>
+╰ <b>Powered by Team SPY ⚡</b>
+
+<b>Bot Uptime:</b> <code>{uptime}</code>
 """
 
         try:
@@ -104,10 +113,10 @@ async def run_speedtest(bot: Client, message: Message):
             await message.reply_text(result_text)
 
     except Exception as e:
-        await status.edit_text(f"❌ **Speedtest Failed!**\n\n`{e}`")
+        await status.edit_text(f"❌ <b>Speedtest Failed!</b>\n\n<code>{e}</code>")
 
 # -------------------
 # Credits
 # -------------------
-# Developer: @MyselfNeon
-# Update Channel: @NeonFiles
+# 👨‍💻 Developer: @MyselfNeon
+# 📢 Channel: @NeonFiles

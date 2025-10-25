@@ -16,9 +16,25 @@ routes = web.RouteTableDef()
 async def root_route_handler(request):
     return web.Response(
         text="""
-        <body style="background-color:black; color:#39FF14; display:flex; justify-content:center; align-items:flex-start; height:100vh; margin:0; font-family:sans-serif; padding-top:20vh; font-size:4rem;">
-            Coded By @MyselfNeon
-        </body>
+        <body style="
+  background-color: #000;
+  color: #39FF14;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 3.5rem;
+  text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
+  letter-spacing: 2px;
+">
+  <div>Coded By <span style="color:#00ff99;">@MyselfNeon</span></div>
+  <div style="font-size: 2rem; margin-top: 20px; color:#00ff99;">
+    NeonFiler Bot is Live ...
+  </div>
+</body>
         """,
         content_type="text/html"
     )
@@ -158,3 +174,4 @@ async def media_streamer(request: web.Request, id: int, secure_hash: str):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

@@ -20,19 +20,26 @@ async def root_route_handler(request):
   background-color: #000;
   color: #39FF14;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
   margin: 0;
-  font-family: 'Courier New', monospace;
-  font-size: 3.5rem;
-  text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
-  letter-spacing: 2px;
+  font-family: 'Times New Roman', serif;
 ">
-  <div>Coded By <span style="color:#00ff99;">@MyselfNeon</span></div>
-  <div style="font-size: 2rem; margin-top: 20px; color:#00ff99;">
-    NeonFiler Bot is Live ...
+  <div style="
+    border: 3px solid #00ffff;
+    box-shadow: 0 0 20px #00ffff, inset 0 0 10px #00ffff;
+    padding: 40px 80px;
+    text-align: center;
+    border-radius: 15px;
+    text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
+  ">
+    <div style="font-size: 3.5rem; letter-spacing: 2px;">
+      Coded By <span style="color:#00ff99;">@MyselfNeon</span>
+    </div>
+    <div style="font-size: 2rem; margin-top: 20px; color:#00ff99;">
+      NeonFilter Bot is Live...
+    </div>
   </div>
 </body>
         """,
@@ -174,4 +181,5 @@ async def media_streamer(request: web.Request, id: int, secure_hash: str):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 

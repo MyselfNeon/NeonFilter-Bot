@@ -224,7 +224,7 @@ YEARS = [str(year) for year in range(1900, 2026)]
 # ============================================================
 # 🔹 STREAMING & DOWNLOAD
 # ============================================================
-STREAM_MODE = bool(environ.get('STREAM_MODE', False))
+STREAM_MODE = bool(environ.get('STREAM_MODE', True))
 
 # If Stream Mode Is True Then Fill All Required Variable, If False Then Don't Fill.
 MULTI_CLIENT = False
@@ -232,7 +232,7 @@ SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '60'))
 PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))  # 20 min
 
 ON_HEROKU = 'DYNO' in environ
-URL = environ.get("URL", "")
+URL = environ.get("URL", "https://neonfilter-bot-ume4.onrender.com/")
 
 
 # ============================================================
@@ -259,23 +259,6 @@ REACTIONS = [
 # Don't add unsupported emojis because Telegram reactions have limits
 
 
-
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

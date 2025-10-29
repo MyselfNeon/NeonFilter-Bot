@@ -11,25 +11,26 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-  <!-- ------- Custom Style ------- -->
+  <!-- ------- Custom Neon Style ------- -->
   <style>
     html {
       scroll-behavior: smooth;
     }
 
     body {
-      background-color: #0d0d0d;
-      color: #e0e0e0;
+      background-color: #000010;
+      color: #e0e0ff;
       font-family: "Poppins", sans-serif;
       overflow-x: hidden;
     }
 
-    /* Neon glow accents */
+    /* Neon Text */
     .neon-text {
-      color: #e0e0e0;
-      text-shadow: 0 0 10px #6a00ff, 0 0 20px #6a00ff, 0 0 30px #6a00ff;
+      color: #b57aff;
+      text-shadow: 0 0 8px #8f63ff, 0 0 16px #2d9bff;
     }
 
+    /* Neon Border */
     .neon-border {
       border: 1px solid rgba(106, 0, 255, 0.4);
       box-shadow: 0 0 15px rgba(106, 0, 255, 0.2);
@@ -42,28 +43,50 @@
       transform: translateY(-3px);
     }
 
+    /* Navbar */
+    nav.navbar {
+      background: linear-gradient(90deg, #0a001f, #12004d);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(158, 92, 255, 0.3);
+      box-shadow: 0 0 15px #6200ff66;
+    }
+
+    .navbar-brand {
+      font-weight: bold;
+      text-shadow: 0 0 10px #5b14ff, 0 0 20px #00bfff;
+    }
+
+    .offcanvas {
+      background: linear-gradient(135deg, #0d0224, #1e004f);
+      color: #e5dbff;
+      box-shadow: inset 0 0 20px #6200ff44;
+    }
+
     .offcanvas-body {
       max-height: calc(100vh - 200px);
       overflow-y: auto;
     }
 
+    /* Scrollbar */
     ::-webkit-scrollbar {
       width: 8px;
     }
+
     ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #6a00ff, #ff007a);
+      background: linear-gradient(180deg, #6a00ff, #00bfff);
       border-radius: 10px;
     }
+
     ::-webkit-scrollbar-track {
       background: #111;
     }
 
-    /* Scroll-to-top button */
+    /* Scroll-To-Top Button */
     #scrollTopBtn {
       position: fixed;
       bottom: 30px;
       right: 30px;
-      background: linear-gradient(45deg, #6a00ff, #ff007a);
+      background: linear-gradient(45deg, #6a00ff, #00bfff);
       border: none;
       border-radius: 50%;
       width: 45px;
@@ -76,23 +99,43 @@
     }
 
     #scrollTopBtn:hover {
-      box-shadow: 0 0 20px #ff007a;
+      box-shadow: 0 0 20px #00bfff;
       transform: scale(1.1);
     }
 
-    /* Navbar styling */
-    nav.navbar {
-      background-color: rgba(20, 20, 20, 0.9);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(106, 0, 255, 0.3);
+    /* Buttons */
+    .btn {
+      border-radius: 10px;
+      box-shadow: 0 0 10px #5a00ff88;
+      transition: all 0.3s ease-in-out;
     }
 
+    .btn:hover {
+      box-shadow: 0 0 20px #5a00ff, 0 0 30px #00bfff;
+      transform: translateY(-3px);
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(10, 10, 20, 0.8);
+      border: 1px solid rgba(91, 0, 255, 0.4);
+      box-shadow: 0 0 10px #5a00ff44;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 0 25px #5a00ff, 0 0 40px #00bfff;
+      transform: translateY(-5px);
+    }
+
+    /* Footer */
     footer {
-      background-color: #111;
-      color: #aaa;
+      background-color: #0b0015;
+      color: #b57aff;
       text-align: center;
       padding: 1rem 0;
       border-top: 1px solid rgba(106, 0, 255, 0.2);
+      text-shadow: 0 0 10px #5a00ff;
     }
   </style>
 </head>
@@ -102,11 +145,11 @@
   <!-- ------- Navbar ------- -->
   <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-      <a class="navbar-brand neon-text fw-bold" href="#">FileStream</a>
+      <a class="navbar-brand neon-text" href="#">FileStream</a>
       <button class="navbar-toggler text-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
         ☰
       </button>
-      <div class="offcanvas offcanvas-end bg-dark text-light" tabindex="-1" id="sidebar">
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="sidebar">
         <div class="offcanvas-header">
           <h5 class="offcanvas-title neon-text">Menu</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
@@ -126,7 +169,7 @@
   <!-- ------- Hero Section ------- -->
   <section id="home" class="pt-5 mt-5 container text-center wow animate__fadeIn">
     <h1 class="neon-text display-4 mt-5">Welcome to FileStream 🚀</h1>
-    <p class="lead mt-3">Stream and share files instantly — sleek, secure, and stylish.</p>
+    <p class="lead mt-3">Stream and share files instantly — sleek, secure, and glowing in style.</p>
     <a href="#features" class="btn btn-outline-light mt-4 neon-border">Explore Features</a>
   </section>
 
@@ -135,21 +178,21 @@
     <h2 class="neon-text mb-4 wow animate__fadeInUp">Features</h2>
     <div class="row g-4">
       <div class="col-md-4">
-        <div class="p-4 neon-border wow animate__fadeInLeft">
+        <div class="p-4 card wow animate__fadeInLeft">
           <h5 class="fw-bold">⚡ Fast Streaming</h5>
-          <p>Experience lightning-fast downloads and smooth playback.</p>
+          <p>Experience lightning-fast downloads and smooth playback with minimal delay.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="p-4 neon-border wow animate__fadeInUp">
+        <div class="p-4 card wow animate__fadeInUp">
           <h5 class="fw-bold">🔐 Secure Links</h5>
-          <p>Your files are protected and served with privacy in mind.</p>
+          <p>Your files are protected with high-level encryption and privacy assurance.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="p-4 neon-border wow animate__fadeInRight">
+        <div class="p-4 card wow animate__fadeInRight">
           <h5 class="fw-bold">🌍 Multi-Platform</h5>
-          <p>Access your files anywhere, anytime — with zero hassle.</p>
+          <p>Access your files anywhere, anytime — smooth on desktop and mobile alike.</p>
         </div>
       </div>
     </div>
@@ -158,12 +201,14 @@
   <!-- ------- Contact Section ------- -->
   <section id="contact" class="py-5 text-center container wow animate__fadeInUp">
     <h2 class="neon-text mb-4">Contact</h2>
-    <p>Need help or found a bug? Reach us on our <a href="https://t.me/+o1s-8MppL2syYTI9" class="text-decoration-none text-info">Support Group</a>.</p>
+    <p>Need help or found a bug? Reach us on our
+      <a href="https://t.me/+o1s-8MppL2syYTI9" class="text-decoration-none text-info">Support Group</a>.
+    </p>
   </section>
 
   <!-- ------- Footer ------- -->
   <footer>
-    <p>© 2025 FileStream | Designed by Neon ✨</p>
+    <p>© 2025 FileStream | Designed by <span class="neon-text">Neon ✨</span></p>
   </footer>
 
   <!-- ------- Scroll-To-Top Button ------- -->
@@ -185,5 +230,6 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   </script>
+
 </body>
 </html>

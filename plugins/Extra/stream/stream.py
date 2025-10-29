@@ -8,15 +8,15 @@ from Neon.util.human_readable import humanbytes
 @Client.on_message(filters.private & filters.command("stream"))
 async def stream_start(client, message):
     if not STREAM_MODE:
-        return await message.reply("🚫 Streaming mode is disabled.")
+        return await message.reply("🚫 Streaming Mode is Disabled.")
 
     msg = await client.ask(
         message.chat.id, 
-        "**__Now send me your file or video to get stream & download links.__**"
+        "**__Now send me your File or Video to get Stream & Download Links.__**"
     )
 
     if msg.media not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.DOCUMENT]:
-        return await message.reply("❌ Unsupported media type. Please send a video or document.")
+        return await message.reply("❌ Unsupported Media Type. Please Send a Video or Document.")
 
     # ✅ Fix here
     file = getattr(msg, msg.media.value)
@@ -37,28 +37,28 @@ async def stream_start(client, message):
     download = f"{URL}{log_msg.id}/{file_name_encoded}?hash={file_hash}"
 
     await log_msg.reply_text(
-        text=f"**• Link generated for ID:** `{user.id}`\n"
-             f"**• Username:** {user.mention}\n\n"
-             f"**• File Name:** {get_name(log_msg)}",
+        text=f"**__➠ Link Generated for ID:** `{user.id}`\n"
+             f"**__➠ Username:** {user.mention}__\n\n"
+             f"**__➠ File Name:** {get_name(log_msg)}__",
         disable_web_page_preview=True,
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🚀 Fast Download", url=download),
-             InlineKeyboardButton("🖥 Watch Online", url=stream)]
+            [InlineKeyboardButton("🚀 Fᴀsᴛ Dᴏᴡɴʟᴏᴀᴅ", url=download),
+             InlineKeyboardButton("🖥 Wᴀᴛᴄʜ Oɴʟɪɴᴇ", url=stream)]
         ])
     )
 
     rm = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🖥 Stream", url=stream),
-         InlineKeyboardButton("📥 Download", url=download)]
+        [InlineKeyboardButton("🖥 Sᴛʀᴇᴀᴍ", url=stream),
+         InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ", url=download)]
     ])
 
     msg_text = (
         "<i><u>𝗬𝗼𝘂𝗿 𝗟𝗶𝗻𝗸 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗲𝗱!</u></i>\n\n"
-        f"<b>📂 File Name:</b> <i>{get_name(log_msg)}</i>\n"
-        f"<b>📦 File Size:</b> <i>{filesize}</i>\n\n"
-        f"<b>📥 Download:</b> <i>{download}</i>\n"
-        f"<b>🖥 Watch:</b> <i>{stream}</i>\n\n"
-        "<b>🚸 Note:</b> Link won’t expire unless I delete it."
+        f"<b><i>📂 File Name:</b>\n{get_name(log_msg)}</i>\n"
+        f"<b><i>📦 File Size:</b> {filesize}</i>\n\n"
+        f"<b><i>📥 Download:</i></b>\n<code>{download}</code>\n"
+        f"<b><i>🖥 Watch:</i></b>\n<code>{stream}</code>\n\n"
+        "<b><i>🚫 Link won’t Expire unless I Delete it.</i></b>"
     )
 
     await message.reply_text(

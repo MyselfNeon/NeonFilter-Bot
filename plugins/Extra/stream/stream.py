@@ -16,7 +16,7 @@ async def stream_start(client, message):
     )
 
     if msg.media not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.DOCUMENT]:
-        return await message.reply("❌ Unsupported Media Type. Please Send a Video or Document.")
+        return await message.reply("**__❌ Unsupported Media Type. Please Send a Video or Document.__**")
 
     # ✅ Fix here
     file = getattr(msg, msg.media.value)
@@ -56,8 +56,8 @@ async def stream_start(client, message):
         "<i><u>𝗬𝗼𝘂𝗿 𝗟𝗶𝗻𝗸 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗲𝗱!</u></i>\n\n"
         f"<b><i>📂 File Name:</b>\n{get_name(log_msg)}</i>\n"
         f"<b><i>📦 File Size:</b> {filesize}</i>\n\n"
-        f"<b><i>📥 Download:</i></b>\n<code>{download}</code>\n"
-        f"<b><i>🖥 Watch:</i></b>\n<code>{stream}</code>\n\n"
+        f"<b><i>📥 Download:</i></b>\n<blockquote><code>{download}</code></blockquote expandable>\n"
+        f"<b><i>🖥 Watch:</i></b>\n<blockquote><code>{stream}</code></blockquote expandable>\n\n"
         "<b><i>🚫 Link won’t Expire unless I Delete it.</i></b>"
     )
 

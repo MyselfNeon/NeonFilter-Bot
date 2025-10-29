@@ -56,8 +56,8 @@ async def stream_start(client, message):
         "<i><u>𝗬𝗼𝘂𝗿 𝗟𝗶𝗻𝗸 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗲𝗱!</u></i>\n\n"
         f"<b><i>📂 File Name:</b>\n{get_name(log_msg)}</i>\n"
         f"<b><i>📦 File Size:</b> {filesize}</i>\n\n"
-        f"<b><i>📥 Download:</i></b>\n<blockquote><code>{download}</code></blockquote expandable>\n"
-        f"<b><i>🖥 Watch:</i></b>\n<blockquote><code>{stream}</code></blockquote expandable>\n\n"
+        f"<b><i>📥 Download:</i></b>\n<blockquote expandable><code>{download}</code></blockquote>\n"
+        f"<b><i>🖥 Watch:</i></b>\n<blockquote expandable><code>{stream}</code></blockquote>\n\n"
         "<b><i>🚫 Link won’t Expire unless I Delete it.</i></b>"
     )
 

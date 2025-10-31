@@ -17,7 +17,7 @@ API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
 # Keep-Alive URL
-KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "https://neonfilter-bot-ume4.onrender.com/")  # <-- Add this line
+KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "")  # <-- Add this line
 
 # ============================================================
 # 🔹 START PICTURES
@@ -232,7 +232,7 @@ SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '60'))
 PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))  # 20 min
 
 ON_HEROKU = 'DYNO' in environ
-URL = environ.get("URL", "https://neonfilter-bot-ume4.onrender.com/")
+URL = environ.get("URL", "")
 
 
 # ============================================================
@@ -262,3 +262,4 @@ REACTIONS = [
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

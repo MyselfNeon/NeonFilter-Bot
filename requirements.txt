@@ -59,10 +59,6 @@ openai
 pyromod
 git+https://github.com/Joelkb/cinemagoer
 
-# --- MEGA Upload Plugin Dependencies ---
-git+https://github.com/demotivirus/mega.py.git
-tenacity
-tqdm
-
-
-
+# --- NEW (added for your improved plugin) ---
+# These ensure SSL retry logic & async downloads work perfectly
+async-timeout==4.0.3

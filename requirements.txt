@@ -60,6 +60,7 @@ pyromod
 git+https://github.com/Joelkb/cinemagoer
 
 # --- MEGA Upload Plugin Dependencies ---
-mega.py==1.0.8
+git+https://github.com/odwyersoftware/mega.py
 tenacity
 tqdm
+

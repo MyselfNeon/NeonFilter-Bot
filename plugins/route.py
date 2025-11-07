@@ -11,7 +11,7 @@ from Neon.util.render_template import render_page
 
 routes = web.RouteTableDef()
 
-# Root route with clickable neon HTML message
+# Root route with mobile-friendly clickable neon HTML
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
     return web.Response(
@@ -31,6 +31,8 @@ async def root_route_handler(request):
               display: flex;
               justify-content: center;
               align-items: center;
+              text-align: center;
+              overflow: hidden;
             }
 
             a {
@@ -42,10 +44,12 @@ async def root_route_handler(request):
               height: 100%;
               width: 100%;
               cursor: pointer;
+              padding: 10px;
+              box-sizing: border-box;
             }
 
             h1 {
-              font-size: 7rem;
+              font-size: clamp(2.5rem, 8vw, 7rem);
               letter-spacing: 2px;
               margin-bottom: 0.3rem;
               animation: redToBlue 2s infinite alternate ease-in-out;
@@ -55,9 +59,9 @@ async def root_route_handler(request):
             }
 
             h2 {
-              font-size: 4.8rem;
+              font-size: clamp(1.8rem, 6vw, 4.8rem);
               letter-spacing: 2px;
-              color: #39FF14; /* hacker green */
+              color: #39FF14;
               text-shadow:
                 0 0 1px #39FF14,
                 0 0 3px #00FF00;
@@ -216,6 +220,7 @@ async def media_streamer(request: web.Request, id: int, secure_hash: str):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

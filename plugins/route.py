@@ -11,37 +11,72 @@ from Neon.util.render_template import render_page
 
 routes = web.RouteTableDef()
 
-# Root route with styled HTML message
+# Root route with clickable neon HTML message
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
     return web.Response(
         text="""
-        <body style="
-  background-color: #000;
-  color: #39FF14;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-  font-family: 'Times New Roman', serif;
-">
-  <div style="
-    border: 3px solid #00ffff;
-    box-shadow: 0 0 20px #00ffff, inset 0 0 10px #00ffff;
-    padding: 40px 80px;
-    text-align: center;
-    border-radius: 15px;
-    text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
-  ">
-    <div style="font-size: 3.5rem; letter-spacing: 2px;">
-      Coded By <span style="color:#00ff99;">@MyselfNeon</span>
-    </div>
-    <div style="font-size: 2rem; margin-top: 20px; color:#00ff99;">
-      NeonFilter Bot is Live...
-    </div>
-  </div>
-</body>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Neon Duo Text</title>
+          <style>
+            body {
+              background-color: black;
+              margin: 0;
+              height: 100vh;
+              font-family: 'Brush Script MT', cursive;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+
+            a {
+              text-decoration: none;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              height: 100%;
+              width: 100%;
+              cursor: pointer;
+            }
+
+            h1 {
+              font-size: 7rem;
+              letter-spacing: 2px;
+              margin-bottom: 0.3rem;
+              animation: redToBlue 2s infinite alternate ease-in-out;
+              text-shadow:
+                0 0 1px currentColor,
+                0 0 3px currentColor;
+            }
+
+            h2 {
+              font-size: 4.8rem;
+              letter-spacing: 2px;
+              color: #39FF14; /* hacker green */
+              text-shadow:
+                0 0 1px #39FF14,
+                0 0 3px #00FF00;
+            }
+
+            @keyframes redToBlue {
+              0% { color: #FF2400; }
+              50% { color: #FF1493; }
+              100% { color: #00BFFF; }
+            }
+          </style>
+        </head>
+        <body>
+          <a href="https://t.me/ZeroFilterBot" target="_blank">
+            <h1>ZeroFilter-Bot</h1>
+            <h2>Coded By @MyselfNeon</h2>
+          </a>
+        </body>
+        </html>
         """,
         content_type="text/html"
     )
@@ -181,5 +216,6 @@ async def media_streamer(request: web.Request, id: int, secure_hash: str):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 

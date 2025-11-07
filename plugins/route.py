@@ -11,7 +11,7 @@ from Neon.util.render_template import render_page
 
 routes = web.RouteTableDef()
 
-# Root route with mobile-friendly clickable neon HTML
+# Root route with mobile-friendly and slightly upper-positioned neon HTML
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
     return web.Response(
@@ -29,10 +29,12 @@ async def root_route_handler(request):
               height: 100vh;
               font-family: 'Brush Script MT', cursive;
               display: flex;
-              justify-content: center;
+              flex-direction: column;
+              justify-content: flex-start; /* content starts at top */
               align-items: center;
               text-align: center;
               overflow: hidden;
+              padding-top: 20vh; /* pushes content slightly downward */
             }
 
             a {
@@ -41,11 +43,9 @@ async def root_route_handler(request):
               flex-direction: column;
               justify-content: center;
               align-items: center;
-              height: 100%;
+              height: auto;
               width: 100%;
               cursor: pointer;
-              padding: 10px;
-              box-sizing: border-box;
             }
 
             h1 {
@@ -220,6 +220,7 @@ async def media_streamer(request: web.Request, id: int, secure_hash: str):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

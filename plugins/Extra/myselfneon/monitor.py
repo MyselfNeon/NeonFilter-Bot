@@ -5,27 +5,27 @@ from pyrogram import Client, filters
 from info import BOT_TOKEN  # import only your bot token
 
 # === CONFIG ===
-CHAT_ID = -1002596933554  # Telegram chat/group ID
+CHAT_ID = -1002596933554
 URL = "https://platinmods.com/forums/untested-android-apps.155/"
 HASH_FILE = "last_hash.txt"
 
-# === BOT SETUP ===
-bot = Client("monitor_bot", bot_token=BOT_TOKEN)
+# this should use the existing client instead of creating new
+# if you use multi_clients or something like NeonBot, replace "Client" with that name
+bot = Client("NeonMonitor", bot_token=BOT_TOKEN)
 
-# === HELPER FUNCTION ===
+# === PAGE CHECKER ===
 def get_page_hash():
     try:
         response = requests.get(URL, timeout=10)
         response.raise_for_status()
-        page_hash = hashlib.sha256(response.text.encode('utf-8')).hexdigest()
-        return page_hash
+        return hashlib.sha256(response.text.encode('utf-8')).hexdigest()
     except Exception as e:
         print(f"[Error fetching page] {e}")
         return None
 
 async def check_page_change():
     current_hash = get_page_hash()
-    if current_hash is None:
+    if not current_hash:
         return
 
     try:
@@ -35,15 +35,9 @@ async def check_page_change():
         last_hash = ""
 
     if current_hash != last_hash:
-        # Save new hash
         with open(HASH_FILE, "w") as f:
             f.write(current_hash)
-
-        # Send Telegram alert
-        await bot.send_message(
-            CHAT_ID,
-            f"⚠️ **Platinmods Page Changed!**\n🔗 {URL}"
-        )
+        await bot.send_message(CHAT_ID, f"⚠️ **Platinmods Page Changed!**\n🔗 {URL}")
         print("[+] Change detected and notified!")
     else:
         print("[=] No change detected.")
@@ -69,13 +63,12 @@ monitor_task = None
 async def start_monitor(_, message):
     global monitor_task
     if monitor_task and not monitor_task.done():
-        await message.reply_text("🟢 Monitoring already running!")
-        return
+        return await message.reply_text("🟢 Monitoring already running!")
 
     async def monitor_loop():
         while True:
             await check_page_change()
-            await asyncio.sleep(300)  # check every 5 minutes
+            await asyncio.sleep(300)  # 5 min
 
     monitor_task = asyncio.create_task(monitor_loop())
     await message.reply_text("🚀 Monitoring started (every 5 min)!")
@@ -87,7 +80,4 @@ async def stop_monitor(_, message):
         monitor_task.cancel()
         await message.reply_text("🛑 Monitoring stopped.")
     else:
-        await message.reply_text("⚠️ Monitoring was not running.")
-
-print("✅ Bot started! Use /helpmonitor to see commands.")
-bot.run()
+        await message.reply_text("⚠️ Monitoring not running.")

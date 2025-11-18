@@ -21,7 +21,7 @@ async def root_route_handler(request):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Neon Duo Text</title>
+  <title>@MyselfNeon</title>
   <style>
     body {
       background-color: black;
@@ -237,6 +237,7 @@ async def media_streamer(request: web.Request, id: int, secure_hash: str):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

@@ -25,8 +25,7 @@ async def doc(bot, update):
     try:
         type = update.data.split("_")[1]
         new_name = update.message.text
-        # Extract the filename part from the message text "New Name :- filename"
-        new_filename = new_name.split(":-")[1].strip() 
+        new_filename = new_name.split(":-")[1]
         file = update.message.reply_to_message
         file_path = f"downloads/{new_filename}"
         ms = await update.message.edit("__**Please Wait...__ 😇😍**\n\n__**Downloading File to my Servers__  📥**")
@@ -56,20 +55,6 @@ async def doc(bot, update):
         filesize = humanize.naturalsize(media.file_size) 
         c_caption = await db.get_caption(update.message.chat.id)
         c_thumb = await db.get_thumbnail(update.message.chat.id)
-        
-        # --- START NEW METADATA LOGIC ---
-        c_metadata = await db.get_metadata(update.message.chat.id)
-        
-        # Process and format the metadata for pyrogram
-        metadata_dict = {}
-        if c_metadata:
-            for item in c_metadata.split('|'):
-                key_value = item.strip().split('=', 1)
-                if len(key_value) == 2:
-                    # Pyrogram expects lowercase keys for audio/video metadata (e.g., 'Title' -> 'title')
-                    metadata_dict[key_value[0].strip().lower()] = key_value[1].strip()
-        # --- END NEW METADATA LOGIC ---
-        
         if c_caption:
              try:
                  caption = c_caption.format(filename=new_filename, filesize=humanize.naturalsize(media.file_size), duration=convert(duration))
@@ -106,11 +91,7 @@ async def doc(bot, update):
 	            thumb=ph_path,
 	            duration=duration,
 	            progress=progress_for_pyrogram,
-	            progress_args=( "__**Please Wait...__ 😇😍**\n\n__**Processing File Upload...__  📤**",  ms, c_time),
-	            # --- Apply metadata ---
-	            **metadata_dict 
-	            # ----------------------
-	            ) 
+	            progress_args=( "__**Please Wait...__ 😇😍**\n\n__**Processing File Upload...__  📤**",  ms, c_time)) 
            elif type == "audio": 
                await bot.send_audio(
 	            update.message.chat.id,
@@ -119,11 +100,7 @@ async def doc(bot, update):
 	            thumb=ph_path,
 	            duration=duration,
 	            progress=progress_for_pyrogram,
-	            progress_args=( "__**Please Wait...__ 😇😍**\n\n__**Processing File Upload...__  📤**",  ms, c_time),
-	            # --- Apply metadata ---
-	            **metadata_dict
-	            # ----------------------
-	            ) 
+	            progress_args=( "__**Please Wait...__ 😇😍**\n\n__**Processing File Upload...__  📤**",  ms, c_time)) 
         except Exception as e: 
             await ms.edit(f" Erro {e}") 
             os.remove(file_path)

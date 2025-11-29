@@ -1,4 +1,4 @@
-#Genlink.py
+# genlink.py
 import re
 import os
 import json
@@ -24,21 +24,41 @@ async def allowed(_, __, message):
 
 @Client.on_message(filters.command(['link', 'plink']) & filters.create(allowed))
 async def gen_link_s(bot, message):
+    # 1. Use bot.ask() to get the file message
     neo = await bot.ask(
         chat_id=message.from_user.id,
-        text="**__Now Send Me Your Message Which You Want To Store.__**"
+        text="**__Now Send Me Your File (Video, Audio, Document, Photo, or Animation) Which You Want To Store.__**"
     )
-    file_type = neo.media
-    if file_type not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.AUDIO, enums.MessageMediaType.DOCUMENT]:
-        return await neo.reply("Send me only video,audio,file or document.")
+
+    # 2. Robustly check for the media object regardless of the specific type
+    # This tries to get the file object from the most common media attributes
+    file_object = neo.document or neo.video or neo.audio or neo.photo or neo.animation
+
+    if not file_object:
+        # If no file object is found, it means the user sent a pure text message, sticker, etc.
+        return await neo.reply("❌ **Invalid Input:** Please send a file (Document, Video, Audio, Photo, or Animation), not text or stickers.")
+    
+    # Optional: If you strictly only want Document/Video/Audio, you can re-enable the file_type check:
+    # file_type = neo.media
+    # if file_type not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.AUDIO, enums.MessageMediaType.DOCUMENT, enums.MessageMediaType.PHOTO, enums.MessageMediaType.ANIMATION]:
+    #     return await neo.reply("Send me only video, audio, document, photo, or animation.")
+    
     if message.has_protected_content and message.chat.id not in ADMINS:
         return await message.reply("okDa")
-    file_id, ref = unpack_new_file_id(getattr(neo, file_type.value).file_id)
+        
+    # 3. Get file_id from the detected file object
+    file_id, ref = unpack_new_file_id(file_object.file_id)
+    
+    # 4. Generate the base64 encoded link
     string = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
     string += file_id
     outstr = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
+    
+    # 5. Reply with the generated link
     await message.reply(f"**__Here is Your Link :\n\nhttps://t.me/{temp.U_NAME}?start={outstr}__**")    
 
+
+# ---
 
 @Client.on_message(filters.command(['batch', 'pbatch']) & filters.create(allowed))
 async def gen_link_batch(bot, message):
@@ -86,6 +106,7 @@ async def gen_link_batch(bot, message):
     except (UsernameInvalid, UsernameNotModified):
         return await message.reply('**__Invalid Link Specified__**')
     except Exception as e:
+        logger.exception(e) # Log the exception for debugging
         return await message.reply(f'**__Errors - {e}__**')
 
     sts = await message.reply(
@@ -105,49 +126,63 @@ async def gen_link_batch(bot, message):
 
     async for msg in bot.iter_messages(f_chat_id, l_msg_id, f_msg_id):
         tot += 1
+        # Update status message occasionally to show progress (optional, but good practice)
+        if tot % 20 == 0:
+            try:
+                await sts.edit(FRMT.format(total=(l_msg_id - f_msg_id + 1), current=tot, rem=(l_msg_id - f_msg_id + 1 - tot), sts="Processing..."))
+            except:
+                pass # Ignore FloodWait
+
         if msg.empty or msg.service:
             continue
         if not msg.media:
             continue  # only media messages supported
+            
         try:
-            file_type = msg.media
-            file = getattr(msg, file_type.value)
+            # Get the file object using the same robust method as /link
+            file_object = msg.document or msg.video or msg.audio or msg.photo or msg.animation
+            
+            if not file_object:
+                continue # Skip if no storable file object is found
+
             caption = getattr(msg, 'caption', '')
             if caption:
                 caption = caption.html
-            if file:
-                file = {
-                    "file_id": file.file_id,
-                    "caption": caption,
-                    "title": getattr(file, "file_name", ""),
-                    "size": file.file_size,
-                    "protect": cmd.lower().strip() == "/pbatch",
-                }
-                og_msg += 1
-                outlist.append(file)
-        except:
-            pass
+            
+            file = {
+                "file_id": file_object.file_id,
+                "caption": caption,
+                "title": getattr(file_object, "file_name", ""),
+                "size": file_object.file_size,
+                "protect": cmd.lower().strip() == "/pbatch",
+            }
+            og_msg += 1
+            outlist.append(file)
+            
+        except Exception as e:
+            logger.error(f"Error processing message {msg.id} in chat {f_chat_id}: {e}")
+            pass # Continue to the next message even if one fails
 
-    with open(f"batchmode_{message.from_user.id}.json", "w+") as out:
-        json.dump(outlist, out)
+    # Save the file list to a JSON file
+    file_path = f"batchmode_{message.from_user.id}.json"
+    with open(file_path, "w+") as out:
+        json.dump(outlist, out, indent=4)
 
+    # Upload the JSON file to the log channel
     post = await bot.send_document(
         LOG_CHANNEL,
-        f"batchmode_{message.from_user.id}.json",
+        file_path,
         file_name="Batch.json",
-        caption="**__⚠️ Generated for Filestore.__**"
+        caption=f"**__⚠️ Generated for Filestore. Contains {og_msg} files.__**"
     )
-    os.remove(f"batchmode_{message.from_user.id}.json")
+    os.remove(file_path) # Clean up local file
 
+    # Generate the final link
     file_id, ref = unpack_new_file_id(post.document.file_id)
     await sts.edit(
         f"**__Here is Your Link\nContains `{og_msg}` Files.\n https://t.me/{temp.U_NAME}?start=BATCH-{file_id}__**"
     )
 
-
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-
-
-

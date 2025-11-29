@@ -24,39 +24,52 @@ async def allowed(_, __, message):
 
 @Client.on_message(filters.command(['link', 'plink']) & filters.create(allowed))
 async def gen_link_s(bot, message):
-    # 1. Use bot.ask() to get the file message
-    neo = await bot.ask(
-        chat_id=message.from_user.id,
-        text="**__Now Send Me Your File (Video, Audio, Document, Photo, or Animation) Which You Want To Store.__**"
-    )
+    user_id = message.from_user.id
+    
+    # Send the prompt and wait for the user's response (file)
+    prompt_msg = await message.reply("**__Now Send Me Your File (Video, Audio, Document, Photo, or Animation) Which You Want To Store.__**")
 
-    # 2. Robustly check for the media object regardless of the specific type
-    # This tries to get the file object from the most common media attributes
+    try:
+        # Use get_response to wait for the next message from the same user
+        neo = await bot.get_response(
+            chat_id=user_id,
+            # Set a timeout in seconds (e.g., 60 seconds)
+            timeout=60
+        )
+    except Exception as e:
+        # If timeout or any other error occurs
+        await prompt_msg.edit("**Timed out!** Please run the command again if you still want to generate a link.")
+        return
+
+    # Check for the file object robustly
     file_object = neo.document or neo.video or neo.audio or neo.photo or neo.animation
 
     if not file_object:
-        # If no file object is found, it means the user sent a pure text message, sticker, etc.
-        return await neo.reply("❌ **Invalid Input:** Please send a file (Document, Video, Audio, Photo, or Animation), not text or stickers.")
+        # Check if they sent a text message instead of a file
+        if neo.text:
+            return await neo.reply("❌ **Invalid Input:** You sent a text message. Please send a file (Document, Video, Audio, Photo, or Animation).")
+        else:
+            # For stickers, animated emojis, etc.
+            return await neo.reply("❌ **Invalid Input:** Please send a file (Document, Video, Audio, Photo, or Animation), not stickers or other unsupported media.")
     
-    # Optional: If you strictly only want Document/Video/Audio, you can re-enable the file_type check:
-    # file_type = neo.media
-    # if file_type not in [enums.MessageMediaType.VIDEO, enums.MessageMediaType.AUDIO, enums.MessageMediaType.DOCUMENT, enums.MessageMediaType.PHOTO, enums.MessageMediaType.ANIMATION]:
-    #     return await neo.reply("Send me only video, audio, document, photo, or animation.")
-    
-    if message.has_protected_content and message.chat.id not in ADMINS:
-        return await message.reply("okDa")
+    # Check for protected content (using the message where the file was sent)
+    if neo.has_protected_content and message.chat.id not in ADMINS:
+        return await neo.reply("okDa")
         
-    # 3. Get file_id from the detected file object
-    file_id, ref = unpack_new_file_id(file_object.file_id)
+    # Get file_id from the detected file object
+    try:
+        file_id, ref = unpack_new_file_id(file_object.file_id)
+    except Exception as e:
+        logger.error(f"Error unpacking file ID: {e}")
+        return await neo.reply("❌ **File Error:** Could not process the file ID for link generation.")
     
-    # 4. Generate the base64 encoded link
+    # Generate the base64 encoded link
     string = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
     string += file_id
     outstr = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
     
-    # 5. Reply with the generated link
-    await message.reply(f"**__Here is Your Link :\n\nhttps://t.me/{temp.U_NAME}?start={outstr}__**")    
-
+    # Reply with the generated link
+    await message.reply(f"**__Here is Your Link :\n\nhttps://t.me/{temp.U_NAME}?start={outstr}__**")
 
 # ---
 
@@ -186,3 +199,4 @@ async def gen_link_batch(bot, message):
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

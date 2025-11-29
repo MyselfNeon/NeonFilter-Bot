@@ -24,7 +24,7 @@ async def allowed(_, __, message):
 
 @Client.on_message(filters.command(['link', 'plink']) & filters.create(allowed))
 async def gen_link_s(bot, message):
-    """Generates a direct link from a single message link provided in the command."""
+    """Generates a direct link from a single message link provided in the command argument."""
     
     # 1. Check for link argument
     if " " not in message.text:
@@ -41,6 +41,7 @@ async def gen_link_s(bot, message):
     cmd, file_link = links
     
     # 2. Extract chat ID and message ID using Regex
+    # Regex: (t.me/)(c/)?(chat_id/username)/(message_id)
     regex = re.compile(
         "(https://)?(t\.me/|telegram\.me/|telegram\.dog/)(c/)?(\d+|[a-zA-Z_0-9]+)/(\d+)$"
     )
@@ -53,7 +54,7 @@ async def gen_link_s(bot, message):
     msg_id = int(match.group(5))
     
     if chat_id_str.isnumeric():
-        f_chat_id = int("-100" + chat_id_str)
+        f_chat_id = int("-100" + chat_id_str) # Convert numeric channel ID to Pyrogram format
     else:
         f_chat_id = chat_id_str # Use username if it's not a numeric channel ID
         
@@ -61,8 +62,8 @@ async def gen_link_s(bot, message):
     try:
         msg = await bot.get_messages(f_chat_id, msg_id)
     except Exception as e:
-        logger.error(f"Error fetching message for single link: {e}")
-        return await message.reply(f'**__Error: Could not access the message. Check if the bot is an admin in the channel/group.__**\n\nDetails: `{e}`')
+        logger.error(f"Error fetching message for single link: {e}", exc_info=True)
+        return await message.reply(f'**__Error: Could not access the message. Check if the bot is an admin in the channel/group.__**\n\nDetails: `{type(e).__name__}`')
 
     # 4. Check for media
     file_object = msg.document or msg.video or msg.audio or msg.photo or msg.animation
@@ -70,12 +71,18 @@ async def gen_link_s(bot, message):
     if not file_object:
         return await message.reply("❌ **Invalid Message:** The linked message does not contain a supported file (document, video, audio, photo, or animation).")
 
-    # 5. Check protected content (optional, added for completeness)
+    # 5. Check protected content
     if msg.has_protected_content and message.chat.id not in ADMINS:
         return await message.reply("okDa")
         
     # 6. Generate the final link
-    file_id, ref = unpack_new_file_id(file_object.file_id)
+    # FIX: unpack_new_file_id returns 3 values, so we use _ to discard the third one (file type)
+    try:
+        file_id, ref, _ = unpack_new_file_id(file_object.file_id)
+    except ValueError:
+        # Fallback for older unpack_new_file_id versions that only return 2 values
+        file_id, ref = unpack_new_file_id(file_object.file_id)
+
     
     string = 'filep_' if cmd.lower().strip() == "/plink" else 'file_'
     string += file_id
@@ -136,8 +143,7 @@ async def gen_link_batch(bot, message):
     sts = await message.reply(
         "**__Generating Link for Your Message.\nThis May take Time Depending Upon Number of Messages__**"
     )
-    
-    # Existing logic for handling FILE_STORE_CHANNEL for large batches
+
     if chat_id in FILE_STORE_CHANNEL:
         string = f"{f_msg_id}_{l_msg_id}_{chat_id}_{cmd.lower().strip()}"
         b_64 = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
@@ -152,7 +158,6 @@ async def gen_link_batch(bot, message):
 
     async for msg in bot.iter_messages(f_chat_id, l_msg_id, f_msg_id):
         tot += 1
-        # Update status message occasionally
         if tot % 20 == 0:
             try:
                 await sts.edit(FRMT.format(total=total_messages, current=tot, rem=total_messages - tot, sts="Processing..."))
@@ -165,7 +170,6 @@ async def gen_link_batch(bot, message):
             continue
             
         try:
-            # Use robust file object detection
             file_object = msg.document or msg.video or msg.audio or msg.photo or msg.animation
             
             if not file_object:
@@ -201,7 +205,12 @@ async def gen_link_batch(bot, message):
     )
     os.remove(file_path)
 
-    file_id, ref = unpack_new_file_id(post.document.file_id)
+    # FIX: unpack_new_file_id returns 3 values, so we use _ to discard the third one (file type)
+    try:
+        file_id, ref, _ = unpack_new_file_id(post.document.file_id)
+    except ValueError:
+        file_id, ref = unpack_new_file_id(post.document.file_id)
+
     await sts.edit(
         f"**__Here is Your Link\nContains `{og_msg}` Files.\n https://t.me/{temp.U_NAME}?start=BATCH-{file_id}__**"
     )

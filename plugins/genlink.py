@@ -24,54 +24,65 @@ async def allowed(_, __, message):
 
 @Client.on_message(filters.command(['link', 'plink']) & filters.create(allowed))
 async def gen_link_s(bot, message):
-    user_id = message.from_user.id
-    chat_id = message.chat.id # Use the chat ID where the command was sent
-
-    # 1. Send the prompt message first
-    prompt_text = "**__Now Send Me Your File (Video, Audio, Document, Photo, or Animation) Which You Want To Store.__**"
+    """Generates a direct link from a single message link provided in the command."""
     
-    # We use a separate variable for the prompt to ensure it's sent immediately.
-    await bot.send_message(chat_id, prompt_text)
-
-    # 2. Wait for the user's next message (the file) in that chat
-    try:
-        # Use get_response to wait for the next message from the same user in the current chat
-        neo = await bot.get_response(
-            chat_id=chat_id, # Use the chat_id of the message
-            timeout=60
+    # 1. Check for link argument
+    if " " not in message.text:
+        return await message.reply(
+            "**__Use Correct Format.\n\nExample <code>/link https://t.me/NeonFiles/5428</code>__**"
         )
-    except Exception as e:
-        # Catch the exception and give feedback
-        return await message.reply("⏳ **Timed Out!** You didn't send a file within 60 seconds. Please try the command again.")
-
-
-    # 3. Robustly check for the file object
-    file_object = neo.document or neo.video or neo.audio or neo.photo or neo.animation
-
-    if not file_object:
-        if neo.text:
-            return await neo.reply("❌ **Invalid Input:** You sent a text message. Please send a file.")
-        else:
-            return await neo.reply("❌ **Invalid Input:** Please send a file, not stickers or other unsupported media.")
     
-    # Check for protected content
-    if neo.has_protected_content and message.chat.id not in ADMINS:
-        return await neo.reply("okDa")
+    links = message.text.strip().split(" ")
+    if len(links) != 2:
+        return await message.reply(
+            "**__Use Correct Format.\n\nExample <code>/link https://t.me/NeonFiles/5428</code>__**"
+        )
+
+    cmd, file_link = links
+    
+    # 2. Extract chat ID and message ID using Regex
+    regex = re.compile(
+        "(https://)?(t\.me/|telegram\.me/|telegram\.dog/)(c/)?(\d+|[a-zA-Z_0-9]+)/(\d+)$"
+    )
+
+    match = regex.match(file_link)
+    if not match:
+        return await message.reply('**❌ __Invalid Link Specified__**')
         
-    # 4. Get file_id from the detected file object
-    try:
-        file_id, ref = unpack_new_file_id(file_object.file_id)
-    except Exception as e:
-        logger.error(f"Error unpacking file ID: {e}")
-        return await neo.reply("❌ **File Error:** Could not process the file ID for link generation.")
+    chat_id_str = match.group(4)
+    msg_id = int(match.group(5))
     
-    # 5. Generate and send the final link
-    string = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
+    if chat_id_str.isnumeric():
+        f_chat_id = int("-100" + chat_id_str)
+    else:
+        f_chat_id = chat_id_str # Use username if it's not a numeric channel ID
+        
+    # 3. Get the message object
+    try:
+        msg = await bot.get_messages(f_chat_id, msg_id)
+    except Exception as e:
+        logger.error(f"Error fetching message for single link: {e}")
+        return await message.reply(f'**__Error: Could not access the message. Check if the bot is an admin in the channel/group.__**\n\nDetails: `{e}`')
+
+    # 4. Check for media
+    file_object = msg.document or msg.video or msg.audio or msg.photo or msg.animation
+    
+    if not file_object:
+        return await message.reply("❌ **Invalid Message:** The linked message does not contain a supported file (document, video, audio, photo, or animation).")
+
+    # 5. Check protected content (optional, added for completeness)
+    if msg.has_protected_content and message.chat.id not in ADMINS:
+        return await message.reply("okDa")
+        
+    # 6. Generate the final link
+    file_id, ref = unpack_new_file_id(file_object.file_id)
+    
+    string = 'filep_' if cmd.lower().strip() == "/plink" else 'file_'
     string += file_id
     outstr = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
     
     await message.reply(f"**__Here is Your Link :\n\nhttps://t.me/{temp.U_NAME}?start={outstr}__**")
-# ---
+
 
 @Client.on_message(filters.command(['batch', 'pbatch']) & filters.create(allowed))
 async def gen_link_batch(bot, message):
@@ -119,13 +130,14 @@ async def gen_link_batch(bot, message):
     except (UsernameInvalid, UsernameNotModified):
         return await message.reply('**__Invalid Link Specified__**')
     except Exception as e:
-        logger.exception(e) # Log the exception for debugging
+        logger.exception(e)
         return await message.reply(f'**__Errors - {e}__**')
 
     sts = await message.reply(
         "**__Generating Link for Your Message.\nThis May take Time Depending Upon Number of Messages__**"
     )
-
+    
+    # Existing logic for handling FILE_STORE_CHANNEL for large batches
     if chat_id in FILE_STORE_CHANNEL:
         string = f"{f_msg_id}_{l_msg_id}_{chat_id}_{cmd.lower().strip()}"
         b_64 = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
@@ -136,27 +148,28 @@ async def gen_link_batch(bot, message):
     outlist = []
     og_msg = 0
     tot = 0
+    total_messages = l_msg_id - f_msg_id + 1
 
     async for msg in bot.iter_messages(f_chat_id, l_msg_id, f_msg_id):
         tot += 1
-        # Update status message occasionally to show progress (optional, but good practice)
+        # Update status message occasionally
         if tot % 20 == 0:
             try:
-                await sts.edit(FRMT.format(total=(l_msg_id - f_msg_id + 1), current=tot, rem=(l_msg_id - f_msg_id + 1 - tot), sts="Processing..."))
+                await sts.edit(FRMT.format(total=total_messages, current=tot, rem=total_messages - tot, sts="Processing..."))
             except:
-                pass # Ignore FloodWait
+                pass 
 
         if msg.empty or msg.service:
             continue
         if not msg.media:
-            continue  # only media messages supported
+            continue
             
         try:
-            # Get the file object using the same robust method as /link
+            # Use robust file object detection
             file_object = msg.document or msg.video or msg.audio or msg.photo or msg.animation
             
             if not file_object:
-                continue # Skip if no storable file object is found
+                continue
 
             caption = getattr(msg, 'caption', '')
             if caption:
@@ -174,30 +187,26 @@ async def gen_link_batch(bot, message):
             
         except Exception as e:
             logger.error(f"Error processing message {msg.id} in chat {f_chat_id}: {e}")
-            pass # Continue to the next message even if one fails
+            pass
 
-    # Save the file list to a JSON file
     file_path = f"batchmode_{message.from_user.id}.json"
     with open(file_path, "w+") as out:
         json.dump(outlist, out, indent=4)
 
-    # Upload the JSON file to the log channel
     post = await bot.send_document(
         LOG_CHANNEL,
         file_path,
         file_name="Batch.json",
         caption=f"**__⚠️ Generated for Filestore. Contains {og_msg} files.__**"
     )
-    os.remove(file_path) # Clean up local file
+    os.remove(file_path)
 
-    # Generate the final link
     file_id, ref = unpack_new_file_id(post.document.file_id)
     await sts.edit(
         f"**__Here is Your Link\nContains `{og_msg}` Files.\n https://t.me/{temp.U_NAME}?start=BATCH-{file_id}__**"
     )
 
+
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-
-

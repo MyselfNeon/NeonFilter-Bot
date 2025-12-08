@@ -344,15 +344,15 @@ class TaskManager:
         
         if total == 0:
             prog_bar = "**__Recording Live...__**"
-            size_str = f"**__📦 Recorded :** {human_readable(current)}__"
+            size_str = f"**__📦 Recorded : {human_readable(current)}__**"
             eta_str = "**__Live__**"
         else:
-            prog_bar = f"{get_progressbar(current, total)} `{percent:.1f}%`"
+            prog_bar = f"{get_progressbar(current, total)} **__{percent:.1f}%__**"
             size_str = f"**__📦 Size : {human_readable(current)} / {human_readable(total)}__**"
             eta_str = time_formatter(eta)
 
         text = (
-            f"**{stage}**\n"
+            f"**__{stage}__**\n"
             f"**__🛂 File :__** __{task.get('filename', 'Unknown')}__\n"
             f"**{prog_bar}**\n\n"
             f"{size_str}\n"

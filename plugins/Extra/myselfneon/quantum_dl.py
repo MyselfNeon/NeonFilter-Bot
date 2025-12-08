@@ -22,7 +22,7 @@ from pyrogram import Client, filters
 DOWNLOAD_DIR = "downloads"
 MAX_CONCURRENT_TASKS = 5
 CHUNK_SIZE = 1024 * 1024  # 1MB Chunks
-EDIT_SLEEP = 4            # Dashboard Refresh Rate (4s)
+EDIT_SLEEP = 4            # Anti-Flood (Update progress every 4s)
 ADMINS = {841851780}      # Replace with your ID
 
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
@@ -67,8 +67,13 @@ async def get_filename_from_headers(response, url):
 
 # --- Metadata & Ffmpeg Engines ---
 async def get_video_attributes(file_path):
+    """
+    Scans video to get exact Width/Height/Duration.
+    Essential for fixing Telegram 'Square Video' bug.
+    """
     width, height, duration = 1280, 720, 0
     try:
+        # Uses ffprobe (provided by static-ffmpeg)
         cmd = [
             "ffprobe", "-v", "error",
             "-select_streams", "v:0",
@@ -94,6 +99,7 @@ async def get_video_attributes(file_path):
 async def generate_thumbnail(video_path):
     thumb_path = f"{video_path}.jpg"
     try:
+        # Extract frame at 00:00:02
         cmd = ["ffmpeg", "-i", video_path, "-ss", "00:00:02", "-vframes", "1", thumb_path, "-y"]
         process = await asyncio.create_subprocess_exec(
             *cmd, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
@@ -103,12 +109,11 @@ async def generate_thumbnail(video_path):
     except: pass
     return None
 
-# --- Task Manager (Single Dashboard + New Design) ---
+# --- Task Manager ---
 class TaskManager:
     def __init__(self):
         self.active_tasks = {}
         self.user_semaphores = {}
-        self.user_sessions = {} 
 
     def get_semaphore(self, user_id):
         if user_id not in self.user_semaphores:
@@ -119,7 +124,6 @@ class TaskManager:
         task_id = uuid.uuid4().hex[:8]
         user_id = message.from_user.id
         
-        # 1. Initialize Task Data
         self.active_tasks[task_id] = {
             "id": task_id,
             "url": url,
@@ -127,87 +131,23 @@ class TaskManager:
             "chat_id": message.chat.id,
             "status": "queued",
             "cancel_event": asyncio.Event(),
+            "message": None,
             "start_time": 0,
-            "filename": "Pending...",
+            "filename": "Unknown",
             "process": None, 
-            "progress_text": "⏳ __Queued...__",
-            "finished": False
+            "last_edit": 0
         }
 
-        # 2. Manage Dashboard Message
-        if user_id not in self.user_sessions:
-            msg = await message.reply(f"**__🚀 Starting Manager...__**\n🖇️ __{url}__", quote=True)
-            self.user_sessions[user_id] = {
-                "message": msg,
-                "task_ids": [],
-                "updater_running": False
-            }
-        
-        self.user_sessions[user_id]["task_ids"].append(task_id)
-
-        # 3. Start Execution
+        msg = await message.reply(f"**__😎 Task Added to Queue...__**\n🖇️ __{url}__", quote=True)
+        self.active_tasks[task_id]["message"] = msg
         asyncio.create_task(self.execute_task(client, task_id))
-        
-        # 4. Start the Dashboard Loop
-        if not self.user_sessions[user_id]["updater_running"]:
-            asyncio.create_task(self.dashboard_loop(user_id))
-
-    async def dashboard_loop(self, user_id):
-        """Refreshes the message with the specific requested design."""
-        if user_id not in self.user_sessions: return
-        
-        self.user_sessions[user_id]["updater_running"] = True
-        session = self.user_sessions[user_id]
-        message = session["message"]
-
-        while session["task_ids"]:
-            text_lines = []
-            active_ids = []
-            
-            # Index counter for "Task : 01", "Task : 02"
-            i = 1 
-            
-            for tid in session["task_ids"]:
-                task = self.active_tasks.get(tid)
-                if task:
-                    # Header: 👀 Task : 01
-                    header = f"👀 Task : {i:02d}" 
-                    
-                    # Combine Header + Body (Body is generated in update_task_status)
-                    text_lines.append(f"{header}\n{task['progress_text']}")
-                    
-                    if not task["finished"]:
-                        active_ids.append(tid)
-                    
-                    i += 1
-                else:
-                    pass 
-            
-            session["task_ids"] = active_ids 
-            
-            # Join tasks with a double newline
-            final_text = "\n\n".join(text_lines)
-            
-            if not active_ids:
-                final_text += "\n\n**__✅ All Tasks Completed.__**"
-            
-            try:
-                if final_text != message.text:
-                    await message.edit(final_text)
-            except Exception as e:
-                if "Message to edit not found" in str(e) or "empty" in str(e): break
-
-            if not active_ids: break 
-            await asyncio.sleep(EDIT_SLEEP)
-
-        # Cleanup
-        self.user_sessions.pop(user_id, None)
 
     async def execute_task(self, client, task_id):
         task = self.active_tasks.get(task_id)
         if not task: return
 
         url = task["url"]
+        msg = task["message"]
         semaphore = self.get_semaphore(task["user_id"])
         
         async with semaphore:
@@ -217,7 +157,7 @@ class TaskManager:
             file_path = None
             
             try:
-                # --- 1. Download ---
+                # --- 1. Download Phase ---
                 is_stream = any(x in url.lower() for x in [".m3u8", ".m3u", ".mpd"])
                 
                 if is_stream:
@@ -227,14 +167,14 @@ class TaskManager:
 
                 if not file_path: raise Exception("Download failed.")
 
-                # --- 2. Metadata ---
+                # --- 2. Metadata Phase (Ratio) ---
                 task["status"] = "checking"
-                # Simple update for status change
-                task["progress_text"] = f"📏 Checking Dimensions...\n🛂 File : {task['filename']}"
+                await msg.edit("**__📏 Checking Dimensions...__**")
                 
                 w, h, dur = 0, 0, 0
                 is_video = False
                 
+                # Check Magic Numbers (Real File Type)
                 kind = filetype.guess(file_path)
                 if kind and kind.mime.startswith("video"): is_video = True
                 elif file_path.endswith(".mp4") or file_path.endswith(".mkv"): is_video = True
@@ -242,26 +182,23 @@ class TaskManager:
                 if is_video:
                     w, h, dur = await get_video_attributes(file_path)
 
-                # --- 3. Upload ---
+                # --- 3. Upload Phase ---
                 await self.upload_file(client, task, file_path, w, h, dur, is_video)
-                
-                task["progress_text"] = f"✅ Done\n🛂 File : {task['filename']}"
 
             except Exception as e:
-                task["progress_text"] = f"❌ Error\n`{str(e)}`"
+                await msg.edit(f"**__❌ Error:__** `{str(e)}`")
             finally:
-                task["finished"] = True 
+                # Cleanup
                 if file_path and os.path.exists(file_path): os.remove(file_path)
                 if file_path:
                     t = f"{file_path}.jpg"
                     if os.path.exists(t): os.remove(t)
-                
-                await asyncio.sleep(5) 
                 self.active_tasks.pop(task_id, None)
 
-    # --- Engine A: Direct ---
+    # --- Engine A: Direct (Aiohttp) ---
     async def download_direct(self, task, url):
         task["status"] = "downloading"
+        msg = task["message"]
         
         ssl_ctx = ssl.create_default_context()
         ssl_ctx.check_hostname = False
@@ -284,16 +221,20 @@ class TaskManager:
                         if task["cancel_event"].is_set(): raise Exception("Cancelled")
                         f.write(chunk)
                         downloaded += len(chunk)
-                        self.update_task_status(task, downloaded, total_size, "📥 Downloading")
+                        await self.update_progress(msg, task, downloaded, total_size, "📥 Downloading")
 
-        # Smart Extension Renaming
+        # --- Smart Extension Renaming ---
         kind = filetype.guess(file_path)
         if kind:
             curr_ext = os.path.splitext(file_path)[1].lower()
             detected_ext = f".{kind.extension}"
+
+            # If detected is .zip but file is .apk, .docx, or .jar -> Trust the original
             valid_zips = [".apk", ".docx", ".jar", ".xlsx", ".pptx", ".odt"]
             
-            if detected_ext == ".zip" and curr_ext in valid_zips: pass 
+            if detected_ext == ".zip" and curr_ext in valid_zips:
+                pass 
+            # If extensions don't match, rename it
             elif curr_ext != detected_ext:
                 new_fname = f"{os.path.splitext(task['filename'])[0]}{detected_ext}"
                 new_path = os.path.join(DOWNLOAD_DIR, new_fname)
@@ -303,16 +244,20 @@ class TaskManager:
                 
         return file_path
 
-    # --- Engine B: Stream ---
+    # --- Engine B: Stream (Ffmpeg) ---
     async def download_stream(self, task, url):
         task["status"] = "recording"
+        msg = task["message"]
+        
         fname = f"Stream_{int(time.time())}.mp4"
         task["filename"] = fname
         file_path = os.path.join(DOWNLOAD_DIR, fname)
         
-        self.update_task_status(task, 0, 0, "🔄 Starting Stream")
+        await msg.edit("**__🔄 Recording Stream...__**")
         
+        # -c copy = Lossless Download (No Re-encoding)
         cmd = ["ffmpeg", "-i", url, "-c", "copy", "-bsf:a", "aac_adtstoasc", "-y", file_path]
+        
         process = await asyncio.create_subprocess_exec(
             *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
@@ -326,87 +271,101 @@ class TaskManager:
             line = await process.stderr.readline()
             if not line: break
             
+            # --- "Recorded Size" ---
             if os.path.exists(file_path):
                 current_size = os.path.getsize(file_path)
-                self.update_task_status(task, current_size, 0, "🔴 Recording")
+                await self.update_progress(msg, task, current_size, 0, "🔴 Recording Stream")
 
         await process.wait()
         if os.path.exists(file_path) and os.path.getsize(file_path) > 0: return file_path
-        raise Exception("Stream download failed.")
+        raise Exception("Stream download failed or empty.")
 
     async def upload_file(self, client, task, file_path, width, height, duration, is_video):
+        msg = task["message"]
         task["status"] = "uploading"
         
         thumb = None
         if is_video:
-            task["progress_text"] = f"🖼️ Generating Thumbnail...\n🛂 File : {task['filename']}"
+            await msg.edit("**__🖼️ Generating Thumbnail...__**")
             thumb = await generate_thumbnail(file_path)
 
         async def upload_progress(current, total):
             if task["cancel_event"].is_set(): client.stop_transmission()
-            self.update_task_status(task, current, total, "🚀 Uploading")
+            await self.update_progress(msg, task, current, total, "🚀 Uploading")
 
-        # Initial Upload Status
-        task["progress_text"] = f"📤 Initializing Upload...\n🛂 File : {task['filename']}"
+        await msg.edit(f"**__📤 Uploading...__**\n**{width}x{height}**")
         
         caption = f"**__🛃 {task['filename']}__**\n**__📦 Size :** {human_readable(os.path.getsize(file_path))}__"
         
         try:
             if is_video and width and height:
+                # Send Video With Explicit Dimensions
                 await client.send_video(
-                    task["chat_id"], video=file_path, caption=caption, thumb=thumb, 
-                    duration=duration, width=width, height=height, supports_streaming=True, 
+                    task["chat_id"], 
+                    video=file_path, 
+                    caption=caption,
+                    thumb=thumb, 
+                    duration=duration,
+                    width=width,
+                    height=height,
+                    supports_streaming=True, 
                     progress=upload_progress
                 )
             else:
+                # Fallback / Non-Video
                 await client.send_document(
-                    task["chat_id"], document=file_path, caption=caption, thumb=thumb, 
+                    task["chat_id"], 
+                    document=file_path, 
+                    caption=caption,
+                    thumb=thumb, 
                     progress=upload_progress
                 )
+            await msg.edit(f"**__✅ Completed !__**\n🛂 __{task['filename']}__")
         except Exception:
+            # Fallback if send_video crashes
             try:
                 await client.send_document(
                     task["chat_id"], document=file_path, caption=caption, progress=upload_progress
                 )
-            except: pass
+                await msg.edit("**__✅ Completed (Fallback) !__**")
+            except:
+                await msg.edit("**__❌ Upload Failed.__**")
 
-    def update_task_status(self, task, current, total, stage):
-        """Generates the body text for the dashboard."""
+    async def update_progress(self, message, task, current, total, stage):
         now = time.time()
+        # --- FloodWait Logic ---
+        if (now - task["last_edit"] < EDIT_SLEEP) and (current < total if total else True): return
+        
+        task["last_edit"] = now
         elapsed = now - task["start_time"]
         speed = current / elapsed if elapsed > 0 else 0
         percent = (current / total * 100) if total else 0
         eta = (total - current) / speed if speed > 0 and total else 0
         
-        prog_bar = get_progressbar(current, total)
-        
         if total == 0:
-            # Stream Mode (Undefined Total)
-            prog_str = (
-                f"{stage}\n"
-                f"🛂 File : {task['filename']}\n"
-                f"📦 Recorded : {human_readable(current)}\n"
-                f"⚡ Speed : {human_readable(speed)}/s\n\n"
-                f"❌ Cancel : /cancel_{task['id']}"
-            )
+            prog_bar = " __Recording Live...__ "
+            size_str = f"**__📦 Recorded : {human_readable(current)}__**"
+            eta_str = "**__Live__**"
         else:
-            # Direct Mode (Requested Format)
-            prog_str = (
-                f"{stage}\n"
-                f"🛂 File : {task['filename']}\n"
-                f"[{prog_bar}] {percent:.1f}%\n\n"
-                f"📦 Size : {human_readable(current)} / {human_readable(total)}\n"
-                f"⚡ Speed : {human_readable(speed)}/s\n"
-                f"⏳ ETA : {time_formatter(eta)}\n\n"
-                f"❌ Cancel : /cancel_{task['id']}"
-            )
-        
-        task["progress_text"] = prog_str
+            prog_bar = f"[{get_progressbar(current, total)}] __{percent:.1f}%__"
+            size_str = f"**__📦 Size : {human_readable(current)} / {human_readable(total)}__**"
+            eta_str = time_formatter(eta)
+
+        text = (
+            f"**__{stage}__**\n"
+            f"**__🛂 File :__** __{task.get('filename', 'Unknown')}__\n"
+            f"**{prog_bar}**\n\n"
+            f"{size_str}\n"
+            f"**__⚡ Speed : {human_readable(speed)}/s__**\n"
+            f"**__⏳ ETA : {eta_str}__**\n\n"
+            f"**__❌ Cancel :** /cancel_{task['id']}__"
+        )
+        try: await message.edit(text)
+        except: pass
 
     async def cancel_task(self, task_id):
         if task_id in self.active_tasks:
             self.active_tasks[task_id]["cancel_event"].set()
-            self.active_tasks[task_id]["progress_text"] = "❌ Cancelling..."
             proc = self.active_tasks[task_id].get("process")
             if proc:
                 try: proc.kill()
@@ -426,10 +385,8 @@ async def dl_handler(client, message):
 
 @Client.on_message(filters.regex(r"^/cancel_") & filters.private)
 async def cancel_handler(client, message):
-    try:
-        task_id = message.text.split("_")[1]
-        if await manager.cancel_task(task_id):
-            pass 
-        else:
-            await message.reply("**💢 __Task Not Found or Finished.__**", quote=True)
-    except: pass
+    task_id = message.text.split("_")[1]
+    if await manager.cancel_task(task_id):
+        await message.reply(f"**__🥲 Task Cancelled.__**")
+    else:
+        await message.reply("**💢 __Task Not Active.__**")

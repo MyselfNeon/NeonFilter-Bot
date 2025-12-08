@@ -45,10 +45,10 @@ def time_formatter(seconds: int) -> str:
     return f"{h}h {m}m {s}s" if h else f"{m}m {s}s"
 
 def get_progressbar(current, total):
-    if not total: return "▱" * 10
+    if not total: return "□" * 10
     percentage = current / total
     finished_len = int(percentage * 10)
-    return f"{'▰' * finished_len}{'▱' * (10 - finished_len)}"
+    return f"{'■' * finished_len}{'□' * (10 - finished_len)}"
 
 async def get_filename_from_headers(response, url):
     """Smart Filename Detection."""
@@ -354,7 +354,7 @@ class TaskManager:
         text = (
             f"**__{stage}__**\n"
             f"**__🛂 File :__** __{task.get('filename', 'Unknown')}__\n"
-            f"**{prog_bar}**\n\n"
+            f"**[{prog_bar}]**\n\n"
             f"{size_str}\n"
             f"**__⚡ Speed : {human_readable(speed)}/s__**\n"
             f"**__⏳ ETA : {eta_str}__**\n\n"

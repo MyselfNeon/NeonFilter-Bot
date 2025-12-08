@@ -138,7 +138,7 @@ class TaskManager:
             "last_edit": 0
         }
 
-        msg = await message.reply(f"**__😎 Task Added to Queue...__**\n`{url}`", quote=True)
+        msg = await message.reply(f"**__😎 Task Added to Queue...__**\n🖇️ `{url}`", quote=True)
         self.active_tasks[task_id]["message"] = msg
         asyncio.create_task(self.execute_task(client, task_id))
 

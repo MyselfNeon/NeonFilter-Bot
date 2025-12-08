@@ -5,8 +5,17 @@ import asyncio
 import aiohttp
 import ssl
 import re
+import json
 import filetype
 from urllib.parse import unquote
+
+# --- RENDER / VPS SUPPORT ---
+# This ensures FFmpeg/FFprobe works on Render without system installation
+try:
+    import static_ffmpeg
+    static_ffmpeg.add_paths()
+except ImportError:
+    print("Static FFmpeg not found, relying on system PATH.")
 
 from pyrogram import Client, filters
 
@@ -14,8 +23,8 @@ from pyrogram import Client, filters
 DOWNLOAD_DIR = "downloads"
 MAX_CONCURRENT_TASKS = 5
 CHUNK_SIZE = 1024 * 1024  # 1MB Chunks
-EDIT_SLEEP = 4            # Updates progress every 4s
-ADMINS = {841851780}      # Your ID
+EDIT_SLEEP = 4            # Anti-Flood (Update progress every 4s)
+ADMINS = {841851780}      # Replace with your ID
 
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
@@ -44,7 +53,7 @@ def get_progressbar(current, total):
     return f"{'▰' * finished_len}{'▱' * (10 - finished_len)}"
 
 async def get_filename_from_headers(response, url):
-    """Extracts filename from headers or URL."""
+    """Smart filename detection."""
     try:
         cd = response.headers.get("Content-Disposition")
         if cd:
@@ -58,10 +67,42 @@ async def get_filename_from_headers(response, url):
     except: pass
     return f"QuantumDL_{int(time.time())}"
 
+# ================= METADATA & FFMPEG ENGINES =================
+
+async def get_video_attributes(file_path):
+    """
+    Scans video to get exact Width/Height/Duration.
+    Essential for fixing Telegram 'Square Video' bug.
+    """
+    width, height, duration = 1280, 720, 0
+    try:
+        # Uses ffprobe (provided by static-ffmpeg on Render)
+        cmd = [
+            "ffprobe", "-v", "error",
+            "-select_streams", "v:0",
+            "-show_entries", "stream=width,height,duration",
+            "-of", "json",
+            file_path
+        ]
+        process = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+        stdout, _ = await process.communicate()
+        data = json.loads(stdout)
+        
+        width = int(data['streams'][0]['width'])
+        height = int(data['streams'][0]['height'])
+        try:
+            duration = int(float(data['streams'][0]['duration']))
+        except: duration = 0
+    except Exception as e:
+        print(f"Metadata Error: {e}")
+    return width, height, duration
+
 async def generate_thumbnail(video_path):
     thumb_path = f"{video_path}.jpg"
     try:
-        # Fast thumbnail extraction at 00:02
+        # Extract frame at 00:00:02
         cmd = ["ffmpeg", "-i", video_path, "-ss", "00:00:02", "-vframes", "1", thumb_path, "-y"]
         process = await asyncio.create_subprocess_exec(
             *cmd, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
@@ -97,7 +138,7 @@ class TaskManager:
             "message": None,
             "start_time": 0,
             "filename": "Unknown",
-            "process": None, # Holds FFmpeg process
+            "process": None, 
             "last_edit": 0
         }
 
@@ -120,7 +161,7 @@ class TaskManager:
             file_path = None
             
             try:
-                # --- LOGIC: STREAM VS DIRECT ---
+                # --- 1. DOWNLOAD PHASE ---
                 is_stream = any(x in url.lower() for x in [".m3u8", ".m3u", ".mpd"])
                 
                 if is_stream:
@@ -128,22 +169,37 @@ class TaskManager:
                 else:
                     file_path = await self.download_direct(task, url)
 
-                if not file_path:
-                    raise Exception("Download failed.")
+                if not file_path: raise Exception("Download failed.")
 
-                # --- UPLOAD ---
-                await self.upload_file(client, task, file_path)
+                # --- 2. METADATA PHASE (Ratio Fix) ---
+                task["status"] = "checking"
+                await msg.edit("**📏 Checking Dimensions...**")
+                
+                w, h, dur = 0, 0, 0
+                is_video = False
+                
+                # Check Magic Numbers (Real File Type)
+                kind = filetype.guess(file_path)
+                if kind and kind.mime.startswith("video"): is_video = True
+                elif file_path.endswith(".mp4") or file_path.endswith(".mkv"): is_video = True
+                
+                if is_video:
+                    w, h, dur = await get_video_attributes(file_path)
+
+                # --- 3. UPLOAD PHASE ---
+                await self.upload_file(client, task, file_path, w, h, dur, is_video)
 
             except Exception as e:
                 await msg.edit(f"**❌ Error:** `{str(e)}`")
             finally:
+                # Cleanup
                 if file_path and os.path.exists(file_path): os.remove(file_path)
                 if file_path:
                     t = f"{file_path}.jpg"
                     if os.path.exists(t): os.remove(t)
                 self.active_tasks.pop(task_id, None)
 
-    # --- ENGINE 1: AIOHTTP (Direct Links) ---
+    # --- ENGINE A: DIRECT (AIOHTTP) ---
     async def download_direct(self, task, url):
         task["status"] = "downloading"
         msg = task["message"]
@@ -154,8 +210,7 @@ class TaskManager:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, ssl=ssl_ctx) as response:
-                if response.status != 200:
-                    raise Exception(f"HTTP {response.status}")
+                if response.status != 200: raise Exception(f"HTTP {response.status}")
 
                 fname = await get_filename_from_headers(response, url)
                 if "." not in fname: fname += ".dat"
@@ -167,13 +222,12 @@ class TaskManager:
                 
                 with open(file_path, 'wb') as f:
                     async for chunk in response.content.iter_chunked(CHUNK_SIZE):
-                        if task["cancel_event"].is_set():
-                            raise Exception("Cancelled")
+                        if task["cancel_event"].is_set(): raise Exception("Cancelled")
                         f.write(chunk)
                         downloaded += len(chunk)
                         await self.update_progress(msg, task, downloaded, total_size, "📥 Downloading")
 
-        # Fix Extension if unknown
+        # Smart Extension Renaming
         kind = filetype.guess(file_path)
         if kind:
             curr_ext = os.path.splitext(file_path)[1]
@@ -186,7 +240,7 @@ class TaskManager:
                 
         return file_path
 
-    # --- ENGINE 2: FFMPEG (Streams m3u8/mpd) ---
+    # --- ENGINE B: STREAM (FFMPEG) ---
     async def download_stream(self, task, url):
         task["status"] = "recording"
         msg = task["message"]
@@ -195,20 +249,16 @@ class TaskManager:
         task["filename"] = fname
         file_path = os.path.join(DOWNLOAD_DIR, fname)
         
-        await msg.edit("**🔄 Processing Stream...**")
-
-        # -c copy ensures original quality (no re-encode)
-        # -bsf:a aac_adtstoasc fixes audio mapping for Telegram
-        cmd = [
-            "ffmpeg", "-i", url, "-c", "copy", "-bsf:a", "aac_adtstoasc", "-y", file_path
-        ]
+        await msg.edit("**🔄 Recording Stream...**")
+        
+        # -c copy = Lossless Download (No Re-encoding)
+        cmd = ["ffmpeg", "-i", url, "-c", "copy", "-bsf:a", "aac_adtstoasc", "-y", file_path]
         
         process = await asyncio.create_subprocess_exec(
             *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
         task["process"] = process
 
-        # Read stderr for progress (time=00:00:05.20)
         while True:
             if task["cancel_event"].is_set():
                 process.kill()
@@ -217,29 +267,19 @@ class TaskManager:
             line = await process.stderr.readline()
             if not line: break
             
-            line_str = line.decode('utf-8', errors='ignore')
-            
-            # Simple progress based on file size growing
+            # Update "Recorded Size"
             if os.path.exists(file_path):
                 current_size = os.path.getsize(file_path)
                 await self.update_progress(msg, task, current_size, 0, "🔴 Recording Stream")
 
         await process.wait()
-        
-        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-            return file_path
-        raise Exception("Stream download failed.")
+        if os.path.exists(file_path) and os.path.getsize(file_path) > 0: return file_path
+        raise Exception("Stream download failed or empty.")
 
-    async def upload_file(self, client, task, file_path):
+    async def upload_file(self, client, task, file_path, width, height, duration, is_video):
         msg = task["message"]
         task["status"] = "uploading"
         
-        # Check if video
-        is_video = False
-        kind = filetype.guess(file_path)
-        if kind and kind.mime.startswith("video"): is_video = True
-        elif file_path.endswith(".mp4") or file_path.endswith(".mkv"): is_video = True
-
         thumb = None
         if is_video:
             await msg.edit("**🖼️ Generating Thumbnail...**")
@@ -249,44 +289,57 @@ class TaskManager:
             if task["cancel_event"].is_set(): client.stop_transmission()
             await self.update_progress(msg, task, current, total, "🚀 Uploading")
 
-        await msg.edit("**📤 Uploading...**")
+        await msg.edit(f"**📤 Uploading...**\n`{width}x{height}`")
         
         caption = f"**🎬 {task['filename']}**\n**📦 Size:** `{human_readable(os.path.getsize(file_path))}`"
         
         try:
-            if is_video:
+            if is_video and width and height:
+                # SEND VIDEO WITH EXPLICIT DIMENSIONS
                 await client.send_video(
-                    task["chat_id"], video=file_path, caption=caption,
-                    thumb=thumb, supports_streaming=True, progress=upload_progress
+                    task["chat_id"], 
+                    video=file_path, 
+                    caption=caption,
+                    thumb=thumb, 
+                    duration=duration,
+                    width=width,    # <--- Fixes Square Issue
+                    height=height,  # <--- Fixes Square Issue
+                    supports_streaming=True, 
+                    progress=upload_progress
                 )
             else:
+                # Fallback / Non-Video
                 await client.send_document(
-                    task["chat_id"], document=file_path, caption=caption,
-                    thumb=thumb, progress=upload_progress
+                    task["chat_id"], 
+                    document=file_path, 
+                    caption=caption,
+                    thumb=thumb, 
+                    progress=upload_progress
                 )
             await msg.edit(f"**✅ Completed!**\n`{task['filename']}`")
         except Exception:
-            # Fallback
-            await client.send_document(
-                task["chat_id"], document=file_path, caption=caption, progress=upload_progress
-            )
-            await msg.edit("**✅ Completed (Fallback)!**")
+            # Fallback if send_video crashes
+            try:
+                await client.send_document(
+                    task["chat_id"], document=file_path, caption=caption, progress=upload_progress
+                )
+                await msg.edit("**✅ Completed (Fallback)!**")
+            except:
+                await msg.edit("**❌ Upload Failed.**")
 
     async def update_progress(self, message, task, current, total, stage):
         now = time.time()
-        # FloodWait Protection (4s interval)
+        # FloodWait Logic
         if (now - task["last_edit"] < EDIT_SLEEP) and (current < total if total else True): return
         
         task["last_edit"] = now
         elapsed = now - task["start_time"]
         speed = current / elapsed if elapsed > 0 else 0
         percent = (current / total * 100) if total else 0
-        
         eta = (total - current) / speed if speed > 0 and total else 0
         
-        # Format for streams (where total is 0)
         if total == 0:
-            prog_bar = "Recording..."
+            prog_bar = "Recording Live..."
             size_str = f"**📦 Recorded:** `{human_readable(current)}`"
             eta_str = "Live"
         else:
@@ -309,7 +362,6 @@ class TaskManager:
     async def cancel_task(self, task_id):
         if task_id in self.active_tasks:
             self.active_tasks[task_id]["cancel_event"].set()
-            # Kill FFmpeg if running
             proc = self.active_tasks[task_id].get("process")
             if proc:
                 try: proc.kill()
@@ -325,7 +377,6 @@ manager = TaskManager()
 async def dl_handler(client, message):
     if len(message.command) < 2:
         return await message.reply("**⚠️ Usage:** `/dl url`")
-    
     url = message.command[1]
     await manager.add_task(client, message, url)
 

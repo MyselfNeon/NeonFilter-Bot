@@ -291,7 +291,7 @@ class TaskManager:
 
         async def upload_progress(current, total):
             if task["cancel_event"].is_set(): client.stop_transmission()
-            await self.update_progress(msg, task, current, total, "🚀 **__Uploading__**")
+            await self.update_progress(msg, task, current, total, "🚀 Uploading")
 
         await msg.edit(f"**__📤 Uploading...__**\n**{width}x{height}**")
         
@@ -343,18 +343,18 @@ class TaskManager:
         eta = (total - current) / speed if speed > 0 and total else 0
         
         if total == 0:
-            prog_bar = "**__Recording Live...__**"
+            prog_bar = " __Recording Live...__ "
             size_str = f"**__📦 Recorded : {human_readable(current)}__**"
             eta_str = "**__Live__**"
         else:
-            prog_bar = f"{get_progressbar(current, total)} **__{percent:.1f}%__**"
+            prog_bar = f"[{get_progressbar(current, total)}] __{percent:.1f}%__"
             size_str = f"**__📦 Size : {human_readable(current)} / {human_readable(total)}__**"
             eta_str = time_formatter(eta)
 
         text = (
             f"**__{stage}__**\n"
             f"**__🛂 File :__** __{task.get('filename', 'Unknown')}__\n"
-            f"**[{prog_bar}]**\n\n"
+            f"**{prog_bar}**\n\n"
             f"{size_str}\n"
             f"**__⚡ Speed : {human_readable(speed)}/s__**\n"
             f"**__⏳ ETA : {eta_str}__**\n\n"

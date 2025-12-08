@@ -320,7 +320,7 @@ class TaskManager:
                     thumb=thumb, 
                     progress=upload_progress
                 )
-            await msg.edit(f"**__✅ Completed !__**\n`{task['filename']}`")
+            await msg.edit(f"**__✅ Completed !__**\n📋 `{task['filename']}`")
         except Exception:
             # Fallback if send_video crashes
             try:
@@ -343,9 +343,9 @@ class TaskManager:
         eta = (total - current) / speed if speed > 0 and total else 0
         
         if total == 0:
-            prog_bar = "**__Recorded Live...__**"
+            prog_bar = "**__Recording Live...__**"
             size_str = f"**__📦 Recorded :** {human_readable(current)}__"
-            eta_str = "**__Lɪᴠᴇ__**"
+            eta_str = "**__Live__**"
         else:
             prog_bar = f"{get_progressbar(current, total)} `{percent:.1f}%`"
             size_str = f"**__📦 Size :** {human_readable(current)} / {human_readable(total)}__"
@@ -353,7 +353,7 @@ class TaskManager:
 
         text = (
             f"**{stage}**\n"
-            f"**__File :__** `{task.get('filename', 'Unknown')}`\n"
+            f"**__📋 File :__** `{task.get('filename', 'Unknown')}`\n"
             f"**{prog_bar}**\n\n"
             f"{size_str}\n"
             f"**__⚡ Speed :** {human_readable(speed)}/s__\n"

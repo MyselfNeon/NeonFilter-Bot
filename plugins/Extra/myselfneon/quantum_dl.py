@@ -295,7 +295,7 @@ class TaskManager:
 
         await msg.edit(f"**__📤 Uploading...__**\n**{width}x{height}**")
         
-        caption = f"**– __🎬 {task['filename']}__**\n**– __📦 Size :** {human_readable(os.path.getsize(file_path))}__"
+        caption = f"**__🛃 {task['filename']}__**\n**__📦 Size :** {human_readable(os.path.getsize(file_path))}__"
         
         try:
             if is_video and width and height:
@@ -320,7 +320,7 @@ class TaskManager:
                     thumb=thumb, 
                     progress=upload_progress
                 )
-            await msg.edit(f"**__✅ Completed !__**\n📋 `{task['filename']}`")
+            await msg.edit(f"**__✅ Completed !__**\n🛂 `{task['filename']}`")
         except Exception:
             # Fallback if send_video crashes
             try:
@@ -348,16 +348,16 @@ class TaskManager:
             eta_str = "**__Live__**"
         else:
             prog_bar = f"{get_progressbar(current, total)} `{percent:.1f}%`"
-            size_str = f"**__📦 Size :** {human_readable(current)} / {human_readable(total)}__"
+            size_str = f"**__📦 Size : {human_readable(current)} / {human_readable(total)}__**"
             eta_str = time_formatter(eta)
 
         text = (
             f"**{stage}**\n"
-            f"**__📋 File :__** `{task.get('filename', 'Unknown')}`\n"
+            f"**__🛂 File :__** `{task.get('filename', 'Unknown')}`\n"
             f"**{prog_bar}**\n\n"
             f"{size_str}\n"
-            f"**__⚡ Speed :** {human_readable(speed)}/s__\n"
-            f"**__⏳ ETA :** {eta_str}__\n\n"
+            f"**__⚡ Speed : {human_readable(speed)}/s__**\n"
+            f"**__⏳ ETA : {eta_str}__**\n\n"
             f"**__❌ Cancel :** /cancel_{task['id']}__"
         )
         try: await message.edit(text)
@@ -379,7 +379,7 @@ manager = TaskManager()
 @Client.on_message(filters.command(["dl", "leech"]) & filters.private)
 async def dl_handler(client, message):
     if len(message.command) < 2:
-        return await message.reply("**⚠️ __Usage :__** /dl url")
+        return await message.reply("**⁉️ __Usage :__** /dl url")
     url = message.command[1]
     await manager.add_task(client, message, url)
 

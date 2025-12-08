@@ -138,7 +138,7 @@ class TaskManager:
             "last_edit": 0
         }
 
-        msg = await message.reply(f"**__😎 Task Added to Queue...__**\n🖇️ `{url}`", quote=True)
+        msg = await message.reply(f"**__😎 Task Added to Queue...__**\n🖇️ __{url}__", quote=True)
         self.active_tasks[task_id]["message"] = msg
         asyncio.create_task(self.execute_task(client, task_id))
 
@@ -329,7 +329,7 @@ class TaskManager:
                 )
                 await msg.edit("**__✅ Completed (Fallback) !__**")
             except:
-                await msg.edit("**__❌ Upload Failed._**")
+                await msg.edit("**__❌ Upload Failed.__**")
 
     async def update_progress(self, message, task, current, total, stage):
         now = time.time()
@@ -353,7 +353,7 @@ class TaskManager:
 
         text = (
             f"**{stage}**\n"
-            f"**__🛂 File :__** `{task.get('filename', 'Unknown')}`\n"
+            f"**__🛂 File :__** __{task.get('filename', 'Unknown')}__\n"
             f"**{prog_bar}**\n\n"
             f"{size_str}\n"
             f"**__⚡ Speed : {human_readable(speed)}/s__**\n"

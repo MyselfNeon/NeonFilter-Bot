@@ -9,8 +9,7 @@ import json
 import filetype
 from urllib.parse import unquote
 
-# --- RENDER / VPS SUPPORT ---
-# This ensures FFmpeg/FFprobe works on Render without system installation
+# --- Render / Vps Support ---
 try:
     import static_ffmpeg
     static_ffmpeg.add_paths()
@@ -19,7 +18,7 @@ except ImportError:
 
 from pyrogram import Client, filters
 
-# ================= CONFIGURATION =================
+# --- Configuration ---
 DOWNLOAD_DIR = "downloads"
 MAX_CONCURRENT_TASKS = 5
 CHUNK_SIZE = 1024 * 1024  # 1MB Chunks
@@ -28,8 +27,7 @@ ADMINS = {841851780}      # Replace with your ID
 
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-# ================= UTILITIES =================
-
+# --- Utilities ---
 def human_readable(size: int) -> str:
     if not size: return "0 B"
     power = 2**10
@@ -53,7 +51,7 @@ def get_progressbar(current, total):
     return f"{'▰' * finished_len}{'▱' * (10 - finished_len)}"
 
 async def get_filename_from_headers(response, url):
-    """Smart filename detection."""
+    """Smart Filename Detection."""
     try:
         cd = response.headers.get("Content-Disposition")
         if cd:
@@ -67,8 +65,7 @@ async def get_filename_from_headers(response, url):
     except: pass
     return f"QuantumDL_{int(time.time())}"
 
-# ================= METADATA & FFMPEG ENGINES =================
-
+# --- Metadata & Ffmpeg Engines ---
 async def get_video_attributes(file_path):
     """
     Scans video to get exact Width/Height/Duration.
@@ -76,7 +73,7 @@ async def get_video_attributes(file_path):
     """
     width, height, duration = 1280, 720, 0
     try:
-        # Uses ffprobe (provided by static-ffmpeg on Render)
+        # Uses ffprobe (provided by static-ffmpeg)
         cmd = [
             "ffprobe", "-v", "error",
             "-select_streams", "v:0",
@@ -112,8 +109,7 @@ async def generate_thumbnail(video_path):
     except: pass
     return None
 
-# ================= TASK MANAGER =================
-
+# --- Task Manager ---
 class TaskManager:
     def __init__(self):
         self.active_tasks = {}
@@ -142,7 +138,7 @@ class TaskManager:
             "last_edit": 0
         }
 
-        msg = await message.reply(f"**⚡ Added to Queue...**\n`{url}`", quote=True)
+        msg = await message.reply(f"**__⚡ Added to Queue...__**\n`{url}`", quote=True)
         self.active_tasks[task_id]["message"] = msg
         asyncio.create_task(self.execute_task(client, task_id))
 
@@ -161,7 +157,7 @@ class TaskManager:
             file_path = None
             
             try:
-                # --- 1. DOWNLOAD PHASE ---
+                # --- 1. Download Phase ---
                 is_stream = any(x in url.lower() for x in [".m3u8", ".m3u", ".mpd"])
                 
                 if is_stream:
@@ -171,9 +167,9 @@ class TaskManager:
 
                 if not file_path: raise Exception("Download failed.")
 
-                # --- 2. METADATA PHASE (Ratio Fix) ---
+                # --- 2. Metadata Phase (Ratio) ---
                 task["status"] = "checking"
-                await msg.edit("**📏 Checking Dimensions...**")
+                await msg.edit("**__📏 Checking Dimensions...__**")
                 
                 w, h, dur = 0, 0, 0
                 is_video = False
@@ -186,11 +182,11 @@ class TaskManager:
                 if is_video:
                     w, h, dur = await get_video_attributes(file_path)
 
-                # --- 3. UPLOAD PHASE ---
+                # --- 3. Upload Phase ---
                 await self.upload_file(client, task, file_path, w, h, dur, is_video)
 
             except Exception as e:
-                await msg.edit(f"**❌ Error:** `{str(e)}`")
+                await msg.edit(f"**__❌ Error:__** `{str(e)}`")
             finally:
                 # Cleanup
                 if file_path and os.path.exists(file_path): os.remove(file_path)
@@ -199,7 +195,7 @@ class TaskManager:
                     if os.path.exists(t): os.remove(t)
                 self.active_tasks.pop(task_id, None)
 
-    # --- ENGINE A: DIRECT (AIOHTTP) ---
+    # --- Engine A: Direct (Aiohttp) ---
     async def download_direct(self, task, url):
         task["status"] = "downloading"
         msg = task["message"]
@@ -227,12 +223,20 @@ class TaskManager:
                         downloaded += len(chunk)
                         await self.update_progress(msg, task, downloaded, total_size, "📥 Downloading")
 
-        # Smart Extension Renaming
+        # --- Smart Extension Renaming ---
         kind = filetype.guess(file_path)
         if kind:
-            curr_ext = os.path.splitext(file_path)[1]
-            if not curr_ext or curr_ext.lower() != f".{kind.extension}":
-                new_fname = f"{os.path.splitext(task['filename'])[0]}.{kind.extension}"
+            curr_ext = os.path.splitext(file_path)[1].lower()
+            detected_ext = f".{kind.extension}"
+
+            # If detected is .zip but file is .apk, .docx, or .jar -> Trust the original
+            valid_zips = [".apk", ".docx", ".jar", ".xlsx", ".pptx", ".odt"]
+            
+            if detected_ext == ".zip" and curr_ext in valid_zips:
+                pass 
+            # If extensions don't match, rename it
+            elif curr_ext != detected_ext:
+                new_fname = f"{os.path.splitext(task['filename'])[0]}{detected_ext}"
                 new_path = os.path.join(DOWNLOAD_DIR, new_fname)
                 os.rename(file_path, new_path)
                 file_path = new_path
@@ -240,7 +244,7 @@ class TaskManager:
                 
         return file_path
 
-    # --- ENGINE B: STREAM (FFMPEG) ---
+    # --- Engine B: Stream (Ffmpeg) ---
     async def download_stream(self, task, url):
         task["status"] = "recording"
         msg = task["message"]
@@ -249,7 +253,7 @@ class TaskManager:
         task["filename"] = fname
         file_path = os.path.join(DOWNLOAD_DIR, fname)
         
-        await msg.edit("**🔄 Recording Stream...**")
+        await msg.edit("**__🔄 Recording Stream...__**")
         
         # -c copy = Lossless Download (No Re-encoding)
         cmd = ["ffmpeg", "-i", url, "-c", "copy", "-bsf:a", "aac_adtstoasc", "-y", file_path]
@@ -267,7 +271,7 @@ class TaskManager:
             line = await process.stderr.readline()
             if not line: break
             
-            # Update "Recorded Size"
+            # --- "Recorded Size" ---
             if os.path.exists(file_path):
                 current_size = os.path.getsize(file_path)
                 await self.update_progress(msg, task, current_size, 0, "🔴 Recording Stream")
@@ -282,28 +286,28 @@ class TaskManager:
         
         thumb = None
         if is_video:
-            await msg.edit("**🖼️ Generating Thumbnail...**")
+            await msg.edit("**__🖼️ Generating Thumbnail...__**")
             thumb = await generate_thumbnail(file_path)
 
         async def upload_progress(current, total):
             if task["cancel_event"].is_set(): client.stop_transmission()
             await self.update_progress(msg, task, current, total, "🚀 Uploading")
 
-        await msg.edit(f"**📤 Uploading...**\n`{width}x{height}`")
+        await msg.edit(f"**__📤 Uploading...__**\n`{width}x{height}`")
         
-        caption = f"**🎬 {task['filename']}**\n**📦 Size:** `{human_readable(os.path.getsize(file_path))}`"
+        caption = f"**__🎬 {task['filename']}__**\n**__📦 Size:** {human_readable(os.path.getsize(file_path))}__"
         
         try:
             if is_video and width and height:
-                # SEND VIDEO WITH EXPLICIT DIMENSIONS
+                # Send Video With Explicit Dimensions
                 await client.send_video(
                     task["chat_id"], 
                     video=file_path, 
                     caption=caption,
                     thumb=thumb, 
                     duration=duration,
-                    width=width,    # <--- Fixes Square Issue
-                    height=height,  # <--- Fixes Square Issue
+                    width=width,
+                    height=height,
                     supports_streaming=True, 
                     progress=upload_progress
                 )
@@ -316,20 +320,20 @@ class TaskManager:
                     thumb=thumb, 
                     progress=upload_progress
                 )
-            await msg.edit(f"**✅ Completed!**\n`{task['filename']}`")
+            await msg.edit(f"**__✅ Completed !__**\n`{task['filename']}`")
         except Exception:
             # Fallback if send_video crashes
             try:
                 await client.send_document(
                     task["chat_id"], document=file_path, caption=caption, progress=upload_progress
                 )
-                await msg.edit("**✅ Completed (Fallback)!**")
+                await msg.edit("**__✅ Completed (Fallback) !__**")
             except:
-                await msg.edit("**❌ Upload Failed.**")
+                await msg.edit("**__❌ Upload Failed.__**")
 
     async def update_progress(self, message, task, current, total, stage):
         now = time.time()
-        # FloodWait Logic
+        # --- FloodWait Logic ---
         if (now - task["last_edit"] < EDIT_SLEEP) and (current < total if total else True): return
         
         task["last_edit"] = now
@@ -340,21 +344,21 @@ class TaskManager:
         
         if total == 0:
             prog_bar = "Recording Live..."
-            size_str = f"**📦 Recorded:** `{human_readable(current)}`"
+            size_str = f"**__📦 Recorded:** {human_readable(current)}__"
             eta_str = "Live"
         else:
             prog_bar = f"{get_progressbar(current, total)} `{percent:.1f}%`"
-            size_str = f"**📦 Size:** `{human_readable(current)} / {human_readable(total)}`"
+            size_str = f"**__📦 Size:** {human_readable(current)} / {human_readable(total)}__"
             eta_str = time_formatter(eta)
 
         text = (
             f"**{stage}**\n"
-            f"**File:** `{task.get('filename', 'Unknown')}`\n"
+            f"**__File:__** `{task.get('filename', 'Unknown')}`\n"
             f"**{prog_bar}**\n\n"
             f"{size_str}\n"
-            f"**⚡ Speed:** `{human_readable(speed)}/s`\n"
-            f"**⏳ ETA:** `{eta_str}`\n\n"
-            f"**🚫 Cancel:** `/cancel_{task['id']}`"
+            f"**__⚡ Speed:** {human_readable(speed)}/s__\n"
+            f"**__⏳ ETA:** {eta_str}__\n\n"
+            f"**__❌ Cancel:** /cancel_{task['id']}__"
         )
         try: await message.edit(text)
         except: pass
@@ -371,12 +375,11 @@ class TaskManager:
 
 manager = TaskManager()
 
-# ================= COMMANDS =================
-
+# --- Commands ---
 @Client.on_message(filters.command(["dl", "leech"]) & filters.private)
 async def dl_handler(client, message):
     if len(message.command) < 2:
-        return await message.reply("**⚠️ Usage:** `/dl url`")
+        return await message.reply("**⚠️ __Usage:__** /dl url")
     url = message.command[1]
     await manager.add_task(client, message, url)
 
@@ -384,6 +387,7 @@ async def dl_handler(client, message):
 async def cancel_handler(client, message):
     task_id = message.text.split("_")[1]
     if await manager.cancel_task(task_id):
-        await message.reply(f"**🛑 Task Cancelled.**")
+        await message.reply(f"**__🛑 Task Cancelled.__**")
     else:
-        await message.reply("**❌ Task not active.**")
+        await message.reply("**❌ __Task not Active.__**")
+        

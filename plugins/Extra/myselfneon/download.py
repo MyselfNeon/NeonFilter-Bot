@@ -2,26 +2,22 @@ import os
 import time
 import uuid
 import asyncio
-import aiohttp
-import ssl
-import re
-import mimetypes
-import filetype
+import json
 import shutil
-from urllib.parse import unquote
-
 from pyrogram import Client, filters
-from pyrogram.types import Message
+
+# Try to import yt_dlp
+try:
+    import yt_dlp
+except ImportError:
+    print("CRITICAL: yt-dlp is not installed. Run 'pip install yt-dlp'")
 
 # ================= CONFIGURATION =================
 DOWNLOAD_DIR = "downloads"
 MAX_CONCURRENT_TASKS = 5
-CHUNK_SIZE = 1024 * 1024  # 1MB
 EDIT_SLEEP = 4
-ADMINS = {841851780} 
 
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-mimetypes.init()
 
 # ================= UTILITIES =================
 
@@ -47,36 +43,50 @@ def get_progressbar(current, total):
     finished_len = int(percentage * 10)
     return f"{'▰' * finished_len}{'▱' * (10 - finished_len)}"
 
-def get_seconds(time_str):
-    """Converts HH:MM:SS.ms to total seconds"""
-    try:
-        h, m, s = time_str.split(':')
-        return int(h) * 3600 + int(m) * 60 + float(s)
-    except:
-        return 0
+# ================= METADATA ENGINE (THE FIX) =================
 
-# ================= CORE ENGINES =================
-
-async def get_filename_from_headers(response, url):
+async def get_video_attributes(file_path):
+    """
+    Uses FFprobe to get the EXACT width, height, and duration.
+    This fixes the 'random ratio' issue in Telegram.
+    """
+    width = 1280
+    height = 720
+    duration = 0
+    
     try:
-        content_disposition = response.headers.get("Content-Disposition")
-        if content_disposition:
-            fname = re.findall("filename=(.+)", content_disposition)
-            if fname: return unquote(fname[0].strip('";'))
-    except: pass
-    try:
-        path = unquote(url.split("?")[0])
-        name = path.split("/")[-1]
-        if name: return name
-    except: pass
-    return f"QuantumDL_{int(time.time())}"
-
-async def generate_thumbnail(video_path: str):
-    thumb_path = f"{video_path}.jpg"
-    try:
+        cmd = [
+            "ffprobe", "-v", "error",
+            "-select_streams", "v:0",
+            "-show_entries", "stream=width,height,duration",
+            "-of", "json",
+            file_path
+        ]
         process = await asyncio.create_subprocess_exec(
-            "ffmpeg", "-i", video_path, "-ss", "00:00:02", "-vframes", "1", thumb_path, "-y",
-            stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+        stdout, _ = await process.communicate()
+        data = json.loads(stdout)
+        
+        width = int(data['streams'][0]['width'])
+        height = int(data['streams'][0]['height'])
+        duration = int(float(data['streams'][0]['duration']))
+    except Exception as e:
+        print(f"Metadata Error: {e}")
+        
+    return width, height, duration
+
+async def generate_thumbnail(video_path, duration):
+    """Generates a thumbnail from the middle of the video."""
+    thumb_path = f"{video_path}.jpg"
+    timestamp = duration // 2 if duration > 0 else 2
+    try:
+        cmd = [
+            "ffmpeg", "-i", video_path, "-ss", str(timestamp), 
+            "-vframes", "1", thumb_path, "-y"
+        ]
+        process = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
         )
         await process.wait()
         if os.path.exists(thumb_path): return thumb_path
@@ -105,15 +115,14 @@ class TaskManager:
             "user_id": user_id,
             "chat_id": message.chat.id,
             "status": "queued",
-            "cancel_event": asyncio.Event(),
+            "cancel_event": False, # yt-dlp uses a boolean flag usually
             "message": None,
             "start_time": 0,
             "filename": "Unknown",
-            "last_edit": 0,
-            "process": None # For FFmpeg process
+            "last_edit": 0
         }
 
-        msg = await message.reply(f"**⚡ Added to Queue...**\n`{url}`", quote=True)
+        msg = await message.reply(f"**⚡ Initializing...**\n`{url}`", quote=True)
         self.active_tasks[task_id]["message"] = msg
         asyncio.create_task(self.execute_task(client, task_id))
 
@@ -126,218 +135,158 @@ class TaskManager:
         semaphore = self.get_semaphore(task["user_id"])
         
         async with semaphore:
-            if task["cancel_event"].is_set(): return
+            if task["cancel_event"]: return
             
-            # --- 1. DETECT TYPE ---
-            is_m3u8 = any(x in url.lower() for x in [".m3u8", ".m3u", ".mpd"])
+            task["start_time"] = time.time()
+            task["status"] = "downloading"
             
-            # --- 2. EXECUTE ENGINE ---
             file_path = None
+            
             try:
-                if is_m3u8:
-                    file_path = await self.download_stream(task, url)
-                else:
-                    file_path = await self.download_direct(task, url)
+                # --- 1. DOWNLOAD WITH YT-DLP ---
+                # This automatically handles generic links, Youtube, Insta, M3U8
+                # and selects BEST quality.
+                file_path = await self.download_ytdlp(task, url)
 
-                if not file_path or task["cancel_event"].is_set():
-                    return # Cancelled or failed
+                if not file_path:
+                    raise Exception("Download failed or cancelled.")
+
+                # --- 2. EXTRACT PRECISE METADATA ---
+                task["status"] = "probing"
+                await msg.edit("**📏 Checking Dimensions...**")
+                width, height, duration = await get_video_attributes(file_path)
 
                 # --- 3. UPLOAD ---
-                await self.upload_file(client, task, file_path)
+                await self.upload_file(client, task, file_path, width, height, duration)
 
             except Exception as e:
                 await msg.edit(f"**❌ Error:** `{str(e)}`")
             finally:
                 if file_path and os.path.exists(file_path): os.remove(file_path)
+                # Cleanup thumb if exists
+                if file_path:
+                    t = f"{file_path}.jpg"
+                    if os.path.exists(t): os.remove(t)
                 self.active_tasks.pop(task_id, None)
 
-    # --- ENGINE A: DIRECT DOWNLOADER (aiohttp) ---
-    async def download_direct(self, task, url):
-        task["start_time"] = time.time()
-        task["status"] = "downloading"
+    async def download_ytdlp(self, task, url):
         msg = task["message"]
+        loop = asyncio.get_event_loop()
         
-        ssl_ctx = ssl.create_default_context()
-        ssl_ctx.check_hostname = False
-        ssl_ctx.verify_mode = ssl.CERT_NONE
+        # Unique temp filename
+        out_tmpl = f"{DOWNLOAD_DIR}/{task['id']}_%(title)s.%(ext)s"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, ssl=ssl_ctx) as response:
-                if response.status != 200:
-                    raise Exception(f"HTTP {response.status}")
-
-                fname = await get_filename_from_headers(response, url)
+        def progress_hook(d):
+            if d['status'] == 'downloading':
+                # Map yt-dlp progress to our bot
+                total = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
+                downloaded = d.get('downloaded_bytes', 0)
                 
-                # Correction for files with no extension
-                if "." not in fname:
-                    fname += ".dat"
-                
-                task["filename"] = fname
-                file_path = os.path.join(DOWNLOAD_DIR, fname)
-                total_size = int(response.headers.get("Content-Length", 0))
-                downloaded = 0
-                
-                with open(file_path, 'wb') as f:
-                    async for chunk in response.content.iter_chunked(CHUNK_SIZE):
-                        if task["cancel_event"].is_set():
-                            await msg.edit("**🚫 Cancelled.**")
-                            return None
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        await self.update_progress(msg, task, downloaded, total_size, "📥 Downloading")
+                # Check cancellation
+                if task["cancel_event"]:
+                    raise Exception("Cancelled")
 
-        # Magic Number Check for Rename
-        kind = filetype.guess(file_path)
-        if kind:
-            current_ext = os.path.splitext(file_path)[1]
-            if not current_ext or current_ext.lower() != f".{kind.extension}":
-                new_fname = f"{os.path.splitext(task['filename'])[0]}.{kind.extension}"
-                new_path = os.path.join(DOWNLOAD_DIR, new_fname)
-                os.rename(file_path, new_path)
-                file_path = new_path
-                task["filename"] = new_fname
+                # Update UI
+                asyncio.run_coroutine_threadsafe(
+                    self.update_progress(msg, task, downloaded, total, "📥 Downloading (yt-dlp)"),
+                    loop
+                )
+            elif d['status'] == 'finished':
+                task["filename"] = os.path.basename(d['filename'])
 
-        return file_path
+        ydl_opts = {
+            'outtmpl': out_tmpl,
+            'format': 'bestvideo+bestaudio/best', # <--- ENSURES MAX QUALITY
+            'merge_output_format': 'mp4',        # <--- ENSURES COMPATIBILITY
+            'noplaylist': True,
+            'progress_hooks': [progress_hook],
+            'quiet': True,
+            'no_warnings': True,
+            'geo_bypass': True,
+            # Instagram/Cookies support can be added here
+        }
 
-    # --- ENGINE B: STREAM DOWNLOADER (FFmpeg) ---
-    async def download_stream(self, task, url):
-        task["start_time"] = time.time()
-        task["status"] = "recording"
-        msg = task["message"]
-        
-        # Name defaults to MP4 for streams
-        fname = f"Stream_{int(time.time())}.mp4"
-        task["filename"] = fname
-        file_path = os.path.join(DOWNLOAD_DIR, fname)
-        
-        await msg.edit("**🔄 Starting Stream Recording (FFmpeg)...**")
-
-        # 1. Get Total Duration first (optional, helps progress)
-        total_duration = 0
+        # Run yt-dlp in a separate thread to not block async loop
         try:
-            cmd_probe = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", url]
-            proc_probe = await asyncio.create_subprocess_exec(*cmd_probe, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            stdout, _ = await proc_probe.communicate()
-            total_duration = float(stdout.decode().strip())
-        except:
-            total_duration = 0 # Live stream or fail to probe
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = await loop.run_in_executor(None, lambda: ydl.extract_info(url, download=True))
+                # If extract_info returns info dict, getting filename is safer:
+                if 'requested_downloads' in info:
+                    return info['requested_downloads'][0]['filepath']
+                else:
+                    return ydl.prepare_filename(info)
+        except Exception as e:
+            if "Cancelled" in str(e): return None
+            raise e
 
-        # 2. Start Download
-        # -bsf:a aac_adtstoasc fixes audio issues in m3u8 to mp4 conversion
-        cmd = [
-            "ffmpeg", "-i", url, "-c", "copy", "-bsf:a", "aac_adtstoasc", "-y", file_path
-        ]
-        
-        process = await asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-        )
-        task["process"] = process
-
-        # Monitor Progress from stderr
-        while True:
-            if task["cancel_event"].is_set():
-                process.kill()
-                await msg.edit("**🚫 Cancelled.**")
-                return None
-            
-            line = await process.stderr.readline()
-            if not line:
-                break
-            
-            line_str = line.decode('utf-8', errors='ignore')
-            
-            # Parse "time=00:00:15.40"
-            if "time=" in line_str:
-                try:
-                    time_match = re.search(r"time=(\d{2}:\d{2}:\d{2}\.\d{2})", line_str)
-                    if time_match:
-                        current_time = get_seconds(time_match.group(1))
-                        # For streams, we pass Time (seconds) instead of Bytes
-                        await self.update_progress(msg, task, current_time, total_duration, "🔴 Recording Stream", is_time=True)
-                except: pass
-
-        await process.wait()
-        
-        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-            return file_path
-        raise Exception("Stream download failed or empty.")
-
-    # --- COMMON UPLOAD HANDLER ---
-    async def upload_file(self, client, task, file_path):
+    async def upload_file(self, client, task, file_path, width, height, duration):
         msg = task["message"]
         task["status"] = "uploading"
         
-        # Detect video
-        is_video = False
-        kind = filetype.guess(file_path)
-        if kind and kind.mime.startswith("video"): is_video = True
-        else:
-            mime = mimetypes.guess_type(file_path)[0]
-            if mime and mime.startswith("video"): is_video = True
-            elif file_path.endswith(".mp4") or file_path.endswith(".mkv"): is_video = True
-
-        thumb = None
-        if is_video:
-            await msg.edit(f"**🖼️ Generating Thumbnail...**")
-            thumb = await generate_thumbnail(file_path)
+        await msg.edit("**🖼️ Generating Thumbnail...**")
+        thumb = await generate_thumbnail(file_path, duration)
 
         async def upload_progress(current, total):
-            if task["cancel_event"].is_set(): client.stop_transmission()
+            if task["cancel_event"]: client.stop_transmission()
             await self.update_progress(msg, task, current, total, "🚀 Uploading")
 
-        await msg.edit(f"**📤 Uploading...**")
+        await msg.edit(f"**📤 Uploading...**\n`{width}x{height}`")
         
-        caption = f"**🎬 {task['filename']}**\n**📦 Size:** `{human_readable(os.path.getsize(file_path))}`"
+        file_size = os.path.getsize(file_path)
+        caption = (
+            f"**🎬 Name:** `{task['filename']}`\n"
+            f"**📏 Res:** `{width}x{height}`\n"
+            f"**📦 Size:** `{human_readable(file_size)}`"
+        )
         
         try:
-            if is_video:
-                await client.send_video(
-                    task["chat_id"], video=file_path, caption=caption,
-                    thumb=thumb, supports_streaming=True, progress=upload_progress
-                )
-            else:
-                await client.send_document(
-                    task["chat_id"], document=file_path, caption=caption,
-                    thumb=thumb, progress=upload_progress
-                )
+            # SEND VIDEO with EXPLICIT WIDTH/HEIGHT
+            # This fixes the ratio/aspect issue in Telegram
+            await client.send_video(
+                task["chat_id"],
+                video=file_path,
+                caption=caption,
+                duration=duration,
+                width=width,     # <--- KEY FIX
+                height=height,   # <--- KEY FIX
+                thumb=thumb,
+                supports_streaming=True,
+                progress=upload_progress
+            )
             await msg.edit(f"**✅ Completed!**\n`{task['filename']}`")
         except Exception as e:
-            # Fallback for weird files
+            # Fallback
             await client.send_document(
-                task["chat_id"], document=file_path, caption=caption, progress=upload_progress
+                task["chat_id"],
+                document=file_path,
+                caption=caption,
+                thumb=thumb,
+                progress=upload_progress
             )
-            await msg.edit(f"**✅ Completed!**")
-            
-        if thumb and os.path.exists(thumb): os.remove(thumb)
+            await msg.edit("**✅ Completed (as File)!**")
 
-    async def update_progress(self, message, task, current, total, stage, is_time=False):
+    async def update_progress(self, message, task, current, total, stage):
         now = time.time()
         if (now - task["last_edit"] < EDIT_SLEEP) and (current < total if total else True): return
         
         task["last_edit"] = now
         elapsed = now - task["start_time"]
+        speed = current / elapsed if elapsed > 0 else 0
+        percent = (current / total * 100) if total else 0
         
-        if is_time:
-            # Time Based Progress (For Streams)
-            percent = (current / total * 100) if total else 0
-            prog_bar = get_progressbar(current, total)
-            status_str = f"**⏱ Duration:** `{time_formatter(current)}` / `{time_formatter(total)}`"
-            eta_str = "Live Stream" if not total else time_formatter(total - current)
+        # Safe ETA calculation
+        if speed > 0 and total > 0:
+            eta = (total - current) / speed
         else:
-            # Size Based Progress (For Direct DL / Upload)
-            speed = current / elapsed if elapsed > 0 else 0
-            percent = (current / total * 100) if total else 0
-            prog_bar = get_progressbar(current, total)
-            status_str = f"**💾 Size:** `{human_readable(current)} / {human_readable(total)}`"
-            eta_str = time_formatter((total - current) / speed) if speed > 0 and total else "0s"
-            status_str += f"\n**⚡ Speed:** `{human_readable(speed)}/s`"
+            eta = 0
 
         text = (
             f"**{stage}**\n"
-            f"**File:** `{task['filename']}`\n"
-            f"**{prog_bar}** `{percent:.1f}%`\n\n"
-            f"{status_str}\n"
-            f"**⏳ ETA:** `{eta_str}`\n\n"
+            f"**File:** `{task.get('filename', 'Processing...')}`\n"
+            f"**{get_progressbar(current, total)}** `{percent:.1f}%`\n\n"
+            f"**💾 Size:** `{human_readable(current)} / {human_readable(total)}`\n"
+            f"**⚡ Speed:** `{human_readable(speed)}/s`\n"
+            f"**⏳ ETA:** `{time_formatter(eta)}`\n\n"
             f"**🚫 Cancel:** `/cancel_{task['id']}`"
         )
         try: await message.edit(text)
@@ -345,12 +294,7 @@ class TaskManager:
 
     async def cancel_task(self, task_id):
         if task_id in self.active_tasks:
-            self.active_tasks[task_id]["cancel_event"].set()
-            # If FFmpeg is running, kill it
-            proc = self.active_tasks[task_id].get("process")
-            if proc:
-                try: proc.kill()
-                except: pass
+            self.active_tasks[task_id]["cancel_event"] = True
             return True
         return False
 
@@ -364,9 +308,6 @@ async def dl_handler(client, message):
         return await message.reply("**⚠️ Usage:** `/dl url`")
     
     url = message.command[1]
-    if not url.startswith("http"):
-        return await message.reply("**❌ Invalid URL.**")
-
     await manager.add_task(client, message, url)
 
 @Client.on_message(filters.regex(r"^/cancel_") & filters.private)

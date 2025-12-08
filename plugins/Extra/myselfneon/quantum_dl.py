@@ -320,7 +320,7 @@ class TaskManager:
                     thumb=thumb, 
                     progress=upload_progress
                 )
-            await msg.edit(f"**__✅ Completed !__**\n🛂 `{task['filename']}`")
+            await msg.edit(f"**__✅ Completed !__**\n🛂 __{task['filename']}__")
         except Exception:
             # Fallback if send_video crashes
             try:

@@ -1,3 +1,10 @@
+# ---------------------------------------------------
+# File Name: Quantum-Download-V5.1.py
+# Author: MyselfNeon
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import os
 import time
 import uuid
@@ -390,3 +397,6 @@ async def cancel_handler(client, message):
         await message.reply(f"**__🥲 Task Cancelled.__**")
     else:
         await message.reply("**💢 __Task Not Active.__**")
+
+# – Andi mandi sandi jisne credit churaya
+# – Uski bandi R@ndi 😁

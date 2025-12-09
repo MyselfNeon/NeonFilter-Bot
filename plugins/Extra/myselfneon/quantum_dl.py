@@ -1,5 +1,5 @@
 # ---------------------------------------------------
-# File Name: Quantum-Download-V5.1.py
+# File Name: Quantum-Download-V5.2.py
 # Author: MyselfNeon
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
@@ -327,14 +327,24 @@ class TaskManager:
                     thumb=thumb, 
                     progress=upload_progress
                 )
-            await msg.edit(f"**__✅ Completed !__**\n🛂 __{task['filename']}__")
+            
+            # --- Added Link to Completion Message ---
+            await msg.edit(
+                f"**__✅ Completed !__**\n"
+                f"🛂 __{task['filename']}__\n"
+                f"🖇️ **__Link : [Click Here]({task['url']}__**)"
+            )
+
         except Exception:
             # Fallback if send_video crashes
             try:
                 await client.send_document(
                     task["chat_id"], document=file_path, caption=caption, progress=upload_progress
                 )
-                await msg.edit("**__✅ Completed (Fallback) !__**")
+                await msg.edit(
+                    f"**__✅ Completed (Fallback) !__**\n"
+                    f"🖇️ **__Link :** [Click Here]({task['url']}__**)"
+                )
             except:
                 await msg.edit("**__❌ Upload Failed.__**")
 
@@ -358,9 +368,11 @@ class TaskManager:
             size_str = f"**__📦 Size : {human_readable(current)} / {human_readable(total)}__**"
             eta_str = time_formatter(eta)
 
+        # --- Added Link to Progress Message ---
         text = (
             f"**__{stage}__**\n"
             f"**__🛂 File :__** __{task.get('filename', 'Unknown')}__\n"
+            f"**__🖇️ Link :** [Click Here]({task['url']})__**\n"
             f"**{prog_bar}**\n\n"
             f"{size_str}\n"
             f"**__⚡ Speed : {human_readable(speed)}/s__**\n"
@@ -389,6 +401,13 @@ async def dl_handler(client, message):
         return await message.reply("**⁉️ __Usage :__** /dl url")
     url = message.command[1]
     await manager.add_task(client, message, url)
+    
+    # --- Added Message Deletion after 1 Second ---
+    await asyncio.sleep(1)
+    try:
+        await message.delete()
+    except Exception as e:
+        print(f"Could not delete message: {e}")
 
 @Client.on_message(filters.regex(r"^/cancel_") & filters.private)
 async def cancel_handler(client, message):
@@ -398,5 +417,5 @@ async def cancel_handler(client, message):
     else:
         await message.reply("**💢 __Task Not Active.__**")
 
-# – Andi mandi sandi jisne credit churaya
-# – Uski bandi R@ndi 😁
+# Andi mandi sandi jisne bhi credits churaya
+# Uski bandi R@ndi 📢

@@ -38,7 +38,7 @@ Usage:
 @Client.on_message(filters.command("whois") & filters.private)
 async def whois_user(client: Client, message: Message):
     # Visual feedback
-    status_msg = await message.reply("<b><i>🎉 Fetching user details...</i></b>", quote=True)
+    status_msg = await message.reply("<b><i>🎉 Fetching User Details ...</i></b>", quote=True)
 
     try:
         user = None

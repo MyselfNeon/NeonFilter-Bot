@@ -1,226 +1,319 @@
-#Pass remover and adder.py
 import os
 import shutil
+import time
+import math
+import asyncio
+import uuid
 import pyzipper
 import pikepdf
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
-# TEMPORARY STORAGE FOR PROCESSED FILES
-PROCESSED_RESULTS = {}  # {chat_id: {"files": [paths], "force_zip": bool}}
+# ==================== CONFIG & GLOBALS ====================
+PROCESSED_RESULTS = {} 
+TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB
 
-# TELEGRAM MAX UPLOAD SIZE (2 GB)
-TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
+# ==================== HELPER FUNCTIONS ====================
 
+def humanbytes(size):
+    """Converts bytes to human readable string."""
+    if not size:
+        return "0 B"
+    power = 2**10
+    n = 0
+    dic_powerN = {0: ' ', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti'}
+    while size > power:
+        size /= power
+        n += 1
+    return str(round(size, 2)) + " " + dic_powerN[n] + 'B'
 
-# ====================== REMOVE PASSWORD COMMAND ======================
+async def progress(current, total, message: Message, start_time, status_text):
+    """Progress bar for Download/Upload with Bold+Italic styling."""
+    try:
+        now = time.time()
+        diff = now - start_time
+        
+        if round(diff % 5.00) == 0 or current == total:
+            percentage = current * 100 / total
+            speed = current / diff if diff > 0 else 0
+            elapsed_time = round(diff) * 1000
+            time_to_completion = round((total - current) / speed) * 1000 if speed > 0 else 0
+            estimated_total_time = elapsed_time + time_to_completion
+
+            elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time / 1000))
+            eta_str = time.strftime('%H:%M:%S', time.gmtime(estimated_total_time / 1000))
+
+            # Progress Bar Visual
+            progress_bar = "[{0}{1}] \n**__{2}%__**".format(
+                ''.join(["⬢" for i in range(math.floor(percentage / 10))]),
+                ''.join(["⬡" for i in range(10 - math.floor(percentage / 10))]),
+                round(percentage, 2)
+            )
+
+            # FORCE BOLD + ITALIC ON EVERYTHING
+            tmp = f"{status_text}\n{progress_bar}\n"
+            tmp += f"**__📦 Size:__** {humanbytes(current)} / {humanbytes(total)}\n"
+            tmp += f"**__🚀 Speed:__** {humanbytes(speed)}/s\n"
+            tmp += f"**__⏳ Time:__** {elapsed_str} / {eta_str}"
+
+            await message.edit(tmp)
+    except Exception:
+        pass
+
+# ==================== BLOCKING LOGIC (THREADS) ====================
+
+def _cpu_remove_pdf(input_path, output_path, password):
+    try:
+        with pikepdf.open(input_path, password=password) as pdf:
+            pdf.save(output_path)
+        return True, None
+    except pikepdf.PasswordError:
+        return False, "Wrong Password"
+    except Exception as e:
+        return False, str(e)
+
+def _cpu_remove_zip(input_path, extract_path, password):
+    try:
+        with pyzipper.AESZipFile(input_path) as zf:
+            if password:
+                zf.extractall(path=extract_path, pwd=password.encode("utf-8"))
+            else:
+                zf.extractall(path=extract_path)
+        return True, None
+    except RuntimeError:
+        return False, "Wrong Password or Corrupt ZIP"
+    except Exception as e:
+        return False, str(e)
+
+def _cpu_add_pass(input_path, output_path, password, is_zip):
+    try:
+        if not is_zip: # PDF
+            with pikepdf.open(input_path) as pdf:
+                pdf.save(output_path, encryption=pikepdf.Encryption(owner=password, user=password, R=4))
+        else: # ZIP
+            with pyzipper.AESZipFile(output_path, "w", compression=pyzipper.ZIP_DEFLATED, encryption=pyzipper.WZ_AES) as zf:
+                zf.setpassword(password.encode("utf-8"))
+                with pyzipper.AESZipFile(input_path) as original:
+                    for f in original.namelist():
+                        zf.writestr(f, original.read(f))
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
+# ==================== REMOVE PASSWORD COMMAND ====================
 @Client.on_message(filters.command("removepass") & filters.reply)
 async def remove_password(client: Client, message: Message):
     if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("**⚠️ __Reply To A <u>PDF or ZIP File</u> With__** `/removepass <password>`")
+        return await message.reply("**__⚠️ Reply to a PDF or ZIP file.__**")
 
     file_name = message.reply_to_message.document.file_name
     args = message.text.split(" ", 1)
     password = args[1] if len(args) > 1 else None
 
-    status = await message.reply("⏳ **__Rᴇᴍᴏᴠɪɴɢ Pᴀssᴡᴏʀᴅ__ 🔓 ...**")
+    task_id = str(uuid.uuid4())
+    base_dir = f"temp_{task_id}"
+    os.makedirs(base_dir, exist_ok=True)
+    
+    status = await message.reply("**__⏳ Downloading...__**")
+    start_time = time.time()
 
     try:
-        # DOWNLOAD FILE
-        file_path = await message.reply_to_message.download()
-        base_dir = "temp_unlock"
-        extracted_dir = os.path.join(base_dir, "extracted")
-        unlocked_dir = os.path.join(base_dir, "unlocked")
-        os.makedirs(extracted_dir, exist_ok=True)
-        os.makedirs(unlocked_dir, exist_ok=True)
+        file_path = os.path.join(base_dir, file_name)
+        await message.reply_to_message.download(
+            file_path,
+            progress=progress,
+            progress_args=(status, start_time, "**__📥 Downloading File...__**")
+        )
 
-        # HANDLE PDF
+        await status.edit("**__🔐 Decrypting (This may take a moment)...__**")
+
+        # --- HANDLE PDF ---
         if file_name.lower().endswith(".pdf"):
-            unlocked_path = os.path.join(unlocked_dir, file_name)
-            try:
-                with pikepdf.open(file_path, password=password) as pdf:
-                    pdf.save(unlocked_path)
-                if os.path.getsize(unlocked_path) > TG_MAX_FILE_SIZE:
-                    return await status.edit("❌ **__File Too Large For Telegram (2GB Limit)__**")
-                await status.delete()
-                await message.reply_document(
-                    unlocked_path,
-                    caption="**✅ __File Unlocked Successfully__**"
-                )
-            except pikepdf.PasswordError:
-                await status.edit("❌ **__Wrong PDF Password Or Unable To Remove__**")
+            unlocked_path = os.path.join(base_dir, f"Unlocked_{file_name}")
+            
+            success, error = await asyncio.to_thread(_cpu_remove_pdf, file_path, unlocked_path, password)
+            
+            if not success:
+                return await status.edit(f"**__❌ Error:__** \n`{error}`")
 
-        # HANDLE ZIP
+            if os.path.getsize(unlocked_path) > TG_MAX_FILE_SIZE:
+                return await status.edit("**__❌ File Too Large (2GB Limit).__**")
+
+            await message.reply_document(
+                unlocked_path,
+                caption="**__✅ File Unlocked Successfully__**\n**__🔥 Powered By @NeonFiles__**",
+                progress=progress,
+                progress_args=(status, time.time(), "**__📤 Uploading...__**")
+            )
+            await status.delete()
+
+        # --- HANDLE ZIP ---
         elif file_name.lower().endswith(".zip"):
+            extracted_dir = os.path.join(base_dir, "extracted")
+            os.makedirs(extracted_dir, exist_ok=True)
+
+            success, error = await asyncio.to_thread(_cpu_remove_zip, file_path, extracted_dir, password)
+            
+            if not success:
+                return await status.edit(f"**__❌ Error:__** \n`{error}`")
+
             unlocked_files = []
-            too_large = False
-
-            try:
-                with pyzipper.AESZipFile(file_path) as zf:
-                    try:
-                        if password:
-                            zf.extractall(path=extracted_dir, pwd=password.encode("utf-8"))
-                        else:
-                            zf.extractall(path=extracted_dir)
-                    except RuntimeError:
-                        return await status.edit("❌ **__Wrong ZIP Password Or Extraction Failed__**")
-            except Exception as e:
-                return await status.edit(f"❌ **__ZIP Extraction Error: {e}__**")
-
-            # PROCESS EXTRACTED FILES
+            files_too_large = False
             for root, _, files in os.walk(extracted_dir):
                 for f in files:
-                    src_path = os.path.join(root, f)
-                    rel_path = os.path.relpath(src_path, extracted_dir)
-                    dest_path = os.path.join(unlocked_dir, rel_path)
-                    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                    full_path = os.path.join(root, f)
+                    unlocked_files.append(full_path)
+                    if os.path.getsize(full_path) > TG_MAX_FILE_SIZE:
+                        files_too_large = True
 
-                    if f.lower().endswith(".pdf"):
-                        try:
-                            with pikepdf.open(src_path, password=password) as pdf:
-                                pdf.save(dest_path)
-                        except Exception:
-                            shutil.copy(src_path, dest_path)
-                    else:
-                        shutil.copy(src_path, dest_path)
-
-                    unlocked_files.append(dest_path)
-                    if os.path.getsize(dest_path) > TG_MAX_FILE_SIZE:
-                        too_large = True
-
-            # SAVE FOR CALLBACK
-            PROCESSED_RESULTS[message.chat.id] = {"files": unlocked_files, "force_zip": too_large}
+            PROCESSED_RESULTS[task_id] = {
+                "files": unlocked_files, 
+                "base_dir": base_dir,
+                "extract_dir": extracted_dir
+            }
 
             buttons = []
-            if too_large:
-                buttons.append([InlineKeyboardButton("📂 Sᴇɴᴅ ZIP", callback_data="send_zip")])
-                await status.edit("⚠️ **__Some Files Exceed 2GB, Must Send As ZIP__**",
-                                  reply_markup=InlineKeyboardMarkup(buttons))
+            if files_too_large:
+                buttons.append([InlineKeyboardButton("📂 Send as ZIP", callback_data=f"zip_{task_id}")])
+                msg_text = "**__⚠️ Some files are >2GB. Must send as ZIP.__**"
             else:
-                buttons.append([InlineKeyboardButton("📂 Sᴇɴᴅ ZIP", callback_data="send_zip")])
-                buttons.append([InlineKeyboardButton("📄 Sᴇɴᴅ Fɪʟᴇs", callback_data="send_files")])
-                await status.edit("**✅ __ZIP Unlocked Successfully\nChoose How To Receive Files__**",
-                                  reply_markup=InlineKeyboardMarkup(buttons))
+                buttons.append([InlineKeyboardButton("📂 Send as ZIP", callback_data=f"zip_{task_id}")])
+                buttons.append([InlineKeyboardButton("📄 Send Files", callback_data=f"files_{task_id}")])
+                msg_text = f"**__✅ ZIP Unlocked! ({len(unlocked_files)} files)__**\n**__Choose delivery method:__**"
+
+            await status.edit(msg_text, reply_markup=InlineKeyboardMarkup(buttons))
+            return 
 
         else:
-            await status.edit("⚠️ **__Only Pdf And Zip Files Are Supported__**")
+            await status.edit("**__⚠️ Only PDF and ZIP supported.__**")
 
     except Exception as e:
-        await status.edit(f"🚫 **__Error:** \n{e}__")
+        await status.edit(f"**__🚫 Error:__** \n`{e}`")
+        shutil.rmtree(base_dir, ignore_errors=True)
 
-    finally:
-        if os.path.exists(file_path):
-            os.remove(file_path)
+    if not file_name.lower().endswith(".zip"):
+        shutil.rmtree(base_dir, ignore_errors=True)
 
 
 # ====================== ADD PASSWORD COMMAND ======================
 @Client.on_message(filters.command("addpass") & filters.reply)
 async def add_password(client: Client, message: Message):
     if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("⚠️ **__Reply To A <u>PDF or ZIP File</u> With__** `/addpass <password>`")
+        return await message.reply("**__⚠️ Reply to a PDF or ZIP file.__**")
 
-    file_name = message.reply_to_message.document.file_name
     args = message.text.split(" ", 1)
     password = args[1] if len(args) > 1 else None
     if not password:
-        return await message.reply("⚠️ **__Please Provide A Password.\n\nUsage__**: `/addpass yourpassword`")
+        return await message.reply("**__⚠️ Usage:__** `/addpass <password>`")
 
-    status = await message.reply("**⏳ __Aᴅᴅɪɴɢ Pᴀssᴡᴏʀᴅ__ 🔐 ...**")
+    file_name = message.reply_to_message.document.file_name
+    
+    task_id = str(uuid.uuid4())
+    base_dir = f"temp_{task_id}"
+    os.makedirs(base_dir, exist_ok=True)
+    
+    status = await message.reply("**__⏳ Downloading...__**")
+    start_time = time.time()
 
     try:
-        file_path = await message.reply_to_message.download()
-        base_dir = "temp_addpass"
-        os.makedirs(base_dir, exist_ok=True)
+        file_path = os.path.join(base_dir, file_name)
+        await message.reply_to_message.download(
+            file_path,
+            progress=progress,
+            progress_args=(status, start_time, "**__📥 Downloading...__**")
+        )
 
-        # PDF CASE
-        if file_name.lower().endswith(".pdf"):
-            protected_path = os.path.join(base_dir, file_name)
-            with pikepdf.open(file_path) as pdf:
-                pdf.save(protected_path, encryption=pikepdf.Encryption(owner=password, user=password, R=4))
-            await status.delete()
-            await message.reply_document(
-                protected_path,
-                caption=f"🔐 **__File Protected Successfully\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
-            )
+        output_path = os.path.join(base_dir, f"Protected_{file_name}")
+        await status.edit("**__🔐 Encrypting...__**")
 
-        # ZIP CASE
-        elif file_name.lower().endswith(".zip"):
-            protected_path = os.path.join(base_dir, file_name)
-            with pyzipper.AESZipFile(protected_path, "w", compression=pyzipper.ZIP_DEFLATED,
-                                     encryption=pyzipper.WZ_AES) as zf:
-                zf.setpassword(password.encode("utf-8"))   # SET PASSWORD ONCE
-                with pyzipper.AESZipFile(file_path) as original_zip:
-                    for f in original_zip.namelist():
-                        data = original_zip.read(f)
-                        zf.writestr(f, data)  # NO PWD ARG HERE
-            await status.delete()
-            await message.reply_document(
-                protected_path,
-                caption=f"🔐 **__File Protected Successfully\n🔑 Password__**: `{password}`\n\n**🔥 __Powered By @NeonFiles__**"
-            )
+        is_zip = file_name.lower().endswith(".zip")
+        is_pdf = file_name.lower().endswith(".pdf")
 
-        else:
-            await status.edit("⚠️ **__Only PDF And ZIP Files Are Supported__**")
+        if not (is_zip or is_pdf):
+             return await status.edit("**__⚠️ Only PDF and ZIP supported.__**")
+
+        success, error = await asyncio.to_thread(_cpu_add_pass, file_path, output_path, password, is_zip)
+
+        if not success:
+             return await status.edit(f"**__❌ Encryption Error:__** \n`{error}`")
+
+        await message.reply_document(
+            output_path,
+            caption=f"**__🔐 Protected Successfully__**\n**__🔑 Pass:__** `{password}`\n**__🔥 Powered By @NeonFiles__**",
+            progress=progress,
+            progress_args=(status, time.time(), "**__📤 Uploading...__**")
+        )
+        await status.delete()
 
     except Exception as e:
-        await status.edit(f"🚫 **__Error:** \n{e}__")
+        await status.edit(f"**__🚫 Error:__** \n`{e}`")
 
     finally:
         shutil.rmtree(base_dir, ignore_errors=True)
-        if os.path.exists(file_path):
-            os.remove(file_path)
 
 
 # ====================== CALLBACK HANDLER ======================
-@Client.on_callback_query(filters.regex("send_zip|send_files"))
+@Client.on_callback_query(filters.regex(r"^(zip|files)_"))
 async def handle_send_choice(client: Client, callback: CallbackQuery):
-    chat_id = callback.message.chat.id
-    if chat_id not in PROCESSED_RESULTS:
-        return await callback.answer("⚠️ **__No Processed Files Found__**", show_alert=True)
+    action, task_id = callback.data.split("_")
 
-    results = PROCESSED_RESULTS[chat_id]
-    choice = callback.data
+    if task_id not in PROCESSED_RESULTS:
+        return await callback.answer("⚠️ Session expired.", show_alert=True)
 
-    if choice == "send_zip":
-        new_zip = "Unlocked Files.zip"
-        with pyzipper.AESZipFile(new_zip, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
-            for f in results["files"]:
-                arcname = os.path.relpath(f, "temp_unlock/unlocked")
-                newzf.write(f, arcname=arcname)
-        await callback.message.reply_document(new_zip, caption="📂 **__Here’s Your Unlocked ZIP__\n\n🔥 __Powered By @NeonFiles__**")
-        os.remove(new_zip)
+    data = PROCESSED_RESULTS[task_id]
+    files = data["files"]
+    base_dir = data["base_dir"]
+    extract_dir = data["extract_dir"]
 
-    elif choice == "send_files":
-        if results.get("force_zip"):
-            return await callback.answer("⚠️ **__Some Files Exceed 2GB. ZIP Is Required__**", show_alert=True)
-        for f in results["files"]:
+    if action == "zip":
+        new_zip = os.path.join(base_dir, "Unlocked_Files.zip")
+        await callback.message.edit("**__📦 Re-zipping files...__**")
+        
+        def _repack():
+            with pyzipper.AESZipFile(new_zip, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
+                for f in files:
+                    arcname = os.path.relpath(f, extract_dir)
+                    newzf.write(f, arcname=arcname)
+        
+        await asyncio.to_thread(_repack)
+        
+        await callback.message.reply_document(
+            new_zip, 
+            caption="**__📂 Your Unlocked ZIP__**\n**__🔥 Powered By @NeonFiles__**",
+            progress=progress,
+            progress_args=(callback.message, time.time(), "**__📤 Uploading ZIP...__**")
+        )
+
+    elif action == "files":
+        await callback.message.edit("**__📄 Sending files one by one...__**")
+        for f in files:
             try:
-                await callback.message.reply_document(f, caption="**__File Unlocked Successfully__ ✅**")
-            except:
+                await callback.message.reply_document(f, caption="**__✅ Unlocked__**")
+                await asyncio.sleep(0.8) 
+            except Exception:
                 pass
+    
+    await callback.message.delete()
+    shutil.rmtree(base_dir, ignore_errors=True)
+    del PROCESSED_RESULTS[task_id]
 
-    shutil.rmtree("temp_unlock", ignore_errors=True)
-    del PROCESSED_RESULTS[chat_id]
-    await callback.answer()
-  
-# ====================== PASSWORD HELP COMMAND ======================
+# ====================== HELP COMMAND ======================
 @Client.on_message(filters.command("passhelp"))
 async def password_help(client: Client, message: Message):
     help_text = """
-<blockquote>**🔐 𝐏𝐀𝐒𝐒𝐖𝐎𝐑𝐃 𝐌𝐀𝐍𝐀𝐆𝐄𝐑 🔐**</blockquote>
+<blockquote>**__🔐 𝐏𝐀𝐒𝐒𝐖𝐎𝐑𝐃 𝐌𝐀𝐍𝐀𝐆𝐄𝐑 𝐏𝐑𝐎__**</blockquote>
 
-**🔓 __Remove Password__**
-__• /removepass \n- **Reply To any PDF or ZIP Files
-• If ZIP Contains Large Files (>2GB) It \n  Will Send As A New Zip__**
-\n**🔐 __Add Password__**
-__• /addpass \n- **Reply To any PDF or ZIP Files
-• Adds Password Protection To A PDF \n  ProvideFile. Give A Password First__**
+**__🔓 /removepass__**
+**__Reply to PDF/ZIP. Removes password.__**
 
-<blockquote>**⚠️ __Nᴏᴛᴇs__**</blockquote>
-**__- Only PDF and ZIP Are Supported
-- Large Files (>2GB) May Require ZIP\n   Packaging To Send Via Telegram__**
+**__🔐 /addpass <password>__**
+**__Reply to PDF/ZIP. Adds password protection.__**
 
-**🔥 __Powered By @NeonFiles__ 🔥**
+**__✨ Pro Features:__**
+**__• Progress Bars 📊__**
+**__• Fast Async Processing ⚡️__**
+**__• 2GB+ File Support 📁__**
+
+**__🔥 Powered By @NeonFiles 🔥__**
 """
     await message.reply(help_text)
-    

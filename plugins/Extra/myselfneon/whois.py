@@ -1,11 +1,12 @@
 # ---------------------------------------------------
-# File Name: WhoIs??-V0.2.py
+# File Name: WhoIs??-V0.3.py
 # Author: MyselfNeon
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
 
 import html
+import io  # For in-memory handling
 from datetime import datetime
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -66,7 +67,6 @@ async def whois_user(client: Client, message: Message):
             return await status_msg.edit("<b><i>❌ Could not resolve user.</i></b>")
 
         # 2. Fetch Full Chat Details (Bio)
-        # We use a safe try/except block here to prevent hanging
         try:
             full_chat = await client.get_chat(user.id)
             user_bio = full_chat.bio if full_chat.bio else "N/A"
@@ -128,10 +128,14 @@ async def whois_user(client: Client, message: Message):
             ]
         ])
 
-        # Send new message FIRST to ensure it works
+        # 6. Send Result
         if user.photo:
+            # FIX: Download to Memory (RAM) then send.
+            # This bypasses the "CHAT_PHOTO vs PHOTO" ID error.
+            photo_file = await client.download_media(user.photo.big_file_id, in_memory=True)
+            
             await message.reply_photo(
-                photo=user.photo.big_file_id,
+                photo=photo_file,
                 caption=text,
                 reply_markup=buttons,
                 quote=True

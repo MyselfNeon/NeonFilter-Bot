@@ -91,19 +91,19 @@ def _cpu_add_pass(input_path, output_path, password, is_zip):
     except Exception as e:
         return False, str(e)
 
-# ==================== DELPASS COMMAND ====================
-@Client.on_message(filters.command("delpass"))
+# --- Removepass Command ---
+@Client.on_message(filters.command("removepass"))
 async def remove_password(client: Client, message: Message):
     target = message.reply_to_message
     
     # Explicitly check if reply exists AND if it is a document
     if not target or not target.document:
-        usage_text = """**__⚠️ Error: You must reply to a file.__**
+        usage_text = """**__⚠️ Error: You must reply to a File.__**
         
 **__Usage:__**
-**__1. Reply to a PDF or ZIP file__**
-**__2. Type:__** `/delpass`
-**__3. If it has a password:__** `/delpass <password>`"""
+**__01. Reply to a PDF or ZIP file__**
+**__02. Type:__** `/delpass`
+**__03. If it has a password:__** `/delpass password`"""
         return await message.reply(usage_text)
 
     file_name = target.document.file_name
@@ -114,7 +114,7 @@ async def remove_password(client: Client, message: Message):
     base_dir = f"temp_{task_id}"
     os.makedirs(base_dir, exist_ok=True)
     
-    status = await message.reply("**__⏳ Downloading...__**")
+    status = await message.reply("**__⏳ Downloading ...__**")
     start_time = time.time()
 
     try:
@@ -122,10 +122,10 @@ async def remove_password(client: Client, message: Message):
         await target.download(
             file_path,
             progress=progress,
-            progress_args=(status, start_time, "**__📥 Downloading File...__**")
+            progress_args=(status, start_time, "**__📥 Downloading File ...__**")
         )
 
-        await status.edit("**__🔐 Decrypting (This may take a moment)...__**")
+        await status.edit("**__🔐 Decrypting (This may take a Moment) ...__**")
 
         if file_name.lower().endswith(".pdf"):
             unlocked_path = os.path.join(base_dir, f"Unlocked_{file_name}")
@@ -142,7 +142,7 @@ async def remove_password(client: Client, message: Message):
                 unlocked_path,
                 caption="**__✅ File Unlocked Successfully__**\n**__🔥 Powered By @NeonFiles__**",
                 progress=progress,
-                progress_args=(status, time.time(), "**__📤 Uploading...__**")
+                progress_args=(status, time.time(), "**__📤 Uploading ...__**")
             )
             await status.delete()
 
@@ -192,7 +192,7 @@ async def remove_password(client: Client, message: Message):
     if not file_name.lower().endswith(".zip"):
         shutil.rmtree(base_dir, ignore_errors=True)
 
-# ==================== ADDPASS COMMAND ====================
+# --- Addpass Command ---
 @Client.on_message(filters.command("addpass"))
 async def add_password(client: Client, message: Message):
     target = message.reply_to_message
@@ -202,7 +202,7 @@ async def add_password(client: Client, message: Message):
 
 **__Usage:__**
 **__1. Reply to a PDF or ZIP file__**
-**__2. Type:__** `/addpass <password>`
+**__2. Type:__** `/addpass password`
 **__Example:__** `/addpass 123456`"""
         return await message.reply(usage_text)
 
@@ -210,7 +210,7 @@ async def add_password(client: Client, message: Message):
     password = args[1] if len(args) > 1 else None
     
     if not password:
-        return await message.reply("**__⚠️ Error: Password missing.__**\n\n**__Usage:__** `/addpass <password>`")
+        return await message.reply("**__⚠️ Error: Password missing.__**\n\n**__Usage:__** `/addpass password`")
 
     file_name = target.document.file_name
     
@@ -218,7 +218,7 @@ async def add_password(client: Client, message: Message):
     base_dir = f"temp_{task_id}"
     os.makedirs(base_dir, exist_ok=True)
     
-    status = await message.reply("**__⏳ Downloading...__**")
+    status = await message.reply("**__⏳ Downloading ...__**")
     start_time = time.time()
 
     try:
@@ -226,11 +226,11 @@ async def add_password(client: Client, message: Message):
         await target.download(
             file_path,
             progress=progress,
-            progress_args=(status, start_time, "**__📥 Downloading...__**")
+            progress_args=(status, start_time, "**__📥 Downloading ...__**")
         )
 
         output_path = os.path.join(base_dir, f"Protected_{file_name}")
-        await status.edit("**__🔐 Encrypting...__**")
+        await status.edit("**__🔐 Encrypting ...__**")
 
         is_zip = file_name.lower().endswith(".zip")
         is_pdf = file_name.lower().endswith(".pdf")
@@ -247,7 +247,7 @@ async def add_password(client: Client, message: Message):
             output_path,
             caption=f"**__🔐 Protected Successfully__**\n**__🔑 Pass:__** `{password}`\n**__🔥 Powered By @NeonFiles__**",
             progress=progress,
-            progress_args=(status, time.time(), "**__📤 Uploading...__**")
+            progress_args=(status, time.time(), "**__📤 Uploading ...__**")
         )
         await status.delete()
 
@@ -271,7 +271,7 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
 
     if action == "zip":
         new_zip = os.path.join(base_dir, "Unlocked_Files.zip")
-        await callback.message.edit("**__📦 Re-zipping files...__**")
+        await callback.message.edit("**__📦 Re-Zipping Files ...__**")
         
         def _repack():
             with pyzipper.AESZipFile(new_zip, "w", compression=pyzipper.ZIP_DEFLATED) as newzf:
@@ -285,11 +285,11 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
             new_zip, 
             caption="**__📂 Your Unlocked ZIP__**\n**__🔥 Powered By @NeonFiles__**",
             progress=progress,
-            progress_args=(callback.message, time.time(), "**__📤 Uploading ZIP...__**")
+            progress_args=(callback.message, time.time(), "**__📤 Uploading ZIP ...__**")
         )
 
     elif action == "files":
-        await callback.message.edit("**__📄 Sending files one by one...__**")
+        await callback.message.edit("**__📄 Sending Files one by one ...__**")
         for f in files:
             try:
                 await callback.message.reply_document(f, caption="**__✅ Unlocked__**")

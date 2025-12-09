@@ -43,14 +43,12 @@ async def progress(current, total, message: Message, start_time, status_text):
             elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time / 1000))
             eta_str = time.strftime('%H:%M:%S', time.gmtime(estimated_total_time / 1000))
 
-            # Progress Bar Visual
             progress_bar = "[{0}{1}] \n**__{2}%__**".format(
                 ''.join(["⬢" for i in range(math.floor(percentage / 10))]),
                 ''.join(["⬡" for i in range(10 - math.floor(percentage / 10))]),
                 round(percentage, 2)
             )
 
-            # FORCE BOLD + ITALIC ON EVERYTHING
             tmp = f"{status_text}\n{progress_bar}\n"
             tmp += f"**__📦 Size:__** {humanbytes(current)} / {humanbytes(total)}\n"
             tmp += f"**__🚀 Speed:__** {humanbytes(speed)}/s\n"
@@ -101,10 +99,17 @@ def _cpu_add_pass(input_path, output_path, password, is_zip):
         return False, str(e)
 
 # ==================== REMOVE PASSWORD COMMAND ====================
-@Client.on_message(filters.command("removepass") & filters.reply)
+@Client.on_message(filters.command("removepass"))
 async def remove_password(client: Client, message: Message):
+    # 1. Check if user replied to a file
     if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("**__⚠️ Reply to a PDF or ZIP file.__**")
+        usage_text = """**__⚠️ Error: You must reply to a file.__**
+        
+**__Usage:__**
+**__1. Reply to a PDF or ZIP file__**
+**__2. Type:__** `/removepass`
+**__3. If it has a password:__** `/removepass <password>`"""
+        return await message.reply(usage_text)
 
     file_name = message.reply_to_message.document.file_name
     args = message.text.split(" ", 1)
@@ -196,15 +201,24 @@ async def remove_password(client: Client, message: Message):
 
 
 # ====================== ADD PASSWORD COMMAND ======================
-@Client.on_message(filters.command("addpass") & filters.reply)
+@Client.on_message(filters.command("addpass"))
 async def add_password(client: Client, message: Message):
+    # 1. Check if user replied to a file
     if not message.reply_to_message or not message.reply_to_message.document:
-        return await message.reply("**__⚠️ Reply to a PDF or ZIP file.__**")
+        usage_text = """**__⚠️ Error: You must reply to a file.__**
 
+**__Usage:__**
+**__1. Reply to a PDF or ZIP file__**
+**__2. Type:__** `/addpass <password>`
+**__Example:__** `/addpass 123456`"""
+        return await message.reply(usage_text)
+
+    # 2. Check if password is provided
     args = message.text.split(" ", 1)
     password = args[1] if len(args) > 1 else None
+    
     if not password:
-        return await message.reply("**__⚠️ Usage:__** `/addpass <password>`")
+        return await message.reply("**__⚠️ Error: Password missing.__**\n\n**__Usage:__** `/addpass <password>`")
 
     file_name = message.reply_to_message.document.file_name
     

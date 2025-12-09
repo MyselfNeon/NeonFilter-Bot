@@ -38,7 +38,7 @@ Usage:
 @Client.on_message(filters.command("whois") & filters.private)
 async def whois_user(client: Client, message: Message):
     # Visual feedback
-    status_msg = await message.reply("<b><i>⚡ Fetching user details...</i></b>", quote=True)
+    status_msg = await message.reply("<b><i>🎉 Fetching user details...</i></b>", quote=True)
 
     try:
         user = None
@@ -107,14 +107,14 @@ async def whois_user(client: Client, message: Message):
         text = (
             f"<b><i>👤 USER INFORMATION</i></b>\n"
             f"<b><i>━━━━━━━━━━━━━━━━━━</i></b>\n"
-            f"<b><i>🆔 ID:</i></b> <code>{user.id}</code>\n"
-            f"<b><i>📛 Name: {user_link}</i></b>\n"
-            f"<b><i>🖇️ Username: @{user_username}</i></b>\n"
-            f"<b><i>🏳️ Tags: {tags_text}</i></b>\n"
-            f"<b><i>🧾 DC ID: {user.dc_id or 'Unknown'}</i></b>\n"
-            f"<b><i>🕓 Status: {u_status}</i></b>\n"
-            f"<b><i>👥 Common Groups: {common_count}</i></b>\n"
-            f"<b><i>🌐 Language: {user.language_code.upper() if user.language_code else 'Unknown'}</i></b>\n"
+            f"<b><i>🆔 ID :</i></b> <code>{user.id}</code>\n"
+            f"<b><i>📛 Name : {user_link}</i></b>\n"
+            f"<b><i>🖇️ Username : @{user_username}</i></b>\n"
+            f"<b><i>🏳️ Tags : {tags_text}</i></b>\n"
+            f"<b><i>🧾 DC ID : {user.dc_id or 'Unknown'}</i></b>\n"
+            f"<b><i>🕓 Status : {u_status}</i></b>\n"
+            f"<b><i>👥 Common Groups : {common_count}</i></b>\n"
+            f"<b><i>🌐 Language : {user.language_code.upper() if user.language_code else 'Unknown'}</i></b>\n"
         )
 
         if safe_bio != "N/A":
@@ -130,8 +130,7 @@ async def whois_user(client: Client, message: Message):
 
         # 6. Send Result
         if user.photo:
-            # FIX: Download to Memory (RAM) then send.
-            # This bypasses the "CHAT_PHOTO vs PHOTO" ID error.
+            # Download to Memory (RAM) then send.
             photo_file = await client.download_media(user.photo.big_file_id, in_memory=True)
             
             await message.reply_photo(

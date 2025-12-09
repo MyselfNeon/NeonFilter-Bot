@@ -98,8 +98,8 @@ def _cpu_add_pass(input_path, output_path, password, is_zip):
     except Exception as e:
         return False, str(e)
 
-# ==================== REMOVE PASSWORD COMMAND ====================
-@Client.on_message(filters.command("removepass"))
+# ==================== DELPASS (REMOVE PASSWORD) COMMAND ====================
+@Client.on_message(filters.command("delpass"))
 async def remove_password(client: Client, message: Message):
     # 1. Check if user replied to a file
     if not message.reply_to_message or not message.reply_to_message.document:
@@ -107,8 +107,8 @@ async def remove_password(client: Client, message: Message):
         
 **__Usage:__**
 **__1. Reply to a PDF or ZIP file__**
-**__2. Type:__** `/removepass`
-**__3. If it has a password:__** `/removepass <password>`"""
+**__2. Type:__** `/delpass`
+**__3. If it has a password:__** `/delpass <password>`"""
         return await message.reply(usage_text)
 
     file_name = message.reply_to_message.document.file_name
@@ -200,7 +200,7 @@ async def remove_password(client: Client, message: Message):
         shutil.rmtree(base_dir, ignore_errors=True)
 
 
-# ====================== ADD PASSWORD COMMAND ======================
+# ====================== ADDPASS (ADD PASSWORD) COMMAND ======================
 @Client.on_message(filters.command("addpass"))
 async def add_password(client: Client, message: Message):
     # 1. Check if user replied to a file
@@ -310,24 +310,3 @@ async def handle_send_choice(client: Client, callback: CallbackQuery):
     await callback.message.delete()
     shutil.rmtree(base_dir, ignore_errors=True)
     del PROCESSED_RESULTS[task_id]
-
-# ====================== HELP COMMAND ======================
-@Client.on_message(filters.command("passhelp"))
-async def password_help(client: Client, message: Message):
-    help_text = """
-<blockquote>**__🔐 𝐏𝐀𝐒𝐒𝐖𝐎𝐑𝐃 𝐌𝐀𝐍𝐀𝐆𝐄𝐑 𝐏𝐑𝐎__**</blockquote>
-
-**__🔓 /removepass__**
-**__Reply to PDF/ZIP. Removes password.__**
-
-**__🔐 /addpass <password>__**
-**__Reply to PDF/ZIP. Adds password protection.__**
-
-**__✨ Pro Features:__**
-**__• Progress Bars 📊__**
-**__• Fast Async Processing ⚡️__**
-**__• 2GB+ File Support 📁__**
-
-**__🔥 Powered By @NeonFiles 🔥__**
-"""
-    await message.reply(help_text)

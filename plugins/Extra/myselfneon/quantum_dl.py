@@ -145,7 +145,7 @@ class TaskManager:
             "last_edit": 0
         }
 
-        msg = await message.reply(f"**__😎 Task Added to Queue...__**\n🖇️ __{url}__", quote=True)
+        msg = await message.reply(f"**__😎 Task Added to Queue ...__**\n🖇️ __{url}__", quote=True)
         self.active_tasks[task_id]["message"] = msg
         asyncio.create_task(self.execute_task(client, task_id))
 
@@ -176,7 +176,7 @@ class TaskManager:
 
                 # --- 2. Metadata Phase (Ratio) ---
                 task["status"] = "checking"
-                await msg.edit("**__📏 Checking Dimensions...__**")
+                await msg.edit("**__📏 Checking Dimensions ...__**")
                 
                 w, h, dur = 0, 0, 0
                 is_video = False
@@ -260,7 +260,7 @@ class TaskManager:
         task["filename"] = fname
         file_path = os.path.join(DOWNLOAD_DIR, fname)
         
-        await msg.edit("**__🔄 Recording Stream...__**")
+        await msg.edit("**__🔄 Recording Stream ...__**")
         
         # -c copy = Lossless Download (No Re-encoding)
         cmd = ["ffmpeg", "-i", url, "-c", "copy", "-bsf:a", "aac_adtstoasc", "-y", file_path]
@@ -293,14 +293,14 @@ class TaskManager:
         
         thumb = None
         if is_video:
-            await msg.edit("**__🖼️ Generating Thumbnail...__**")
+            await msg.edit("**__🖼️ Generating Thumbnail ...__**")
             thumb = await generate_thumbnail(file_path)
 
         async def upload_progress(current, total):
             if task["cancel_event"].is_set(): client.stop_transmission()
             await self.update_progress(msg, task, current, total, "🚀 Uploading")
 
-        await msg.edit(f"**__📤 Uploading...__**\n**{width}x{height}**")
+        await msg.edit(f"**__📤 Uploading ...__**\n**{width}x{height}**")
         
         caption = f"**__🛃 {task['filename']}__**\n**__📦 Size :** {human_readable(os.path.getsize(file_path))}__"
         
@@ -350,7 +350,7 @@ class TaskManager:
         eta = (total - current) / speed if speed > 0 and total else 0
         
         if total == 0:
-            prog_bar = " __Recording Live...__ "
+            prog_bar = " __Recording Live ...__ "
             size_str = f"**__📦 Recorded : {human_readable(current)}__**"
             eta_str = "**__Live__**"
         else:

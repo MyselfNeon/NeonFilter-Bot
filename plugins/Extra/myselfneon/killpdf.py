@@ -9,14 +9,10 @@ import pikepdf
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
-# ==================== CONFIG & GLOBALS ====================
 PROCESSED_RESULTS = {} 
-TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB
-
-# ==================== HELPER FUNCTIONS ====================
+TG_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
 
 def humanbytes(size):
-    """Converts bytes to human readable string."""
     if not size:
         return "0 B"
     power = 2**10
@@ -28,7 +24,6 @@ def humanbytes(size):
     return str(round(size, 2)) + " " + dic_powerN[n] + 'B'
 
 async def progress(current, total, message: Message, start_time, status_text):
-    """Progress bar for Download/Upload with Bold+Italic styling."""
     try:
         now = time.time()
         diff = now - start_time
@@ -58,8 +53,6 @@ async def progress(current, total, message: Message, start_time, status_text):
     except Exception:
         pass
 
-# ==================== BLOCKING LOGIC (THREADS) ====================
-
 def _cpu_remove_pdf(input_path, output_path, password):
     try:
         with pikepdf.open(input_path, password=password) as pdf:
@@ -85,10 +78,10 @@ def _cpu_remove_zip(input_path, extract_path, password):
 
 def _cpu_add_pass(input_path, output_path, password, is_zip):
     try:
-        if not is_zip: # PDF
+        if not is_zip:
             with pikepdf.open(input_path) as pdf:
                 pdf.save(output_path, encryption=pikepdf.Encryption(owner=password, user=password, R=4))
-        else: # ZIP
+        else:
             with pyzipper.AESZipFile(output_path, "w", compression=pyzipper.ZIP_DEFLATED, encryption=pyzipper.WZ_AES) as zf:
                 zf.setpassword(password.encode("utf-8"))
                 with pyzipper.AESZipFile(input_path) as original:
@@ -98,11 +91,13 @@ def _cpu_add_pass(input_path, output_path, password, is_zip):
     except Exception as e:
         return False, str(e)
 
-# ==================== DELPASS (REMOVE PASSWORD) COMMAND ====================
+# ==================== DELPASS COMMAND ====================
 @Client.on_message(filters.command("delpass"))
 async def remove_password(client: Client, message: Message):
-    # 1. Check if user replied to a file
-    if not message.reply_to_message or not message.reply_to_message.document:
+    target = message.reply_to_message
+    
+    # Explicitly check if reply exists AND if it is a document
+    if not target or not target.document:
         usage_text = """**__⚠️ Error: You must reply to a file.__**
         
 **__Usage:__**
@@ -111,7 +106,7 @@ async def remove_password(client: Client, message: Message):
 **__3. If it has a password:__** `/delpass <password>`"""
         return await message.reply(usage_text)
 
-    file_name = message.reply_to_message.document.file_name
+    file_name = target.document.file_name
     args = message.text.split(" ", 1)
     password = args[1] if len(args) > 1 else None
 
@@ -124,7 +119,7 @@ async def remove_password(client: Client, message: Message):
 
     try:
         file_path = os.path.join(base_dir, file_name)
-        await message.reply_to_message.download(
+        await target.download(
             file_path,
             progress=progress,
             progress_args=(status, start_time, "**__📥 Downloading File...__**")
@@ -132,7 +127,6 @@ async def remove_password(client: Client, message: Message):
 
         await status.edit("**__🔐 Decrypting (This may take a moment)...__**")
 
-        # --- HANDLE PDF ---
         if file_name.lower().endswith(".pdf"):
             unlocked_path = os.path.join(base_dir, f"Unlocked_{file_name}")
             
@@ -152,7 +146,6 @@ async def remove_password(client: Client, message: Message):
             )
             await status.delete()
 
-        # --- HANDLE ZIP ---
         elif file_name.lower().endswith(".zip"):
             extracted_dir = os.path.join(base_dir, "extracted")
             os.makedirs(extracted_dir, exist_ok=True)
@@ -199,12 +192,12 @@ async def remove_password(client: Client, message: Message):
     if not file_name.lower().endswith(".zip"):
         shutil.rmtree(base_dir, ignore_errors=True)
 
-
-# ====================== ADDPASS (ADD PASSWORD) COMMAND ======================
+# ==================== ADDPASS COMMAND ====================
 @Client.on_message(filters.command("addpass"))
 async def add_password(client: Client, message: Message):
-    # 1. Check if user replied to a file
-    if not message.reply_to_message or not message.reply_to_message.document:
+    target = message.reply_to_message
+    
+    if not target or not target.document:
         usage_text = """**__⚠️ Error: You must reply to a file.__**
 
 **__Usage:__**
@@ -213,14 +206,13 @@ async def add_password(client: Client, message: Message):
 **__Example:__** `/addpass 123456`"""
         return await message.reply(usage_text)
 
-    # 2. Check if password is provided
     args = message.text.split(" ", 1)
     password = args[1] if len(args) > 1 else None
     
     if not password:
         return await message.reply("**__⚠️ Error: Password missing.__**\n\n**__Usage:__** `/addpass <password>`")
 
-    file_name = message.reply_to_message.document.file_name
+    file_name = target.document.file_name
     
     task_id = str(uuid.uuid4())
     base_dir = f"temp_{task_id}"
@@ -231,7 +223,7 @@ async def add_password(client: Client, message: Message):
 
     try:
         file_path = os.path.join(base_dir, file_name)
-        await message.reply_to_message.download(
+        await target.download(
             file_path,
             progress=progress,
             progress_args=(status, start_time, "**__📥 Downloading...__**")
@@ -265,8 +257,6 @@ async def add_password(client: Client, message: Message):
     finally:
         shutil.rmtree(base_dir, ignore_errors=True)
 
-
-# ====================== CALLBACK HANDLER ======================
 @Client.on_callback_query(filters.regex(r"^(zip|files)_"))
 async def handle_send_choice(client: Client, callback: CallbackQuery):
     action, task_id = callback.data.split("_")

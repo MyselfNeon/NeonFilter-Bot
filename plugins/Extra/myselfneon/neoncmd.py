@@ -130,7 +130,7 @@ async def sync_bot_commands(client: Client, message: Message):
         print(f"✅ Commands Synced with Telegram: {len(commands)} commands set.")
         
         # --- Confirm Success ---
-        await msg.edit_text("**✅ __Success !!\n🎉 Commands Updated Successfully.__**\n👀 **__Close Telegram and Return back to see Changes. - by @MyselfNeon 🆘__**")
+        await msg.edit_text("**✅ __Success !!\n🎉 Commands Updated Successfully.__**\n👀 **__Wait few Seconds - by @MyselfNeon__**")
         
     except Exception as e:
         print(f"✗ Failed to Sync Commands: {e}")

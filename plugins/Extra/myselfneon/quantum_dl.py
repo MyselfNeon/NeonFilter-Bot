@@ -332,7 +332,7 @@ class TaskManager:
             await msg.edit(
                 f"**__✅ Completed !__**\n"
                 f"🛂 __{task['filename']}__\n"
-                f"🖇️ **__Link : [Click Here]({task['url']}__**)"
+                f"🖇️ **__Link : [Click Here]({task['url']})__**"
             )
 
         except Exception:
@@ -343,7 +343,7 @@ class TaskManager:
                 )
                 await msg.edit(
                     f"**__✅ Completed (Fallback) !__**\n"
-                    f"🖇️ **__Link :** [Click Here]({task['url']}__**)"
+                    f"🖇️ **__Link :** [Click Here]({task['url']})__**"
                 )
             except:
                 await msg.edit("**__❌ Upload Failed.__**")

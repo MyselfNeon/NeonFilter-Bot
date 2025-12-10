@@ -12,7 +12,7 @@ from pyrogram.types import BotCommand, Message
 # --- Edit This List (Text Format) ---
 COMMAND_BLOCK = """
 [
-start - 𝘕𝘦𝘰𝘯𝘈𝘯𝘶𝘳𝘢𝘨 𝘉𝘰𝘵 𝘚𝘵𝘢𝘳𝘵 !!
+start - 𝘔𝘺𝘴𝘦𝘭𝘧𝘕𝘦𝘰𝘯 𝘉𝘰𝘵 𝘚𝘵𝘢𝘳𝘵
 help - 𝘚𝘩𝘰𝘸 𝘏𝘦𝘭𝘱 𝘔𝘦𝘯𝘶
 index - 𝘐𝘯𝘥𝘦𝘹 𝘍𝘪𝘭𝘦 𝘍𝘳𝘰𝘮 𝘊𝘩𝘢𝘯𝘯𝘦𝘭
 setskip - 𝘚𝘬𝘪𝘱 𝘍𝘪𝘭𝘦𝘴 𝘞𝘩𝘦𝘯 𝘐𝘯𝘥𝘦𝘹𝘪𝘯𝘨

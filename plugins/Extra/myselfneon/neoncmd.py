@@ -5,7 +5,7 @@
 # ------------------------------------------------
 
 import asyncio
-from FileStream.config import Telegram
+from info import ADMINS
 from pyrogram import Client, filters
 from pyrogram.types import BotCommand, Message
 
@@ -93,7 +93,7 @@ restart - 𝘙𝘦𝘴𝘵𝘢𝘳𝘵 𝘉𝘰𝘵 𝘚𝘦𝘳𝘷𝘦𝘳
 """
 
 # --- Internal Command Handler ---
-@Client.on_message(filters.command("neoncmd") & filters.user(Telegram.OWNER_ID))
+@Client.on_message(filters.command("neoncmd") & filters.user(ADMINS))
 async def sync_bot_commands(client: Client, message: Message):
 
     msg = await message.reply_text("**⏱️ __Wait 3 Seconds while I load your Commands through plugin System.__**")

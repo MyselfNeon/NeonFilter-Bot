@@ -15,5 +15,4 @@ async def openai_ask(client, message):
     m = await message.reply_text("👀 Thinking...")
     
     # 3. Call the asynchronous AI processing function
-    # Note: We only pass m (the placeholder) and the original message
     await ask_ai(m, message)

@@ -1,17 +1,31 @@
 import openai
 from openai import AsyncOpenAI
+# Import the configuration variable from your config file
+from info import OPENAI_API_KEY 
 
-# 1. Configuration and Client Setup
-# NOTE: Replace the placeholder key below with your actual OpenAI API Key.
-# It is highly recommended to use environment variables for keys.
-API_KEY = "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" 
+# 1. Initialization Logic based on imported key
+AI_ENABLED = False
+client = None
 
-# Instantiate the AsyncOpenAI client globally
-client = AsyncOpenAI(api_key=API_KEY)
+if OPENAI_API_KEY:
+    AI_ENABLED = True
+    try:
+        # Initialize the client only if the key is present
+        client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+        print("OpenAI API Key successfully loaded from info.py/environment.")
+    except Exception as e:
+        # Handle errors during client instantiation (e.g., library error)
+        AI_ENABLED = False
+        print(f"Error initializing OpenAI client: {e}")
+else:
+    print("Warning: OPENAI_API_KEY is not set. AI commands will be disabled.")
+
+
+# --- AI Functionality ---
 
 async def ai(query):
     """
-    Asynchronously queries the OpenAI Chat Completions API (gpt-3.5-turbo).
+    Asynchronously queries the OpenAI Chat Completions API.
     """
     try:
         response = await client.chat.completions.create(
@@ -23,23 +37,25 @@ async def ai(query):
             n=1,
             temperature=0.9
         )
-        
-        # Extract the content from the response object
         return response.choices[0].message.content.strip()
 
     except Exception as e:
-        # Catch and report any API errors
+        # Catch and report any API errors (e.g., rate limits, invalid key check on first call)
         error_message = f"OpenAI API Error: {e}"
         print(error_message)
         return f"Sorry, the AI encountered an error: {e}"
      
 async def ask_ai(m, message):
     """
-    Handles the Telegram interaction: extracting the question and updating the message.
+    Handles the Telegram interaction and checks the AI status.
     """
+    if not AI_ENABLED:
+        # Display message if the feature is disabled due to a missing key
+        await m.edit("🚫 **AI is disabled.** Please set the `OPENAI_API_KEY` environment variable to enable this command.")
+        return
+        
     try:
-        # Extract the question (everything after the command, e.g., /openai question)
-        # Note: We rely on openai.py to ensure the command is not empty
+        # Extract the question (everything after the command)
         question = message.text.split(" ", 1)[1]
         
         # Generate response using the async OpenAI function
@@ -49,8 +65,7 @@ async def ask_ai(m, message):
         await m.edit(f"{response}")
         
     except IndexError:
-        # This handles the unlikely case where the command was empty,
-        # though openai.py should catch it.
+        # Handle case where only /openai was sent without a question
         await m.edit("Please provide a question after the command.")
         
     except Exception as e:

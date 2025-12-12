@@ -1,27 +1,20 @@
 import re
 from os import environ
 from Script import script 
-
-# ============================================================
-# 🔹 REGEX PATTERN
-# ============================================================
+ 
+# --- REGEX PATTERN ---
 id_pattern = re.compile(r'^.\d+$')
 
-
-# ============================================================
-# 🔹 BOT INFORMATION
-# ============================================================
+# --- BOT INFORMATION ---
 SESSION = environ.get('SESSION', 'MyselfNeon')
 API_ID = int(environ.get('API_ID', ''))
 API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
-# Keep-Alive URL
+# --- KEEP-ALIVE URL ---
 KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "")  # <-- Add this line
 
-# ============================================================
-# 🔹 START PICTURES
-# ============================================================
+# --- START PICTURES --- 
 # (Add Multiple By Giving One Space Between Each)
 PICS = (
     environ.get(
@@ -35,9 +28,7 @@ PICS = (
     )
 ).split()
 
-# ============================================================
-# 🔹 ADMINS & USERS
-# ============================================================
+# --- ADMINS & USERS ---
 ADMINS = [int(admin) if id_pattern.search(admin) else admin
           for admin in environ.get('ADMINS', '841851780').split()]  # Multiple IDs separated by space
 
@@ -46,10 +37,7 @@ auth_users = [int(user) if id_pattern.search(user) else user
 
 AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 
-
-# ============================================================
-# 🔹 CHANNELS AND GROUPS
-# ============================================================
+# --- CHANNELS AND GROUPS ---
 LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001889915480'))
 # This Channel Is For When User Start Your Bot Then Bot Send That User Name And Id In This Log Channel, Same For Group Also.
 
@@ -60,39 +48,36 @@ CHANNELS = [int(ch) if id_pattern.search(ch) else ch
 REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', False))  # True → request to join FSUB
 TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', False))                # Retry button for FSUB
 
-# Force Subscribe Channel
+# --- FORCE SUBSCRIBE CHANNEL ---
 auth_channel = environ.get('AUTH_CHANNEL', '-1002384933640')
 AUTH_CHANNEL = int(auth_channel) if auth_channel and id_pattern.search(auth_channel) else None
 
-# File request channel
+# --- FILE REQUEST CHANNEL ---
 reqst_channel = environ.get('REQST_CHANNEL', '-1002158258466')
 REQST_CHANNEL = int(reqst_channel) if reqst_channel and id_pattern.search(reqst_channel) else None
 
-# Index request channel
+# --- INDEX REQUEST CHANNEL ---
 INDEX_REQ_CHANNEL = int(environ.get('INDEX_REQ_CHANNEL', LOG_CHANNEL))
 
-# Bot support group
+# --- BOT SUPPORT GROUP ---
 support_chat_id = environ.get('SUPPORT_CHAT_ID', '')
 SUPPORT_CHAT_ID = int(support_chat_id) if support_chat_id and id_pattern.search(support_chat_id) else None
 
-# File store channel (/batch command)
+# --- FILE STORE CHANNEL ---
 FILE_STORE_CHANNEL = [int(ch) for ch in (environ.get('FILE_STORE_CHANNEL', '-1002487845241')).split()]
 
-# Delete channel(s)
+# --- DELETE CHANNEL(s) ---
 DELETE_CHANNELS = [int(dch) if id_pattern.search(dch) else dch
                    for dch in environ.get('DELETE_CHANNELS', '-1002231967338').split()]
-
-
-# ============================================================
-# 🔹 DATABASE
-# ============================================================
+ 
+# --- DATABASE --- 
 DATABASE_URI = environ.get('DATABASE_URI', "")
 DATABASE_NAME = environ.get('DATABASE_NAME', "NeonFilter")
 COLLECTION_NAME = environ.get('COLLECTION_NAME', 'neoncollection')
 
 MULTIPLE_DATABASE = bool(environ.get('MULTIPLE_DATABASE', False))
 
-# Separate DBs if MULTIPLE_DATABASE = True
+# --- Separate DBs if MULTIPLE_DATABASE = True ---
 O_DB_URI = environ.get('O_DB_URI', "")  # This Db Is For Other Data Store
 F_DB_URI = environ.get('F_DB_URI', "")  # This Db Is For File Data Store
 S_DB_URI = environ.get('S_DB_URI', "")  # This Db is for File Data Store When First Db Is Going To Be Full
@@ -104,14 +89,11 @@ else:
     OTHER_DB_URI = O_DB_URI
     FILE_DB_URI = F_DB_URI
     SEC_FILE_DB_URI = S_DB_URI
-
-
-# ============================================================
-# 🔹 PREMIUM AND REFERAL 
-# ============================================================
+ 
+# --- PREMIUM AND REFERAL ---
 PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True)) # Set Ture Or False
 
-# If PREMIUM_AND_REFERAL_MODE is True Then Fill Below Variable, If False Then No Need To Fill.
+# --- If PREMIUM_AND_REFERAL_MODE is True Then Fill Below Variable, If False Then No Need To Fill ---
 PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True))
 
 REFERAL_COUNT = int(environ.get('REFERAL_COUNT', '5'))
@@ -130,27 +112,19 @@ PAYMENT_TEXT = environ.get(
     '• After Sending Screenshot Give Us Some Time To Add You In Premium</i></b>'
 )
 
-# ============================================================
-# 🔹 CLONE SETTINGS
-# ============================================================
+# --- CLONE SETTINGS ---
 # Clone Information : If Clone Mode Is True Then Bot Clone Other Bots.
 CLONE_MODE = bool(environ.get('CLONE_MODE', False)) # Set True or False
 CLONE_DATABASE_URI = environ.get('CLONE_DATABASE_URI', "") # Necessary If clone mode is true
 PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', 'AnimeZerox') # Public Channel Username Without @ or without https://t.me/ and Bot Is Admin With Full Right.
 
-
-# ============================================================
-# 🔹 LINKS
-# ============================================================
+# --- LINKS --- 
 GRP_LNK = environ.get('GRP_LNK', 'https://t.me/+o1s-8MppL2syYTI9')
 CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/neonfiles')
 SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'Talk2neonBot') # Support Chat Link Without https:// or @
 OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/MyselfNeon')
 
-
-# ============================================================
-# 🔹 FEATURES (True/False Switches)
-# ============================================================
+# --- FEATURES (True/False Switches) ---
 AI_SPELL_CHECK = bool(environ.get('AI_SPELL_CHECK', True))
 PM_SEARCH = bool(environ.get('PM_SEARCH', True))
 BUTTON_MODE = bool(environ.get('BUTTON_MODE', True))
@@ -167,34 +141,25 @@ PUBLIC_FILE_STORE = bool(environ.get('PUBLIC_FILE_STORE', True))
 NO_RESULTS_MSG = bool(environ.get("NO_RESULTS_MSG", False))
 USE_CAPTION_FILTER = bool(environ.get('USE_CAPTION_FILTER', True))
 
-
-# ============================================================
-# 🔹 TOKEN VERIFICATIONS
-# ============================================================
+# --- TOKEN VERIFICATIONS --- 
 VERIFY = bool(environ.get('VERIFY', False))
 VERIFY_SHORTLINK_URL = environ.get('VERIFY_SHORTLINK_URL', '')
 VERIFY_SHORTLINK_API = environ.get('VERIFY_SHORTLINK_API', '')
 VERIFY_TUTORIAL = environ.get('VERIFY_TUTORIAL', '')
 
-# If You Fill Second Shortner Then Bot Attach Both First And Second Shortner And Use It For Verify.
+# --- If You Fill Second Shortner Then Bot Attach Both First And Second Shortner And Use It For Verify ---
 VERIFY_SECOND_SHORTNER = bool(environ.get('VERIFY_SECOND_SHORTNER', False))
-# if verify second shortner is True then fill below url and api
+# --- if verify second shortner is True then fill below url and api ---
 VERIFY_SND_SHORTLINK_URL = environ.get('VERIFY_SND_SHORTLINK_URL', '')
 VERIFY_SND_SHORTLINK_API = environ.get('VERIFY_SND_SHORTLINK_API', '')
 
-
-# ============================================================
-# 🔹 SHORTLINK SETTINGS
-# ============================================================
+# --- SHORTLINK SETTINGS ---
 SHORTLINK_MODE = bool(environ.get('SHORTLINK_MODE', False))
 SHORTLINK_URL = environ.get('SHORTLINK_URL', '')
 SHORTLINK_API = environ.get('SHORTLINK_API', '')
 TUTORIAL = environ.get('TUTORIAL', '')
 
-
-# ============================================================
-# 🔹 MISCELLANEOUS SETTINGS
-# ============================================================
+# --- MISCELLANEOUS SETTINGS --- 
 CACHE_TIME = int(environ.get('CACHE_TIME', 1800))
 MAX_B_TN = environ.get("MAX_B_TN", "5")
 PORT = environ.get("PORT", "8080")
@@ -205,10 +170,7 @@ BATCH_FILE_CAPTION = environ.get("BATCH_FILE_CAPTION", CUSTOM_FILE_CAPTION)
 IMDB_TEMPLATE = environ.get("IMDB_TEMPLATE", f"{script.IMDB_TEMPLATE_TXT}")
 MAX_LIST_ELM = environ.get("MAX_LIST_ELM", None)
 
-
-# ============================================================
-# 🔹 FILTER OPTIONS
-# ============================================================
+# --- FILTER OPTIONS ---
 LANGUAGES = ["malayalam", "mal", "tamil", "tam", "english", "eng", "hindi", "hin",
              "telugu", "tel", "kannada", "kan"]
 
@@ -220,13 +182,10 @@ QUALITIES = ["360p", "480p", "720p", "1080p", "1440p", "2160p"]
 
 YEARS = [str(year) for year in range(1900, 2026)]
 
-
-# ============================================================
-# 🔹 STREAMING & DOWNLOAD
-# ============================================================
+# --- STREAMING & DOWNLOAD ---
 STREAM_MODE = bool(environ.get('STREAM_MODE', True))
 
-# If Stream Mode Is True Then Fill All Required Variable, If False Then Don't Fill.
+# --- If Stream Mode Is True Then Fill All Required Variable, If False Then Don't Fill ---
 MULTI_CLIENT = False
 SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '60'))
 PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))  # 20 min
@@ -234,24 +193,18 @@ PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))  # 20 min
 ON_HEROKU = 'DYNO' in environ
 URL = environ.get("URL", "")
 
-
-# ============================================================
-# 🔹 RENAME
-# ============================================================
+# --- RENAME ---
 RENAME_MODE = bool(environ.get('RENAME_MODE', True)) # Set True or False
 # Rename Info : If True Then Bot Rename File Else Not
 
+# --- OPENAI API SETTINGS ---
+OPENAI_API_KEY = environ.get('OPENAI_API_KEY', "")
 
-# ============================================================
-# 🔹 AUTO APPROVE
-# ============================================================
+# --- AUTO APPROVE ---
 AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))  # Set True or False
 # Auto Approve Info : If True Then Bot Approve New Upcoming Join Request Else Not
 
-
-# ============================================================
-# 🔹 START COMMAND REACTIONS
-# ============================================================
+# --- START COMMAND REACTIONS ---
 REACTIONS = [
     "🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩",
     "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡",
@@ -262,4 +215,3 @@ REACTIONS = [
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-

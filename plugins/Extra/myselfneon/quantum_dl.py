@@ -372,7 +372,7 @@ class TaskManager:
         text = (
             f"**__{stage}__**\n"
             f"**__🛂 File :__** __{task.get('filename', 'Unknown')}__\n"
-            f"**__🖇️ Link :** [Click Here]({task['url']})__**\n"
+            f"**__🖇️ Link : [Click Here]({task['url']})__**\n"
             f"**{prog_bar}**\n\n"
             f"{size_str}\n"
             f"**__⚡ Speed : {human_readable(speed)}/s__**\n"

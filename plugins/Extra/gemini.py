@@ -5,25 +5,23 @@ from plugins.Extra.engine import ask_ai, reset_chat_history, send_model_selectio
 # 1. Main Chat Command (Aliases: /gemini, /ai, /ask)
 @Client.on_message(filters.command(['gemini', 'ai', 'ask']))
 async def gemini_handler(client, message):
-    # Send a placeholder message first
     m = await message.reply_text("✨ Initializing Gemini...")
-    # Pass the placeholder 'm' and the original 'message' to the engine
     await ask_ai(m, message)
 
-# 2. Reset Command - Clears context/history
+# 2. Reset Command - FIXED ARGUMENTS
 @Client.on_message(filters.command(['reset', 'clear']))
 async def reset_handler(client, message):
     m = await message.reply_text("⏳ Processing request...")
-    await reset_chat_history(m)
+    # PASS BOTH: 'm' (to edit) and 'message' (to get user ID)
+    await reset_chat_history(m, message)
 
-# 3. Model Selector - Switch between Flash/Pro
+# 3. Model Selector
 @Client.on_message(filters.command(['model', 'models']))
 async def model_handler(client, message):
     m = await message.reply_text("⚙️ Loading models...")
     await send_model_selection(m)
 
-# 4. Callback Handler for Model Buttons
-# Listens for any callback data starting with "setgemini_"
+# 4. Callback Handler
 @Client.on_callback_query(filters.regex(r'^setgemini_'))
 async def gemini_callback_handler(client, callback_query: CallbackQuery):
     try:

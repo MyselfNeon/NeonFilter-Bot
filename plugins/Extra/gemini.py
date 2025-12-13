@@ -9,14 +9,14 @@ async def gemini_handler(client, message):
     await ask_ai(m, message)
 
 # 2. Reset Command - FIXED ARGUMENTS
-@Client.on_message(filters.command(['reset', 'clear']))
+@Client.on_message(filters.command(['greset', 'gclear']))
 async def reset_handler(client, message):
     m = await message.reply_text("⏳ Processing request...")
     # PASS BOTH: 'm' (to edit) and 'message' (to get user ID)
     await reset_chat_history(m, message)
 
 # 3. Model Selector
-@Client.on_message(filters.command(['model', 'models']))
+@Client.on_message(filters.command(['gmodel', 'gmodels']))
 async def model_handler(client, message):
     m = await message.reply_text("⚙️ Loading models...")
     await send_model_selection(m)

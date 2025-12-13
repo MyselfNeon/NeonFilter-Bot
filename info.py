@@ -197,8 +197,9 @@ URL = environ.get("URL", "")
 RENAME_MODE = bool(environ.get('RENAME_MODE', True)) # Set True or False
 # Rename Info : If True Then Bot Rename File Else Not
 
-# --- OPENAI API SETTINGS ---
-OPENAI_API_KEY = environ.get('OPENAI_API_KEY', "")
+# --- GEMINI API SETTINGS ---
+# Get this key for FREE from: https://aistudio.google.com/
+GEMINI_API_KEY = environ.get('GEMINI_API_KEY', "")
 
 # --- AUTO APPROVE ---
 AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))  # Set True or False
@@ -215,3 +216,4 @@ REACTIONS = [
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

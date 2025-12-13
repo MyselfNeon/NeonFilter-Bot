@@ -56,8 +56,9 @@ NumPy
 wheel
 humanize
 psutil
-openai
+google-generativeai
 
 # --- Pyrogram Mods / Plugins ---
 pyromod
 git+https://github.com/Joelkb/cinemagoer
+

@@ -44,8 +44,8 @@ ytthumb
 PyLeaves
 
 # --- Audio / Speech ---
-gTTS
-speedtest
+edge-tts
+speedtest-cli
 
 # --- Utilities / Extras ---
 jinja2
@@ -61,5 +61,4 @@ google-generativeai>=0.8.3
 # --- Pyrogram Mods / Plugins ---
 pyromod
 git+https://github.com/Joelkb/cinemagoer
-
 

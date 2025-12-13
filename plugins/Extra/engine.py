@@ -1,8 +1,14 @@
+import warnings
+# Silence the "Python 3.10 support" warning to keep logs clean
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 import google.generativeai as genai
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from info import GEMINI_API_KEY
 
-# 1. Configuration
+# ==========================================
+# ⚙️ CONFIGURATION & SETUP
+# ==========================================
 AI_ENABLED = False
 
 if GEMINI_API_KEY:
@@ -13,23 +19,23 @@ if GEMINI_API_KEY:
     except Exception as e:
         print(f"❌ Gemini Configuration Error: {e}")
 else:
-    print("⚠️ GEMINI_API_KEY missing. AI disabled.")
+    print("⚠️ GEMINI_API_KEY missing in info.py. AI commands will be disabled.")
 
+# Global Chat Storage
 USER_CHATS = {}
 
-# 2. Model Configuration (UPDATED)
-# We changed the default to 'gemini-pro' because it is the most compatible model.
-# If 'gemini-1.5-flash' gives you 404, use 'gemini-pro'.
+# Model Config: Use 'gemini-pro' as it is the most stable for your version
 MODEL_CONFIG = {
-    "Standard (Pro)": "gemini-pro",         # <--- safest option
-    "Fast (Flash)": "gemini-1.5-flash",     # <--- might fail on old libs
+    "Standard (Pro)": "gemini-pro",
+    "Fast (Flash)": "gemini-pro", 
 }
 USER_MODELS = {} 
 
-# --- Helper Functions ---
+# ==========================================
+# 🛠️ HELPER FUNCTIONS
+# ==========================================
 
 def get_user_model_name(user_id):
-    # Defaulting to 'gemini-pro' to prevent 404 errors
     return USER_MODELS.get(user_id, "gemini-pro")
 
 def get_chat_session(user_id):
@@ -39,11 +45,15 @@ def get_chat_session(user_id):
             model = genai.GenerativeModel(model_name)
             USER_CHATS[user_id] = model.start_chat(history=[])
         except Exception as e:
-            print(f"Error starting chat with {model_name}: {e}")
-            return None
+            # Fallback if specific model fails
+            print(f"⚠️ Model error: {e}, falling back to pro.")
+            fallback = genai.GenerativeModel("gemini-pro")
+            USER_CHATS[user_id] = fallback.start_chat(history=[])
     return USER_CHATS[user_id]
 
-# --- Main AI Function ---
+# ==========================================
+# 🧠 MAIN AI LOGIC
+# ==========================================
 
 async def ai(user_id, query):
     if not AI_ENABLED:
@@ -51,26 +61,18 @@ async def ai(user_id, query):
 
     try:
         chat = get_chat_session(user_id)
-        if not chat:
-            return "❌ Error: Could not initialize chat session. Try /reset"
-        
-        # Send message (Async)
         response = await chat.send_message_async(query)
         return response.text
 
     except Exception as e:
         error_msg = str(e).lower()
-        # Custom handling for the 404 error you are seeing
-        if "404" in error_msg or "not found" in error_msg:
-             return (
-                 "⚠️ **Model Error:** The AI model is not supported by your current library.\n"
-                 "Please run `pip install -U google-generativeai` to fix this."
-             )
         if "safety" in error_msg:
             return "⚠️ **Safety Block:** I cannot answer this query due to safety filters."
         return f"⚠️ **Gemini Error:** {e}"
 
-# --- Command Logic ---
+# ==========================================
+# 🎮 COMMAND HANDLERS
+# ==========================================
 
 async def ask_ai(m, message):
     try:
@@ -82,7 +84,6 @@ async def ask_ai(m, message):
         question = message.text.split(" ", 1)[1]
         
         await m.edit("👀 **Thinking...**")
-        
         response = await ai(user_id, question)
         
         model_label = "Pro" if "pro" in get_user_model_name(user_id) else "Flash"
@@ -105,18 +106,14 @@ async def send_model_selection(m):
         buttons.append([InlineKeyboardButton(friendly_name, callback_data=f"setgemini_{model_id}")])
     
     await m.edit(
-        "⚙️ **Select Gemini Model:**\n\n"
-        "• **Pro:** Stable & Intelligent (Recommended)\n"
-        "• **Flash:** Faster, but requires newer libraries.",
+        "⚙️ **Select Gemini Model:**\n(Mapped to stable versions)",
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
 async def set_user_model(callback_query):
     user_id = callback_query.from_user.id
     model_id = callback_query.data.split("_")[1]
-    
     USER_MODELS[user_id] = model_id
     if user_id in USER_CHATS:
         del USER_CHATS[user_id]
-        
     await callback_query.message.edit_text(f"✅ **Switched to {model_id}!**\n\nMemory has been reset.")

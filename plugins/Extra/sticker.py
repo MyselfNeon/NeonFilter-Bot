@@ -1,31 +1,99 @@
+# Sticker_Tools.py
+import asyncio
 from pyrogram import Client, filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
-@Client.on_message(filters.command("sticker") & filters.private)
-async def sticker_handler(bot, message):
+@Client.on_message(filters.command(["sticker", "id"]))
+async def sticker_tool(bot: Client, message: Message):
     """
-    Unified command:
-    1️⃣ /sticker <file_id> [file_id2 ...] → Sends back provided stickers.
-    2️⃣ /sticker → Prompts user to send a sticker and returns its file_id and unique_id.
+    Advanced Sticker Tool:
+    1. Reply to a sticker -> Get comprehensive details (ID, Set, Emoji, etc).
+    2. /sticker <file_id> -> Send the sticker by ID.
+    3. /sticker -> Interactive mode (Waits for you to send one).
     """
-    # If command includes arguments (sticker IDs)
-    if len(message.command) > 1:
-        sticker_ids = message.text.split()[1:]  # all arguments after command
-        for sid in sticker_ids:
-            try:
-                await bot.send_sticker(message.chat.id, sid)
-            except Exception as e:
-                await message.reply_text(f"**❌ __Failed to send Sticker `{sid}`!\nError:** `{e}`__")
+
+    # -----------------------------------------------
+    # 1️⃣ Mode: Reply to a sticker
+    # -----------------------------------------------
+    if message.reply_to_message and message.reply_to_message.sticker:
+        await send_sticker_details(message.reply_to_message, message)
         return
 
-    # No arguments → ask user to send a sticker
+    # -----------------------------------------------
+    # 2️⃣ Mode: Arguments provided (Send Sticker by ID)
+    # -----------------------------------------------
+    if len(message.command) > 1:
+        ids = message.text.split()[1:]
+        sent_count = 0
+        
+        status_msg = await message.reply_text("🔄 **Processing Request...**")
+        
+        for sid in ids:
+            try:
+                await bot.send_sticker(message.chat.id, sid)
+                sent_count += 1
+                await asyncio.sleep(0.3) # Prevent FloodWait
+            except Exception as e:
+                await message.reply_text(f"❌ **Failed to send:** `{sid}`\n**Reason:** {e}")
+        
+        await status_msg.delete()
+        return
+
+    # -----------------------------------------------
+    # 3️⃣ Mode: Interactive (Ask User)
+    # -----------------------------------------------
     try:
-        s_msg = await bot.ask(chat_id=message.from_user.id, text="**🌐 __Please Send a Sticker to get its ID__**")
-        if s_msg.sticker:
-            await s_msg.reply_text(
-                f"**⁉️ __Sticker ID:__**\n`{s_msg.sticker.file_id}`\n\n"
-                f"**🆔 __Unique ID:__**\n`{s_msg.sticker.file_unique_id}`"
-            )
-        else:
-            await s_msg.reply_text("**❌ __That is not a Sticker.\nPlease send a valid Sticker.__**")
+        # Prompt the user
+        ask_msg = await bot.ask(
+            message.chat.id, 
+            "**👋 Send me a Sticker now!**\n\n__I will analyze it and give you the IDs.__",
+            timeout=60,
+            filters=filters.sticker
+        )
+        
+        # Process the response
+        await send_sticker_details(ask_msg, ask_msg)
+        
+    except asyncio.TimeoutError:
+        await message.reply_text("❌ **Time up!** Run the command again.")
     except Exception as e:
-        await message.reply_text(f"**❌ __Error:** {e}__")
+        await message.reply_text(f"❌ **Error:** {e}")
+
+
+async def send_sticker_details(sticker_message: Message, reply_target: Message):
+    """Helper to format and send sticker info."""
+    st = sticker_message.sticker
+    
+    # 1. Determine Type
+    type_str = "🖼 Static (WEBP)"
+    if st.is_animated: type_str = "🎞 Animated (TGS)"
+    elif st.is_video: type_str = "📹 Video (WEBM)"
+    
+    # 2. Pack Info & Buttons
+    pack_info = "None"
+    reply_markup = None
+    
+    if st.set_name:
+        pack_info = f"[{st.set_name}](https://t.me/addstickers/{st.set_name})"
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📂 View Sticker Pack", url=f"https://t.me/addstickers/{st.set_name}")]
+        ])
+
+    # 3. Construct Message
+    text = (
+        f"**🔍 STICKER DETAILS**\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"📛 **Pack:** {pack_info}\n"
+        f"😀 **Emoji:** {st.emoji}\n"
+        f"⚙️ **Type:** {type_str}\n"
+        f"📏 **Size:** `{st.width}x{st.height}`\n\n"
+        f"🆔 **File ID:**\n`{st.file_id}`\n\n"
+        f"🧩 **Unique ID:**\n`{st.file_unique_id}`"
+    )
+    
+    await reply_target.reply_text(
+        text, 
+        reply_markup=reply_markup, 
+        disable_web_page_preview=True,
+        quote=True
+            )

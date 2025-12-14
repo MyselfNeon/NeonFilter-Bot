@@ -12,8 +12,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
-# 🌐 PASTEBIN API CLIENTS
-# -----------------------
+# --- 🌐 PASTEBIN API CLIENTS ---
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36",
     "Content-Type": "application/json",
@@ -83,8 +82,7 @@ async def paste_nekobin(session, content, extension="txt"):
     except: pass
     return None
 
-# 🎮 CONTROLLER LOGIC
-# -----------------------
+# --- 🎮 CONTROLLER LOGIC ---
 async def universal_paste(content):
     """Tries multiple services until one works."""
     async with aiohttp.ClientSession() as session:
@@ -104,9 +102,8 @@ async def universal_paste(content):
                 
     return {"error": "All paste services are currently down."}
 
-# 🤖 BOT COMMAND
-# -----------------------
-@Client.on_message(filters.command(["paste", "bin"]))
+# --- 🤖 BOT COMMAND ---
+@Client.on_message(filters.command(["paste"]))
 async def paste_handler(client: Client, message: Message):
     # 1. Status Message
     status_msg = await message.reply_text("🔄 **Reading Input...**")

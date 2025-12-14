@@ -1,29 +1,26 @@
-# Lyrics_Ultimate.py
+# Lyrics_Ultimate_Fixed.py
 import asyncio
 import aiohttp
+from urllib.parse import quote
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, InputMediaPhoto
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
-# -----------------------
-# ⚙️ CONFIG
-# -----------------------
-# Using a robust public API (or fallback to others if needed)
-LYRICS_API = "https://api.lists.jyverse.com/lyrics" 
-# Fallback search sticker
+# --- ⚙️ CONFIG ---
 SEARCH_STICKER = "CAACAgIAAxkBAAIpb2jHer7l0e-CfAOB2Yy2SBDOzi7oAALdAAMw1J0RjVUlFacabq8eBA"
 
-# -----------------------
-# 🌐 ASYNC API CLIENT
-# -----------------------
+# --- 🌐 ASYNC API CLIENT ---
 async def fetch_lyrics(query: str):
     """Fetches lyrics and album art asynchronously."""
     async with aiohttp.ClientSession() as session:
         try:
-            # Clean up the query (remove common noise)
-            query = query.replace(".mp3", "").replace(".flac", "")
+            # 1. Clean the query
+            clean_query = query.replace(".mp3", "").replace(".flac", "").strip()
             
-            # Using a public lyrics API (supports lyrics, image, artist)
-            url = f"https://lyrist.vercel.app/api/{query}" 
+            # 2. Encode the query (Fixes 'not working' issue with spaces)
+            encoded_query = quote(clean_query)
+            
+            # 3. Call API
+            url = f"https://lyrist.vercel.app/api/{encoded_query}" 
             async with session.get(url, timeout=10) as resp:
                 if resp.status != 200:
                     return None
@@ -33,19 +30,18 @@ async def fetch_lyrics(query: str):
                     return None
                 
                 return {
-                    "title": data.get("title", query.title()),
-                    "artist": data.get("artist", "Unknown"),
+                    # Use .title() to make it look nice if API returns lowercase
+                    "title": data.get("title", clean_query.title()),
+                    "artist": data.get("artist", "Unknown Artist"),
                     "lyrics": data.get("lyrics", ""),
-                    "image": data.get("image", "https://telegra.ph/file/5a53e8392182270921478.jpg") # Default music placeholder
+                    "image": data.get("image", "https://telegra.ph/file/5a53e8392182270921478.jpg")
                 }
         except Exception:
             return None
 
-# -----------------------
-# 🛠 HELPERS
-# -----------------------
+# --- 🛠 HELPERS ---
 def split_text(text: str, limit=1000):
-    """Splits long lyrics into pages of 1000 chars."""
+    """Splits long lyrics into pages."""
     chunks = []
     current_chunk = ""
     for line in text.split("\n"):
@@ -57,26 +53,24 @@ def split_text(text: str, limit=1000):
     chunks.append(current_chunk)
     return chunks
 
-# -----------------------
-# 🎵 MAIN HANDLER
-# -----------------------
+# --- 🎵 MAIN HANDLER ---
 @Client.on_message(filters.command(["lyrics", "lrc"]))
 async def lyrics_handler(client: Client, message: Message):
     query = ""
     
-    # 1️⃣ Case: Argument (/lyrics Believer)
+    # 1️⃣ Case: Argument (/lyrics Faded)
     if len(message.command) > 1:
         query = message.text.split(maxsplit=1)[1]
         
     # 2️⃣ Case: Reply to Audio
     elif message.reply_to_message and message.reply_to_message.audio:
         audio = message.reply_to_message.audio
-        # Try to combine Title + Artist for best results
-        if audio.performer and audio.title:
-            query = f"{audio.title} {audio.performer}"
+        # If metadata exists, use it. If not, fallback to filename.
+        if audio.title:
+            query = audio.title  # Just search Title (Artist is optional)
         else:
-            query = audio.file_name or "Unknown Song"
-            
+            query = audio.file_name or "Unknown"
+
     # 3️⃣ Case: Reply to Text
     elif message.reply_to_message and message.reply_to_message.text:
         query = message.reply_to_message.text
@@ -84,14 +78,14 @@ async def lyrics_handler(client: Client, message: Message):
     # 4️⃣ Case: Interactive (Ask User)
     else:
         try:
-            # Send sticker first like your original code
             stk = await message.reply_sticker(SEARCH_STICKER)
             await asyncio.sleep(1)
             await stk.delete()
             
+            # FIXED PROMPT: Only asks for Song Name now
             ask_msg = await client.ask(
                 message.chat.id, 
-                "**🎙️ Send me the Song Name (and Artist) now...**",
+                "**__Now Send me Song Name__ 🎙️**",
                 timeout=30
             )
             if ask_msg.text:
@@ -107,9 +101,10 @@ async def lyrics_handler(client: Client, message: Message):
     song_data = await fetch_lyrics(query)
     
     if not song_data:
+        # Helpful error message, not demanding
         return await status_msg.edit(
-            f"❌ **Lyrics not found for:** `{query}`\n"
-            f"__Try adding the Artist name (e.g., 'Mockingbird Eminem')__"
+            f"❌ **Lyrics not found for:** `{query}`\n\n"
+            f"__💡 Hint: Try typing `SongName ArtistName` (e.g., `Believer Imagine Dragons`) if the song is common.__"
         )
 
     # --- Pagination Setup ---
@@ -132,7 +127,6 @@ async def lyrics_handler(client: Client, message: Message):
             InlineKeyboardButton("➡️ Next", callback_data=f"lyr_next|0|{query}")
         ])
     
-    # Developer / Close Buttons
     buttons.append([
         InlineKeyboardButton("👾 Developer", url="https://myselfneon.github.io/neon/"),
         InlineKeyboardButton("🗑 Close", callback_data="lyr_close")
@@ -140,16 +134,14 @@ async def lyrics_handler(client: Client, message: Message):
 
     await status_msg.delete()
     
-    # Send Result with Image
+    # Send Result
     await message.reply_photo(
         photo=song_data['image'],
         caption=text_content,
         reply_markup=InlineKeyboardMarkup(buttons)
     )
-
-# -----------------------
-# 🖱️ CALLBACK HANDLERS (Pagination)
-# -----------------------
+    
+# --- 🖱️ CALLBACK HANDLERS ---
 @Client.on_callback_query(filters.regex(r"^lyr_"))
 async def lyrics_callback(client: Client, query: CallbackQuery):
     data = query.data.split("|")
@@ -159,12 +151,9 @@ async def lyrics_callback(client: Client, query: CallbackQuery):
         await query.message.delete()
         return
 
-    # Pagination Logic
     current_page = int(data[1])
     search_query = data[2]
     
-    # Re-fetch data (Stateless approach to save memory)
-    # Note: For production, caching this data is better, but this works for simple plugins.
     song_data = await fetch_lyrics(search_query) 
     if not song_data:
         return await query.answer("❌ Error reloading lyrics.", show_alert=True)
@@ -172,7 +161,6 @@ async def lyrics_callback(client: Client, query: CallbackQuery):
     pages = split_text(song_data['lyrics'])
     total = len(pages)
     
-    # Calculate new page index
     if action == "lyr_next":
         new_page = current_page + 1
     elif action == "lyr_prev":
@@ -180,11 +168,9 @@ async def lyrics_callback(client: Client, query: CallbackQuery):
     else:
         new_page = 0
         
-    # Boundary Checks
     if new_page < 0 or new_page >= total:
         return await query.answer("🚫 No more pages.", show_alert=True)
 
-    # Build New Text
     new_text = (
         f"💿 **{song_data['title']}**\n"
         f"👤 **{song_data['artist']}**\n\n"
@@ -192,7 +178,6 @@ async def lyrics_callback(client: Client, query: CallbackQuery):
         f"📖 **Page {new_page+1}/{total}**"
     )
 
-    # Build New Buttons
     nav_buttons = []
     if new_page > 0:
         nav_buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"lyr_prev|{new_page}|{search_query}"))
@@ -205,8 +190,8 @@ async def lyrics_callback(client: Client, query: CallbackQuery):
         InlineKeyboardButton("🗑 Close", callback_data="lyr_close")
     ])
 
-    # Edit the Caption (No need to re-upload photo)
     await query.message.edit_caption(
         caption=new_text,
         reply_markup=InlineKeyboardMarkup(final_kb)
-        )
+            )
+    

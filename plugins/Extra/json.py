@@ -1,3 +1,10 @@
+# ---------------------------------------------------
+# File Name: Json.py
+# Author: NeonAnurag
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import io
 import os
 from pyrogram import Client, filters
@@ -34,7 +41,7 @@ async def jsonify(client, message):
         await send_as_file(message, json_output, "message_dump.txt", caption="⚠️ Message too long, sent as file.")
 
 
-@Client.on_message(filters.command(["written", "write"]))
+@Client.on_message(filters.command(["write"]))
 async def create_file(client, message):
     """
     Creates a file from text.

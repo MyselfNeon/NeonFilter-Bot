@@ -1,4 +1,10 @@
-# CheckAlive.py
+# ---------------------------------------------------
+# File Name: Alive.py
+# Author: NeonAnurag
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import time
 import random
 from datetime import datetime
@@ -7,14 +13,10 @@ from pyrogram import Client, filters
 # Command prefixes
 CMD_PREFIXES = ["/", "."]
 
-# ===========================
-# 🔹 START TIME (for uptime)
-# ===========================
+# --- START TIME (for uptime) ---
 START_TIME = datetime.now()
 
-# ===========================
-# 🔹 ALIVE COMMAND
-# ===========================
+# --- ALIVE COMMAND ---
 @Client.on_message(filters.command("alive", CMD_PREFIXES))
 async def check_alive(_, message):
     alive_text = (
@@ -26,9 +28,7 @@ async def check_alive(_, message):
     )
     await message.reply_text(alive_text)
 
-# ===========================
-# 🔹 PING COMMAND
-# ===========================
+# --- PING COMMAND ---
 # Some witty pong responses
 PONG_REPLIES = [
     "⚡ Faster Than Your Wifi !",

@@ -18,13 +18,11 @@ async def stream_start(client: Client, message: Message):
     if not STREAM_MODE:
         return await message.reply("🚫 **Streaming Mode is Disabled via Config.**")
 
-    # --- 1️⃣ INPUT HANDLING (Reply vs Interactive) ---
+    # --- 1️⃣ INPUT HANDLING ---
     target_msg = None
-    
     if message.reply_to_message and message.reply_to_message.media:
         target_msg = message.reply_to_message
     else:
-        # Interactive Mode: Ask user to send file
         try:
             ask_msg = await client.ask(
                 message.chat.id, 
@@ -40,27 +38,19 @@ async def stream_start(client: Client, message: Message):
         except Exception as e:
             return await message.reply(f"❌ **Error:** {e}")
 
-    # --- 2️⃣ VALIDATION ---
     if not target_msg:
         return await message.reply("**❌ No Media Found!**")
         
-    # Support Video, Document, and Audio
-    valid_types = [
-        enums.MessageMediaType.VIDEO, 
-        enums.MessageMediaType.DOCUMENT, 
-        enums.MessageMediaType.AUDIO
-    ]
+    valid_types = [enums.MessageMediaType.VIDEO, enums.MessageMediaType.DOCUMENT, enums.MessageMediaType.AUDIO]
     if target_msg.media not in valid_types:
-        return await message.reply("**❌ Unsupported Media Type.**\n__Please Send: Video, Document, or Audio.__")
+        return await message.reply("**❌ Unsupported Media Type.**")
 
-    # --- 3️⃣ PROCESSING ---
+    # --- 2️⃣ PROCESSING ---
     status_msg = await message.reply_text("🔄 **Generating Link...**")
 
     try:
-        # Dynamic Attribute Extraction (Fixes your getattr issue)
-        media_type = target_msg.media.value  # e.g., "video", "document"
+        media_type = target_msg.media.value
         file = getattr(target_msg, media_type)
-        
         filename = get_name(target_msg)
         filesize = humanbytes(get_media_file_size(target_msg))
         fileid = file.file_id
@@ -73,23 +63,33 @@ async def stream_start(client: Client, message: Message):
             caption=f"**User:** {user.mention} (`{user.id}`)\n**File:** `{filename}`"
         )
 
-        # Generate Data
+        # Generate Link
         file_name_encoded = quote_plus(filename)
         file_hash = get_hash(log_msg)
 
         stream_link = f"{URL}watch/{log_msg.id}/{file_name_encoded}?hash={file_hash}"
         download_link = f"{URL}{log_msg.id}/{file_name_encoded}?hash={file_hash}"
 
-        # --- 4️⃣ UI RESPONSE ---
-        # Button for Log Channel (Admins can see who generated it)
-        await log_msg.edit_reply_markup(
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🚀 Fᴀsᴛ Dᴏᴡɴʟᴏᴀᴅ", url=download_link),
-                 InlineKeyboardButton("🖥 Wᴀᴛᴄʜ Oɴʟɪɴᴇ", url=stream_link)]
-            ])
-        )
+        # --- 3️⃣ LOG CHANNEL BUTTONS ---
+        log_buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🚀 Fᴀsᴛ Dᴏᴡɴʟᴏᴀᴅ", url=download_link),
+             InlineKeyboardButton("🖥 Wᴀᴛᴄʜ Oɴʟɪɴᴇ", url=stream_link)]
+        ])
 
-        # Buttons for User
+        try:
+            # Try to edit the original media message
+            await log_msg.edit_reply_markup(reply_markup=log_buttons)
+        except Exception as e:
+            # ⚠️ Fallback: If Edit fails (403), send a Reply instead
+            print(f"Edit failed ({e}), sending fallback message to Log Channel.")
+            await client.send_message(
+                chat_id=LOG_CHANNEL,
+                text=f"**📎 Links for file above:**\n`{filename}`",
+                reply_to_message_id=log_msg.id,
+                reply_markup=log_buttons
+            )
+
+        # --- 4️⃣ SEND LINK TO USER ---
         user_buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("🖥 Sᴛʀᴇᴀᴍ", url=stream_link),
              InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ", url=download_link)]
@@ -112,6 +112,4 @@ async def stream_start(client: Client, message: Message):
 
     except Exception as e:
         await status_msg.edit(f"**❌ Critical Error:** `{e}`")
-        # Optional: Print traceback to console for debugging
-        print(f"Stream Gen Error: {e}")
         

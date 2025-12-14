@@ -1,3 +1,10 @@
+# ---------------------------------------------------
+# File Name: Github.py
+# Author: NeonAnurag
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import logging
 import requests
 from info import CHNL_LNK
@@ -6,7 +13,6 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 from datetime import datetime
 
 # In-memory cache to store search results for pagination
-# Structure: { "chat_id-msg_id": [list_of_repos] }
 REPO_CACHE = {}
 
 def format_date(date_str):
@@ -23,7 +29,7 @@ def get_repo_buttons(owner_url, html_url, current_index, total_count, unique_id)
     # Row 1: External Links
     buttons = [
         [
-            InlineKeyboardButton("🔗 𝐋𝐢𝐧𝐤", url=html_url),
+            InlineKeyboardButton("🖇️ 𝐋𝐢𝐧𝐤", url=html_url),
             InlineKeyboardButton("📥 𝐙𝐢𝐩", url=f"{html_url}/archive/master.zip"),
             InlineKeyboardButton("👤 𝐎𝐰𝐧𝐞𝐫", url=owner_url) # FIXED: Uses correct Owner URL
         ]
@@ -79,8 +85,6 @@ def generate_repo_text(repo_data):
 <b>🪪 <i>Nᴀᴍᴇ : {name}</b></i>
 <b>🛐 <i>Oᴡɴᴇʀ : {owner}</b></i>
 <b>⚖️ <i>Lɪᴄᴇɴsᴇ : {license_info}</i></b>
-
-<b>🖇️ <i>Rᴇᴘᴏ Lɪɴᴋ : <a href="{html_url}">Click Here</a></i></b>
 
 <b>⭐ <i>Sᴛᴀʀs : {stars}</i></b>
 <b>👀 <i>Wᴀᴛᴄʜᴇʀs : {watchers}</i></b>

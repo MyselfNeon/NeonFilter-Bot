@@ -1,3 +1,10 @@
+# ---------------------------------------------------
+# File Name: Passwords.py
+# Author: NeonAnurag
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import secrets
 import string
 import math
@@ -16,8 +23,7 @@ DEFAULT_SETTINGS = {
     'ambiguous': False # Key is 'ambiguous'
 }
 
-# --- HELPER FUNCTIONS --- #
-
+# --- HELPER FUNCTIONS ---
 def get_settings(user_id):
     if user_id not in USER_SETTINGS:
         USER_SETTINGS[user_id] = DEFAULT_SETTINGS.copy()
@@ -94,9 +100,8 @@ def build_keyboard(user_id, settings):
     ]
     return InlineKeyboardMarkup(keyboard)
 
-# --- HANDLERS --- #
-
-@Client.on_message(filters.command(["genpassword", "genpw", "pw"]))
+# --- HANDLERS --- 
+@Client.on_message(filters.command(["genpw", "pw"]))
 async def password_command(bot, message):
     user_id = message.from_user.id
     settings = get_settings(user_id)

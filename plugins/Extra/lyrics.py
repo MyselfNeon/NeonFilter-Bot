@@ -60,7 +60,7 @@ def split_text(text: str, limit=1000):
 # -----------------------
 # 🎵 MAIN HANDLER
 # -----------------------
-@Client.on_message(filters.command(["lyrics", "lyric", "song"]))
+@Client.on_message(filters.command(["lyrics", "lrc"]))
 async def lyrics_handler(client: Client, message: Message):
     query = ""
     

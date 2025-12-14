@@ -1,4 +1,10 @@
-# Lyrics_Ultimate_Fixed.py
+# ---------------------------------------------------
+# File Name: Lyrics.py
+# Author: NeonAnurag
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import asyncio
 import aiohttp
 from urllib.parse import quote

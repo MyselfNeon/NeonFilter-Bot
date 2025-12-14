@@ -1,4 +1,10 @@
-# TTS_Super.py
+# ---------------------------------------------------
+# File Name: TTS_Super.py
+# Author: NeonAnurag
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import asyncio
 import os
 import edge_tts
@@ -6,13 +12,11 @@ from io import BytesIO
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 
-# -----------------------
-# ⚙️ CONFIGURATION
-# -----------------------
+# --- ⚙️ CONFIGURATION ---
 # Default voice if none selected
 DEFAULT_VOICE = "en-US-AriaNeural"
 
-# Expanded Voice Map (Short Codes -> EdgeTTS Names)
+# Expanded Voice Map (Short Codes
 VOICE_MAP = {
     # English
     "en": "en-US-AriaNeural",       # US Female
@@ -37,9 +41,7 @@ VOICE_MAP = {
     "ru": "ru-RU-SvetlanaNeural",   # Russian
 }
 
-# -----------------------
-# 🔊 CONVERSION ENGINE
-# -----------------------
+# --- 🔊 CONVERSION ENGINE ---
 async def generate_tts(text: str, voice: str) -> BytesIO:
     """Generates audio from text using Edge-TTS."""
     audio_fp = BytesIO()
@@ -53,9 +55,7 @@ async def generate_tts(text: str, voice: str) -> BytesIO:
     audio_fp.seek(0)
     return audio_fp
 
-# -----------------------
-# 🎮 HANDLER
-# -----------------------
+# --- 🎮 HANDLER ---
 @Client.on_message(filters.command(["tts", "speak"]))
 async def tts_handler(client: Client, message: Message):
     # 1. Parse Arguments
@@ -94,7 +94,7 @@ async def tts_handler(client: Client, message: Message):
         )
         
         try:
-            # Requires pyromod. If not installed, this block fails gracefully.
+            # Requires: If not installed, this block fails gracefully.
             if hasattr(client, "listen"):
                 user_response = await client.listen(message.chat.id, timeout=30)
                 if user_response and user_response.text:

@@ -1,9 +1,15 @@
-# Sticker_Tools.py
+# ---------------------------------------------------
+# File Name: StickersTool.py
+# Author: NeonAnurag
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
-@Client.on_message(filters.command(["sticker", "id"]))
+@Client.on_message(filters.command(["sticker"]))
 async def sticker_tool(bot: Client, message: Message):
     """
     Advanced Sticker Tool:
@@ -12,16 +18,12 @@ async def sticker_tool(bot: Client, message: Message):
     3. /sticker -> Interactive mode (Waits for you to send one).
     """
 
-    # -----------------------------------------------
     # 1️⃣ Mode: Reply to a sticker
-    # -----------------------------------------------
     if message.reply_to_message and message.reply_to_message.sticker:
         await send_sticker_details(message.reply_to_message, message)
         return
 
-    # -----------------------------------------------
     # 2️⃣ Mode: Arguments provided (Send Sticker by ID)
-    # -----------------------------------------------
     if len(message.command) > 1:
         ids = message.text.split()[1:]
         sent_count = 0
@@ -39,9 +41,7 @@ async def sticker_tool(bot: Client, message: Message):
         await status_msg.delete()
         return
 
-    # -----------------------------------------------
     # 3️⃣ Mode: Interactive (Ask User)
-    # -----------------------------------------------
     try:
         # Prompt the user
         ask_msg = await bot.ask(

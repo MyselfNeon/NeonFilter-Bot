@@ -1,21 +1,23 @@
-# Share_Text_Pro_v2.py
+# ---------------------------------------------------
+# File Name: ShareText.py
+# Author: NeonAnurag
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import urllib.parse
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from info import CHNL_LNK  # <--- Restored this!
 
-# -----------------------
-# 🔗 HELPER FUNCTIONS
-# -----------------------
+# --- 🔗 HELPER FUNCTIONS ---
 def generate_share_link(text: str):
     """Encodes text safely for Telegram Share URLs"""
     encoded = urllib.parse.quote(text)
     return f"https://t.me/share/url?url={encoded}"
 
-# -----------------------
-# 📨 MAIN COMMAND
-# -----------------------
-@Client.on_message(filters.command(["share", "sharetext", "link"]))
+# --- 📨 MAIN COMMAND ---
+@Client.on_message(filters.command(["sharetext"]))
 async def share_text(client: Client, message: Message):
     input_text = None
 
@@ -56,9 +58,7 @@ async def share_text(client: Client, message: Message):
         except Exception as e:
             return await message.reply_text(f"**Error:** {e}")
 
-    # -----------------------
     # ✅ OUTPUT (Upgraded UI)
-    # -----------------------
     if input_text:
         share_url = generate_share_link(input_text)
         
@@ -74,9 +74,7 @@ async def share_text(client: Client, message: Message):
             disable_web_page_preview=True
         )
 
-# -----------------------
-# 🖱️ CALLBACKS (QR Code)
-# -----------------------
+# --- 🖱️ CALLBACKS (QR Code) ---
 @Client.on_callback_query(filters.regex("^gen_qr"))
 async def qr_handler(client: Client, query: CallbackQuery):
     """Generates a QR code when the button is clicked"""

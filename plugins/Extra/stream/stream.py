@@ -13,7 +13,7 @@ from Neon.util.file_properties import get_name, get_hash, get_media_file_size
 from Neon.util.human_readable import humanbytes
 import asyncio
 
-@Client.on_message(filters.private & filters.command(["stream", "link", "gen"]))
+@Client.on_message(filters.private & filters.command(["stream"]))
 async def stream_start(client: Client, message: Message):
     if not STREAM_MODE:
         return await message.reply("🚫 **Streaming Mode is Disabled via Config.**")

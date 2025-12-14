@@ -1,69 +1,212 @@
-#Lyrics.py
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import requests
+# Lyrics_Ultimate.py
 import asyncio
+import aiohttp
+from pyrogram import Client, filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, InputMediaPhoto
 
-API = "https://apis.xditya.me/lyrics?song="
+# -----------------------
+# ⚙️ CONFIG
+# -----------------------
+# Using a robust public API (or fallback to others if needed)
+LYRICS_API = "https://api.lists.jyverse.com/lyrics" 
+# Fallback search sticker
+SEARCH_STICKER = "CAACAgIAAxkBAAIpb2jHer7l0e-CfAOB2Yy2SBDOzi7oAALdAAMw1J0RjVUlFacabq8eBA"
 
-STICKER_ID = "CAACAgIAAxkBAAIpb2jHer7l0e-CfAOB2Yy2SBDOzi7oAALdAAMw1J0RjVUlFacabq8eBA"
+# -----------------------
+# 🌐 ASYNC API CLIENT
+# -----------------------
+async def fetch_lyrics(query: str):
+    """Fetches lyrics and album art asynchronously."""
+    async with aiohttp.ClientSession() as session:
+        try:
+            # Clean up the query (remove common noise)
+            query = query.replace(".mp3", "").replace(".flac", "")
+            
+            # Using a public lyrics API (supports lyrics, image, artist)
+            url = f"https://lyrist.vercel.app/api/{query}" 
+            async with session.get(url, timeout=10) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.json()
+                
+                if "lyrics" not in data or not data["lyrics"]:
+                    return None
+                
+                return {
+                    "title": data.get("title", query.title()),
+                    "artist": data.get("artist", "Unknown"),
+                    "lyrics": data.get("lyrics", ""),
+                    "image": data.get("image", "https://telegra.ph/file/5a53e8392182270921478.jpg") # Default music placeholder
+                }
+        except Exception:
+            return None
 
+# -----------------------
+# 🛠 HELPERS
+# -----------------------
+def split_text(text: str, limit=1000):
+    """Splits long lyrics into pages of 1000 chars."""
+    chunks = []
+    current_chunk = ""
+    for line in text.split("\n"):
+        if len(current_chunk) + len(line) < limit:
+            current_chunk += line + "\n"
+        else:
+            chunks.append(current_chunk)
+            current_chunk = line + "\n"
+    chunks.append(current_chunk)
+    return chunks
 
-@Client.on_message(filters.command("lyrics") & filters.private)
-async def sng(bot, message):
-    # Ask user for song name
-    neo = await bot.ask(
-        chat_id=message.from_user.id,
-        text="**__Now Send me Song Name__ 🎙️**"
-    )
+# -----------------------
+# 🎵 MAIN HANDLER
+# -----------------------
+@Client.on_message(filters.command(["lyrics", "lyric", "song"]))
+async def lyrics_handler(client: Client, message: Message):
+    query = ""
+    
+    # 1️⃣ Case: Argument (/lyrics Believer)
+    if len(message.command) > 1:
+        query = message.text.split(maxsplit=1)[1]
+        
+    # 2️⃣ Case: Reply to Audio
+    elif message.reply_to_message and message.reply_to_message.audio:
+        audio = message.reply_to_message.audio
+        # Try to combine Title + Artist for best results
+        if audio.performer and audio.title:
+            query = f"{audio.title} {audio.performer}"
+        else:
+            query = audio.file_name or "Unknown Song"
+            
+    # 3️⃣ Case: Reply to Text
+    elif message.reply_to_message and message.reply_to_message.text:
+        query = message.reply_to_message.text
 
-    if not neo.text:
-        return await neo.reply_text("**__Send me Only Text Buddy 😊__**")
-
-    song = neo.text.strip()
-
-    # Send sticker as "searching" indicator
-    sticker_msg = await bot.send_sticker(message.chat.id, STICKER_ID)
-    await asyncio.sleep(2)  # keep sticker for 2 sec
-    await sticker_msg.delete()
-
-    try:
-        rpl = lyrics(song)
-        await bot.send_message(
-            chat_id=message.from_user.id,
-            text=rpl,
-            reply_to_message_id=message.id,
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Aᴡᴇsᴏᴍᴇ Dᴇᴠᴇʟᴏᴘᴇʀ", url="https://myselfneon.github.io/neon/")]]
-            ),
-            disable_web_page_preview=True
-        )
-    except Exception:
-        await neo.reply_text(
-            f"**__I Can't Find A Song With `{song}` 🚫__**",
-            quote=True,
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Aᴡᴇsᴏᴍᴇ Dᴇᴠᴇʟᴏᴘᴇʀ 😎", url="https://myselfneon.github.io/neon/")]]
+    # 4️⃣ Case: Interactive (Ask User)
+    else:
+        try:
+            # Send sticker first like your original code
+            stk = await message.reply_sticker(SEARCH_STICKER)
+            await asyncio.sleep(1)
+            await stk.delete()
+            
+            ask_msg = await client.ask(
+                message.chat.id, 
+                "**🎙️ Send me the Song Name (and Artist) now...**",
+                timeout=30
             )
+            if ask_msg.text:
+                query = ask_msg.text
+            else:
+                return await message.reply_text("❌ **Text only please.**")
+        except:
+            return await message.reply_text("⚠️ **Usage:** `/lyrics <song name>`")
+
+    # --- Processing ---
+    status_msg = await message.reply_text(f"🔎 **Searching lyrics for:** `{query}`...")
+    
+    song_data = await fetch_lyrics(query)
+    
+    if not song_data:
+        return await status_msg.edit(
+            f"❌ **Lyrics not found for:** `{query}`\n"
+            f"__Try adding the Artist name (e.g., 'Mockingbird Eminem')__"
         )
 
+    # --- Pagination Setup ---
+    lyrics_pages = split_text(song_data['lyrics'])
+    total_pages = len(lyrics_pages)
+    
+    # Generate First Page Text
+    text_content = (
+        f"💿 **{song_data['title']}**\n"
+        f"👤 **{song_data['artist']}**\n\n"
+        f"{lyrics_pages[0]}"
+    )
+    if total_pages > 1:
+        text_content += f"\n\n📖 **Page 1/{total_pages}**"
 
-def search(song: str) -> dict:
-    """Fetch lyrics JSON from API."""
-    r = requests.get(API + song, timeout=10)
-    r.raise_for_status()
-    return r.json()
+    # Buttons
+    buttons = []
+    if total_pages > 1:
+        buttons.append([
+            InlineKeyboardButton("➡️ Next", callback_data=f"lyr_next|0|{query}")
+        ])
+    
+    # Developer / Close Buttons
+    buttons.append([
+        InlineKeyboardButton("👾 Developer", url="https://myselfneon.github.io/neon/"),
+        InlineKeyboardButton("🗑 Close", callback_data="lyr_close")
+    ])
 
-
-def lyrics(song: str) -> str:
-    """Format lyrics message."""
-    fin = search(song)
-    return (
-        f"<blockquote>**🎶 __Successfully Extracted Lyrics Of {song}__**</blockquote>\n\n"
-        f"`{fin['lyrics']}`"
+    await status_msg.delete()
+    
+    # Send Result with Image
+    await message.reply_photo(
+        photo=song_data['image'],
+        caption=text_content,
+        reply_markup=InlineKeyboardMarkup(buttons)
     )
 
+# -----------------------
+# 🖱️ CALLBACK HANDLERS (Pagination)
+# -----------------------
+@Client.on_callback_query(filters.regex(r"^lyr_"))
+async def lyrics_callback(client: Client, query: CallbackQuery):
+    data = query.data.split("|")
+    action = data[0]
+    
+    if action == "lyr_close":
+        await query.message.delete()
+        return
 
-# Dont Remove Credits
-# Join @NeonFiles
-# Developer @MyselfNeon
+    # Pagination Logic
+    current_page = int(data[1])
+    search_query = data[2]
+    
+    # Re-fetch data (Stateless approach to save memory)
+    # Note: For production, caching this data is better, but this works for simple plugins.
+    song_data = await fetch_lyrics(search_query) 
+    if not song_data:
+        return await query.answer("❌ Error reloading lyrics.", show_alert=True)
+        
+    pages = split_text(song_data['lyrics'])
+    total = len(pages)
+    
+    # Calculate new page index
+    if action == "lyr_next":
+        new_page = current_page + 1
+    elif action == "lyr_prev":
+        new_page = current_page - 1
+    else:
+        new_page = 0
+        
+    # Boundary Checks
+    if new_page < 0 or new_page >= total:
+        return await query.answer("🚫 No more pages.", show_alert=True)
+
+    # Build New Text
+    new_text = (
+        f"💿 **{song_data['title']}**\n"
+        f"👤 **{song_data['artist']}**\n\n"
+        f"{pages[new_page]}\n\n"
+        f"📖 **Page {new_page+1}/{total}**"
+    )
+
+    # Build New Buttons
+    nav_buttons = []
+    if new_page > 0:
+        nav_buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"lyr_prev|{new_page}|{search_query}"))
+    if new_page < total - 1:
+        nav_buttons.append(InlineKeyboardButton("➡️ Next", callback_data=f"lyr_next|{new_page}|{search_query}"))
+        
+    final_kb = [nav_buttons] if nav_buttons else []
+    final_kb.append([
+        InlineKeyboardButton("👾 Developer", url="https://myselfneon.github.io/neon/"),
+        InlineKeyboardButton("🗑 Close", callback_data="lyr_close")
+    ])
+
+    # Edit the Caption (No need to re-upload photo)
+    await query.message.edit_caption(
+        caption=new_text,
+        reply_markup=InlineKeyboardMarkup(final_kb)
+        )

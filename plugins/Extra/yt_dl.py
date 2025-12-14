@@ -1,24 +1,18 @@
 import os
 import asyncio
 from pyrogram import filters, Client
-from pyrogram.types import Message
 from yt_dlp import YoutubeDL
 from info import CHNL_LNK 
 
 def run_sync_download(query, type="audio"):
-    """
-    Runs the download synchronously for the executor.
-    Uses 'android' client spoofing to bypass bot detection without cookies.
-    """
-    
-    # Common options to bypass limits
+    # ... (Same options as before) ...
     common_opts = {
         "quiet": True,
         "noplaylist": True,
-        "source_address": "0.0.0.0", # Force IPv4 to avoid IPv6 blocks
+        # REMOVED source_address just in case your server uses IPv6
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios"] # Spoof Android/iOS client
+                "player_client": ["android", "ios"]
             }
         },
         "geo_bypass": True,
@@ -36,7 +30,7 @@ def run_sync_download(query, type="audio"):
                 "preferredquality": "192",
             }],
         }
-    else: # Video
+    else: 
         opts = {
             **common_opts,
             "format": "bestvideo+bestaudio/best",
@@ -45,111 +39,84 @@ def run_sync_download(query, type="audio"):
 
     with YoutubeDL(opts) as ydl:
         try:
-            # Search and get info for the first result
             info = ydl.extract_info(f"ytsearch1:{query}", download=False)
-            
             if 'entries' in info:
                 info = info['entries'][0]
             
-            # Prepare filename
             original_filename = ydl.prepare_filename(info)
             ydl.download([info['webpage_url']])
             
             final_filename = original_filename
-            
             if type == "audio":
                 base = os.path.splitext(original_filename)[0]
                 possible_mp3 = f"{base}.mp3"
                 if os.path.exists(possible_mp3):
                     final_filename = possible_mp3
             
-            return final_filename, info
+            return final_filename, info, None # Success
             
         except Exception as e:
-            print(f"[Download Error] {e}")
-            return None, None
+            # RETURN THE ERROR MESSAGE
+            return None, None, str(e)
 
 
 @Client.on_message(filters.command(['song', 'mp3']) & filters.private)
 async def song(client, message):
     query = " ".join(message.command[1:])
-    
-    if not query:
-        return await message.reply("Please provide a song name.\n**Example:** `/song Believer`")
-
-    m = await message.reply(f"**__Searching & Downloading:__** `{query}`...")
+    m = await message.reply(f"**__Searching:__** `{query}`...")
     
     try:
-        # Run blocking download in background thread
         loop = asyncio.get_event_loop()
-        file_path, info = await loop.run_in_executor(None, run_sync_download, query, "audio")
+        # Unpack 3 values now (file, info, error)
+        file_path, info, error_msg = await loop.run_in_executor(None, run_sync_download, query, "audio")
+
+        if error_msg:
+            return await m.edit(f"**Download Failed ❌**\n\n`{error_msg}`")
 
         if not file_path or not os.path.exists(file_path):
-            return await m.edit("__Failed to find or download the song. Try a different name.__")
+            return await m.edit("__Unknown Error: File not found.__")
 
         await m.edit("**__Uploading...__ 📤**")
         
-        duration = int(info.get('duration', 0))
-        title = info.get('title', 'Unknown')
-        performer = info.get('uploader', 'Unknown')
-        link = info.get('webpage_url')
-        caption = f"**Title:** [{title}]({link})\n**Duration:** {info.get('duration_string')}\n**By:** [UPDATE]({CHNL_LNK})"
-
         await message.reply_audio(
             audio=file_path,
-            caption=caption,
-            title=title,
-            performer=performer,
-            duration=duration
+            caption=f"**Title:** {info.get('title')}",
+            title=info.get('title'),
+            performer=info.get('uploader'),
+            duration=int(info.get('duration', 0))
         )
         await m.delete()
-        
-        # Cleanup
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        if os.path.exists(file_path): os.remove(file_path)
             
     except Exception as e:
-        await m.edit(f"**Error:** `{e}`")
-        if 'file_path' in locals() and file_path and os.path.exists(file_path):
-            os.remove(file_path)
+        await m.edit(f"**Bot Error:** `{e}`")
 
 
 @Client.on_message(filters.command(["video", "mp4"]))
 async def vsong(client, message):
     query = " ".join(message.command[1:])
-    
-    if not query:
-        return await message.reply("Please provide a video name.\n**Example:** `/video Nature 4k`")
-
-    m = await message.reply(f"**__Finding Video:__** `{query}`...")
+    m = await message.reply(f"**__Searching:__** `{query}`...")
 
     try:
         loop = asyncio.get_event_loop()
-        file_path, info = await loop.run_in_executor(None, run_sync_download, query, "video")
+        file_path, info, error_msg = await loop.run_in_executor(None, run_sync_download, query, "video")
+
+        if error_msg:
+            return await m.edit(f"**Download Failed ❌**\n\n`{error_msg}`")
 
         if not file_path or not os.path.exists(file_path):
-            return await m.edit("__Failed to find or download the video.__")
+            return await m.edit("__Unknown Error: File not found.__")
 
-        await m.edit("**__Uploading Video...__ 📤**")
+        await m.edit("**__Uploading...__ 📤**")
         
-        title = info.get('title', 'Unknown')
-        link = info.get('webpage_url')
-        caption = f"**Title:** [{title}]({link})\n**Requested By:** {message.from_user.mention}"
-
         await message.reply_video(
             video=file_path,
-            caption=caption,
+            caption=f"**Title:** {info.get('title')}",
             duration=int(info.get('duration', 0)),
             supports_streaming=True
         )
         await m.delete()
-
-        # Cleanup
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        if os.path.exists(file_path): os.remove(file_path)
 
     except Exception as e:
-        await m.edit(f"**Error:** `{e}`")
-        if 'file_path' in locals() and file_path and os.path.exists(file_path):
-            os.remove(file_path)
-            
+        await m.edit(f"**Bot Error:** `{e}`")

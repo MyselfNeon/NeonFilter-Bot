@@ -82,7 +82,7 @@ async def slots_game(client: Client, message: Message):
     await message.reply_text(text, quote=True)
     
 # --- 🔴 ROULETTE (Simple) ---
-@Client.on_message(filters.command(["roulette", "spin"]))
+@Client.on_message(filters.command(["roulette"]))
 async def roulette_game(client: Client, message: Message):
     args = message.text.split()
     if len(args) < 2:

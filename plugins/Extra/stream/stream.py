@@ -1,8 +1,7 @@
 # ---------------------------------------------------
 # File Name: StreamPro.py
-# Author: NeonAnurag
-# GitHub: https://github.com/MyselfNeon/
-# Telegram: https://t.me/MyelfNeon
+# Author: NeonAnurag (Refactored)
+# Description: Advanced File to Stream Link Generator
 # ---------------------------------------------------
 
 import asyncio
@@ -50,6 +49,7 @@ class StreamDatabase:
 
 # Initialize Database
 db = StreamDatabase(DATABASE_URI, DATABASE_NAME)
+
 
 # --- HELPER FUNCTIONS ---
 def get_file_details(message: Message):
@@ -194,6 +194,7 @@ async def confirm_revoke_handler(client: Client, query: CallbackQuery):
     ])
     await query.message.edit_reply_markup(reply_markup=btns)
 
+
 @Client.on_callback_query(filters.regex(r"^cancel_revoke"))
 async def cancel_revoke_handler(client: Client, query: CallbackQuery):
     """Step 2a: Restore original buttons (Recovery Mode)"""
@@ -234,7 +235,6 @@ async def cancel_revoke_handler(client: Client, query: CallbackQuery):
     except Exception as e:
         logger.error(f"Cancel Revoke Error: {e}")
         await query.answer("Error restoring view.", show_alert=True)
-
 
 @Client.on_callback_query(filters.regex(r"^do_revoke_"))
 async def execute_revoke_handler(client: Client, query: CallbackQuery):

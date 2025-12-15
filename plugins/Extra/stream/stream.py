@@ -5,123 +5,157 @@
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
 
+import asyncio
+import logging
+import re
+from urllib.parse import quote_plus
+
+import motor.motor_asyncio
 from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
+from pyrogram.errors import FloodWait, MessageNotModified
+
+# Custom Imports (Ensure these exist in your util/info files)
 from info import STREAM_MODE, URL, LOG_CHANNEL, DATABASE_URI, DATABASE_NAME
-from urllib.parse import quote_plus
 from Neon.util.file_properties import get_name, get_hash, get_media_file_size
 from Neon.util.human_readable import humanbytes
-import asyncio
-import re
-import motor.motor_asyncio
 
-# --- MONGODB SETUP ---
-class Database:
+# --- LOGGER SETUP ---
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# --- MONGODB MANAGER ---
+class StreamDatabase:
     def __init__(self, uri, database_name):
         self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
         self.db = self._client[database_name]
         self.col = self.db.files
 
     async def add_file(self, file_info):
-        """Saves file information to MongoDB"""
-        await self.col.insert_one(file_info)
+        """Saves file information. Updates if exists, inserts if new."""
+        # We use unique_id to prevent duplicates in DB
+        await self.col.replace_one(
+            {"unique_id": file_info["unique_id"]}, 
+            file_info, 
+            upsert=True
+        )
+
+    async def get_file_by_unique_id(self, unique_id):
+        """Check if file already exists in DB to avoid re-uploading to Log Channel"""
+        return await self.col.find_one({"unique_id": unique_id})
 
     async def delete_file(self, log_id):
-        """Deletes file information from MongoDB based on Log ID"""
-        await self.col.delete_one({"log_id": log_id})
-
-    async def get_file(self, log_id):
-        """(Optional) Retrieve file info"""
-        return await self.col.find_one({"log_id": log_id})
+        """Deletes file information based on Log Message ID"""
+        await self.col.delete_one({"log_id": int(log_id)})
 
 # Initialize Database
-db = Database(DATABASE_URI, DATABASE_NAME)
+db = StreamDatabase(DATABASE_URI, DATABASE_NAME)
 
+# --- HELPER FUNCTIONS ---
+def get_file_details(message: Message):
+    """Extracts media object and unique ID dynamically."""
+    valid_types = [
+        enums.MessageMediaType.VIDEO, 
+        enums.MessageMediaType.DOCUMENT, 
+        enums.MessageMediaType.AUDIO
+    ]
+    if message.media not in valid_types:
+        return None, None
+    
+    media_type = message.media.value
+    file = getattr(message, media_type)
+    return file, media_type
 
-@Client.on_message(filters.private & filters.command(["stream"]))
-async def stream_start(client: Client, message: Message):
+# --- MAIN HANDLER ---
+@Client.on_message(filters.private & filters.command(["stream", "link"]))
+async def stream_start_handler(client: Client, message: Message):
     if not STREAM_MODE:
-        return await message.reply("🚫 **Streaming Mode is Disabled via Config.**")
+        return await message.reply("🚫 **System is currently in maintenance.**")
 
-    # --- 1️⃣ INPUT HANDLING ---
-    target_msg = None
-    if message.reply_to_message and message.reply_to_message.media:
-        target_msg = message.reply_to_message
-    else:
+    # 1️⃣ Acquire Media
+    target_msg = message.reply_to_message if (message.reply_to_message and message.reply_to_message.media) else None
+
+    if not target_msg:
         try:
-            ask_msg = await client.ask(
+            ask = await client.ask(
                 message.chat.id, 
-                "**__Now send me your File, Video or Audio.__**\n"
-                "__I will generate a direct Stream & Download link.__",
+                "**📤 Send me the file (Video/Document/Audio).**\n"
+                "__I will generate a high-speed direct link.__",
                 timeout=60,
                 filters=filters.media
             )
-            if ask_msg.media:
-                target_msg = ask_msg
+            target_msg = ask
         except asyncio.TimeoutError:
-            return await message.reply("❌ **Time Up!** Please run the command again.")
+            return await message.reply("⚠️ **Session Timed Out.** Type /stream to try again.")
         except Exception as e:
             return await message.reply(f"❌ **Error:** {e}")
 
-    if not target_msg:
-        return await message.reply("**❌ No Media Found!**")
-        
-    valid_types = [enums.MessageMediaType.VIDEO, enums.MessageMediaType.DOCUMENT, enums.MessageMediaType.AUDIO]
-    if target_msg.media not in valid_types:
-        return await message.reply("**❌ Unsupported Media Type.**")
+    file_obj, media_type = get_file_details(target_msg)
+    if not file_obj:
+        return await message.reply("❌ **Unsupported Media Type.** Please send Video, Audio, or Document.")
 
-    # --- 2️⃣ PROCESSING ---
-    status_msg = await message.reply_text("🔄 **Generating Link & Saving to DB...**")
+    # 2️⃣ Processing
+    status_msg = await message.reply_text("⏳ **Processing File...**")
 
     try:
-        media_type = target_msg.media.value
-        file = getattr(target_msg, media_type)
+        # Extract Meta Data
+        file_unique_id = file_obj.file_unique_id
+        file_id = file_obj.file_id
         filename = get_name(target_msg)
         filesize = humanbytes(get_media_file_size(target_msg))
-        fileid = file.file_id
         user = message.from_user
 
-        # --- LOG CHANNEL ---
-        log_msg = await client.send_cached_media(
-            chat_id=LOG_CHANNEL,
-            file_id=fileid,
-            caption=f"**User:** {user.mention} (`{user.id}`)\n**File:** `{filename}`"
-        )
-
-        # Generate Link details
-        file_name_encoded = quote_plus(filename)
-        file_hash = get_hash(log_msg)
+        # 🚀 SMART CHECK: Check if file exists in DB (De-duplication)
+        existing_file = await db.get_file_by_unique_id(file_unique_id)
         
-        stream_link = f"{URL}watch/{log_msg.id}/{file_name_encoded}?hash={file_hash}"
-        download_link = f"{URL}{log_msg.id}/{file_name_encoded}?hash={file_hash}"
+        if existing_file:
+            # -- FAST PATH: File exists, just return credentials --
+            log_id = existing_file['log_id']
+            stream_link = existing_file['stream_link']
+            download_link = existing_file['download_link']
+            await status_msg.edit("♻️ **File found in database! Retrieving links...**")
+        else:
+            # -- SLOW PATH: New File, Upload to Log Channel --
+            log_msg = await client.send_cached_media(
+                chat_id=LOG_CHANNEL,
+                file_id=file_id,
+                caption=f"**User:** {user.mention} (`{user.id}`)\n**File:** `{filename}`\n**Size:** {filesize}"
+            )
+            
+            log_id = log_msg.id
+            file_name_encoded = quote_plus(filename)
+            file_hash = get_hash(log_msg) # Your custom hash function
 
-        # --- SAVE TO MONGODB ---
-        file_data = {
-            "user_id": user.id,
-            "log_id": log_msg.id,
-            "file_name": filename,
-            "file_size": filesize,
-            "file_id": fileid,
-            "media_type": media_type,
-            "stream_link": stream_link,
-            "download_link": download_link,
-            "caption": target_msg.caption or ""
-        }
-        await db.add_file(file_data)
+            stream_link = f"{URL}watch/{log_id}/{file_name_encoded}?hash={file_hash}"
+            download_link = f"{URL}{log_id}/{file_name_encoded}?hash={file_hash}"
 
-        # --- 3️⃣ SEND LINK TO USER ---
-        user_buttons = InlineKeyboardMarkup([
+            # Save to MongoDB
+            file_data = {
+                "unique_id": file_unique_id, # Crucial for deduplication
+                "user_id": user.id,
+                "log_id": log_id,
+                "file_name": filename,
+                "file_size": filesize,
+                "file_id": file_id,
+                "media_type": media_type,
+                "stream_link": stream_link,
+                "download_link": download_link
+            }
+            await db.add_file(file_data)
+
+        # 3️⃣ Construct Response
+        buttons = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("🖥 Sᴛʀᴇᴀᴍ", url=stream_link),
                 InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ", url=download_link)
             ],
             [
-                InlineKeyboardButton("🗑️ Rᴇᴠᴏᴋᴇ Lɪɴᴋ", callback_data=f"ask_revoke_{log_msg.id}")
+                InlineKeyboardButton("🗑️ Rᴇᴠᴏᴋᴇ Lɪɴᴋ", callback_data=f"ask_revoke_{log_id}")
             ]
         ])
 
         msg_text = (
-            "<b><i><u>⚡ 𝗟𝗶𝗻𝗸 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗲𝗱 & 𝗦𝗮𝘃𝗲𝗱!</u></i></b>\n\n"
+            "<b><i><u>⚡ 𝗟𝗶𝗻𝗸 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗲𝗱 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆!</u></i></b>\n\n"
             f"<b><i>📂 File Name:</b>\n{filename}</i>\n"
             f"<b><i>📦 File Size:</b> {filesize}</i>\n\n"
             f"<b><i>📥 Download:</i></b>\n<blockquote expandable><code>{download_link}</code></blockquote>\n"
@@ -132,87 +166,97 @@ async def stream_start(client: Client, message: Message):
         await status_msg.edit(
             text=msg_text,
             disable_web_page_preview=True,
-            reply_markup=user_buttons
+            reply_markup=buttons
         )
 
+    except FloodWait as e:
+        await asyncio.sleep(e.value)
+        await message.reply(f"⚠️ **FloodWait:** Please wait {e.value} seconds.")
     except Exception as e:
-        await status_msg.edit(f"**❌ Critical Error:** `{e}`")
+        logger.error(f"Stream Error: {e}", exc_info=True)
+        await status_msg.edit(f"**❌ An error occurred:** `{e}`")
 
 
-# --- 4️⃣ CALLBACK HANDLERS FOR REVOKE ---
-
+# --- CALLBACKS: REVOKE FLOW ---
 @Client.on_callback_query(filters.regex(r"^ask_revoke_"))
-async def ask_revoke_handler(client: Client, query: CallbackQuery):
+async def confirm_revoke_handler(client: Client, query: CallbackQuery):
+    """Step 1: Ask for confirmation"""
     log_id = query.data.split("_")[-1]
     
-    confirm_buttons = InlineKeyboardMarkup([
+    # Check permission (Optional: Only allow the user who created it)
+    # For now, allowing anyone who has the message handle (standard behavior)
+    
+    btns = InlineKeyboardMarkup([
         [
             InlineKeyboardButton("✅ Yes, Delete", callback_data=f"do_revoke_{log_id}"),
-            InlineKeyboardButton("❌ No, Cancel", callback_data="cancel_revoke")
+            InlineKeyboardButton("❌ Cancel", callback_data="cancel_revoke")
         ]
     ])
-    
-    await query.message.edit_reply_markup(reply_markup=confirm_buttons)
-
+    await query.message.edit_reply_markup(reply_markup=btns)
 
 @Client.on_callback_query(filters.regex(r"^cancel_revoke"))
 async def cancel_revoke_handler(client: Client, query: CallbackQuery):
-    msg_text = query.message.text
+    """Step 2a: Restore original buttons (Recovery Mode)"""
     try:
-        urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', msg_text)
-        dl_link = next((u for u in urls if "watch" not in u), None)
+        # Regex to find URLs in the message text
+        urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', query.message.text)
+        
+        # Logic: Usually Stream Link contains 'watch', Download does not (or based on your logic)
+        # Adjust logic if your URL structure changes
         st_link = next((u for u in urls if "watch" in u), None)
+        dl_link = next((u for u in urls if "watch" not in u and u != st_link), None)
 
-        if dl_link and st_link:
-            # Attempt to extract log_id from the link to restore the exact state
-            # Link format assumption: URL/log_id/filename...
-            try:
-                parts = dl_link.replace(URL, "").split("/")
-                # usually parts[0] is log_id if URL ends with /
-                log_id_restored = parts[0] 
-                
-                original_buttons = InlineKeyboardMarkup([
-                    [
-                        InlineKeyboardButton("🖥 Sᴛʀᴇᴀᴍ", url=st_link),
-                        InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ", url=dl_link)
-                    ],
-                    [
-                        InlineKeyboardButton("🗑️ Rᴇᴠᴏᴋᴇ Lɪɴᴋ", callback_data=f"ask_revoke_{log_id_restored}")
-                    ]
-                ])
-            except:
-                # Fallback if parsing fails
-                original_buttons = InlineKeyboardMarkup([
-                    [
-                        InlineKeyboardButton("🖥 Sᴛʀᴇᴀᴍ", url=st_link),
-                        InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ", url=dl_link)
-                    ]
-                ])
+        if not st_link or not dl_link:
+            await query.answer("⚠️ Cannot restore buttons automatically.", show_alert=True)
+            return await query.message.delete()
 
-            await query.message.edit_reply_markup(reply_markup=original_buttons)
-        else:
-            await query.answer("Could not restore buttons.", show_alert=True)
+        # Try to parse log_id from URL to restore the revoke button too
+        # URL structure: DOMAIN/watch/12345/name...
+        try:
+            log_id_restored = st_link.split("/watch/")[1].split("/")[0]
+            
+            restored_btns = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("🖥 Sᴛʀᴇᴀᴍ", url=st_link),
+                    InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ", url=dl_link)
+                ],
+                [
+                    InlineKeyboardButton("🗑️ Rᴇᴠᴏᴋᴇ Lɪɴᴋ", callback_data=f"ask_revoke_{log_id_restored}")
+                ]
+            ])
+            await query.message.edit_reply_markup(reply_markup=restored_btns)
+        except:
+            # Fallback if parsing fails: Just show links
+            await query.message.edit_reply_markup(
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔗 Link", url=dl_link)]])
+            )
             
     except Exception as e:
-        await query.answer("Cancelled", show_alert=True)
-        await query.message.edit_reply_markup(None)
+        logger.error(f"Cancel Revoke Error: {e}")
+        await query.answer("Error restoring view.", show_alert=True)
 
 
 @Client.on_callback_query(filters.regex(r"^do_revoke_"))
-async def do_revoke_handler(client: Client, query: CallbackQuery):
+async def execute_revoke_handler(client: Client, query: CallbackQuery):
+    """Step 2b: Execute Deletion"""
     log_id = int(query.data.split("_")[-1])
     
     try:
-        # 1. Delete from Telegram Log Channel
-        await client.delete_messages(chat_id=LOG_CHANNEL, message_ids=log_id)
-        
-        # 2. Delete from MongoDB
+        # 1. Delete from MongoDB
         await db.delete_file(log_id)
         
-        # 3. Update User UI
+        # 2. Delete from Telegram Log Channel
+        try:
+            await client.delete_messages(chat_id=LOG_CHANNEL, message_ids=log_id)
+        except Exception as e:
+            logger.warning(f"Message {log_id} already deleted from channel or not found: {e}")
+
+        # 3. Update User Message
         await query.message.edit_text(
-            "<b>🚫 <i>Link Revoked Successfully.</i></b>\n\n"
-            "__The file has been deleted from the database and server.__"
+            "<b>🚫 <i>Link Revoked.</i></b>\n\n"
+            "__The file is no longer accessible via this link.__"
         )
     except Exception as e:
-        await query.answer(f"Error: {e}", show_alert=True)
+        logger.error(f"Revoke Failed: {e}")
+        await query.answer("Failed to revoke link. Check logs.", show_alert=True)
+        

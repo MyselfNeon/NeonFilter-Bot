@@ -1,3 +1,10 @@
+# ---------------------------------------------------
+# File Name: Bot.py
+# Author: MyselfNeon
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import sys, glob, importlib, logging, logging.config, pytz, asyncio
 from pathlib import Path
 
@@ -22,7 +29,7 @@ from Neon.bot import NeonBot
 from Neon.util.keepalive import ping_server
 from Neon.bot.clients import initialize_clients
 
-# ------------------- Added Keep-Alive Function -------------------
+# --- Keep-Alive Function ---
 from info import KEEP_ALIVE_URL
 import aiohttp
 
@@ -36,10 +43,8 @@ async def keep_alive():
             except Exception as e:
                 logging.error(f"Keep-alive request failed: {e}")
             await asyncio.sleep(100)
-# ----------------------------------------------------------------
 
-
-# ------------------- Updated plugin loader -------------------
+# --- Advanced Plugin Loader ---
 def get_all_plugin_files(root="plugins"):
     """
     Recursively get all .py files in the plugins folder and subfolders.
@@ -51,11 +56,9 @@ def get_all_plugin_files(root="plugins"):
     return files
 
 files = get_all_plugin_files()
-# -------------------------------------------------------------
 
 NeonBot.start()
 loop = asyncio.get_event_loop()
-
 
 async def start():
     print('\n')
@@ -63,7 +66,7 @@ async def start():
     bot_info = await NeonBot.get_me()
     await initialize_clients()
 
-    # ------------------- Import plugins -------------------
+    # --- Import Plugins ---
     for plugin_path in files:
         plugin_name = plugin_path.stem
         import_path = ".".join(plugin_path.with_suffix("").parts)  # convert path to module path
@@ -72,7 +75,6 @@ async def start():
         spec.loader.exec_module(mod)
         sys.modules[import_path] = mod
         print(f"✨ Neon Imported => {plugin_name}")
-    # -------------------------------------------------------
 
     if ON_HEROKU:
         asyncio.create_task(ping_server())
@@ -90,25 +92,44 @@ async def start():
     temp.U_NAME = me.username
     temp.B_NAME = me.first_name
     logging.info(script.LOGO)
+
+    # --- Restart Logic ---
     tz = pytz.timezone('Asia/Kolkata')
-    today = date.today()
     now = datetime.now(tz)
     time = now.strftime("%H:%M:%S %p")
+    date_str = now.strftime("%d/%m/%y")
+    
+    # --- New Message Format ---
+    restart_msg = (
+        f"⌬ **Restarted Successfully !**\n"
+        f"┟ **Bot:** {temp.B_NAME} (@{temp.U_NAME})\n"
+        f"┟ **Date:** {date_str}\n"
+        f"┠ **Time:** {time}\n"
+        f"┠ **TimeZone:** Asia/Kolkata\n"
+        f"┖ **Version:** v3.0.8-x"
+    )
+
     try:
-        await NeonBot.send_message(chat_id=LOG_CHANNEL, text=script.RESTART_TXT.format(today, time))
+        # --- Log_Channel ---
+        await NeonBot.send_message(chat_id=LOG_CHANNEL, text=restart_msg)
     except:
         print("Make Your Bot Admin In Log Channel With Full Rights")
+
     for ch in CHANNELS:
         try:
-            k = await NeonBot.send_message(chat_id=ch, text="**Bot Restarted**")
+            # --- Files Channels ---
+            k = await NeonBot.send_message(chat_id=ch, text=restart_msg)
             await k.delete()
         except:
             print("Make Your Bot Admin In File Channels With Full Rights")
+
     try:
-        k = await NeonBot.send_message(chat_id=AUTH_CHANNEL, text="**Bot Restarted**")
+        # --- Auth_Channel ---
+        k = await NeonBot.send_message(chat_id=AUTH_CHANNEL, text=restart_msg)
         await k.delete()
     except:
         print("Make Your Bot Admin In Force Subscribe Channel With Full Rights")
+
     if CLONE_MODE == True:
         print("Restarting All Clone Bots.......")
         await restart_bots()
@@ -125,7 +146,7 @@ if __name__ == '__main__':
         loop.run_until_complete(start())
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
-        
 
-
-
+# Dont remove Credits
+# Developer Telegram @MyselfNeon
+# Update channel - @NeonFiles

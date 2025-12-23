@@ -1,4 +1,4 @@
-import logging, asyncio, os, re, random, pytz, aiohttp, requests, string, json, http.client
+Import logging, asyncio, os, re, random, pytz, aiohttp, requests, string, json, http.client
 from info import *
 from imdb import Cinemagoer 
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
@@ -539,7 +539,8 @@ async def check_token(bot, userid, token):
     user = await bot.get_users(userid)
     if not await db.is_user_exist(user.id):
         await db.add_user(user.id, user.first_name)
-        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+        # Updated to include temp.U_NAME
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(temp.U_NAME, user.id, user.mention, datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d/%m/%y'), datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%I:%M.%S %p')))
     if user.id in TOKENS.keys():
         TKN = TOKENS[user.id]
         if token in TKN.keys():
@@ -555,7 +556,8 @@ async def get_token(bot, userid, link):
     user = await bot.get_users(userid)
     if not await db.is_user_exist(user.id):
         await db.add_user(user.id, user.first_name)
-        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+        # Updated to include temp.U_NAME
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(temp.U_NAME, user.id, user.mention, datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d/%m/%y'), datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%I:%M.%S %p')))
     token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
     TOKENS[user.id] = {token: False}
     link = f"{link}verify-{user.id}-{token}"
@@ -570,7 +572,8 @@ async def verify_user(bot, userid, token):
     user = await bot.get_users(userid)
     if not await db.is_user_exist(user.id):
         await db.add_user(user.id, user.first_name)
-        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+        # Updated to include temp.U_NAME
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(temp.U_NAME, user.id, user.mention, datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d/%m/%y'), datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%I:%M.%S %p')))
     TOKENS[user.id] = {token: True}
     tz = pytz.timezone('Asia/Kolkata')
     today = date.today()
@@ -580,7 +583,8 @@ async def check_verification(bot, userid):
     user = await bot.get_users(userid)
     if not await db.is_user_exist(user.id):
         await db.add_user(user.id, user.first_name)
-        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+        # Updated to include temp.U_NAME
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(temp.U_NAME, user.id, user.mention, datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d/%m/%y'), datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%I:%M.%S %p')))
     tz = pytz.timezone('Asia/Kolkata')
     today = date.today()
     if user.id in VERIFIED.keys():
@@ -592,8 +596,8 @@ async def check_verification(bot, userid):
         else:
             return True
     else:
-        return False  
-    
+        return False
+
 async def send_all(bot, userid, files, ident, chat_id, user_name, query):
     settings = await get_settings(chat_id)
     if 'is_shortlink' in settings.keys():
@@ -732,3 +736,4 @@ async def get_seconds(time_string):
         return value * 86400 * 365
     else:
         return 0
+

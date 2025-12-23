@@ -101,12 +101,12 @@ async def start():
     
     # --- New Message Format ---
     restart_msg = (
-        f"⌬ **Restarted Successfully !**\n"
-        f"┟ **Bot:** {temp.B_NAME} (@{temp.U_NAME})\n"
-        f"┟ **Date:** {date_str}\n"
-        f"┠ **Time:** {time}\n"
-        f"┠ **TimeZone:** Asia/Kolkata\n"
-        f"┖ **Version:** v3.0.8-x"
+        f"**⌬ Restarted Successfully !**\n"
+        f"**┟ Bot:** __{temp.B_NAME} (@{temp.U_NAME})__\n"
+        f"**┟ Date:** __{date_str}__\n"
+        f"**┠ Time:** __{time}__\n"
+        f"**┠ TimeZone:** __Asia/Kolkata__\n"
+        f"**┖ Version:** __v2.7.1-x__"
     )
 
     try:
@@ -150,3 +150,4 @@ if __name__ == '__main__':
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+

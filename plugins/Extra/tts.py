@@ -1,10 +1,12 @@
 # ---------------------------------------------------
-# File Name: TTS_Super.py
-# Author: NeonAnurag
+# File Name: Super-TTS.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
 
+# --- Imports ---
 import asyncio
 import os
 import edge_tts
@@ -12,11 +14,9 @@ from io import BytesIO
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 
-# --- ⚙️ CONFIGURATION ---
-# Default voice if none selected
+# --- Configuration ---
 DEFAULT_VOICE = "en-US-AriaNeural"
 
-# Expanded Voice Map (Short Codes
 VOICE_MAP = {
     # English
     "en": "en-US-AriaNeural",       # US Female
@@ -41,7 +41,7 @@ VOICE_MAP = {
     "ru": "ru-RU-SvetlanaNeural",   # Russian
 }
 
-# --- 🔊 CONVERSION ENGINE ---
+# --- Conversion Engine ---
 async def generate_tts(text: str, voice: str) -> BytesIO:
     """Generates audio from text using Edge-TTS."""
     audio_fp = BytesIO()
@@ -55,7 +55,7 @@ async def generate_tts(text: str, voice: str) -> BytesIO:
     audio_fp.seek(0)
     return audio_fp
 
-# --- 🎮 HANDLER ---
+# --- Handlers ---
 @Client.on_message(filters.command(["tts", "speak"]))
 async def tts_handler(client: Client, message: Message):
     # 1. Parse Arguments
@@ -94,23 +94,20 @@ async def tts_handler(client: Client, message: Message):
         )
         
         try:
-            # Requires: If not installed, this block fails gracefully.
+            # Requires: pyromod or similar 'listen' capability
             if hasattr(client, "listen"):
                 user_response = await client.listen(message.chat.id, timeout=30)
                 if user_response and user_response.text:
                     target_text = user_response.text
                     await user_response.delete() # Cleanup user text
+                    await help_msg.delete()      # Cleanup menu
                 else:
                     return await help_msg.edit("**❌ Time up! Try again.**")
             else:
-                return await help_msg.edit("**❌ usage:** `/tts [code] [text]` OR Reply to a message.")
+                return await help_msg.edit("**❌ Usage:** `/tts [code] [text]` OR Reply to a message.")
                 
         except Exception as e:
             return await help_msg.edit(f"**❌ Error:** {e}")
-        finally:
-            # Delete help menu after getting input
-            try: await help_msg.delete() 
-            except: pass
 
     # 4. Final Validation
     if not target_text:
@@ -141,4 +138,7 @@ async def tts_handler(client: Client, message: Message):
 
     except Exception as e:
         await status_msg.edit_text(f"**❌ TTS Error:** `{str(e)}`")
-        
+
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

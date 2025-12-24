@@ -1,3 +1,11 @@
+# ---------------------------------------------------
+# File Name: Engine.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import warnings
 # Silence "Python 3.10 end of life" warning to keep logs clean
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -169,3 +177,6 @@ async def set_user_model(callback_query):
     await callback_query.message.delete()
     await callback_query.message.reply_text(f"✅ **Model Switched!**\n\nNow using: `{model_id}`")
     
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

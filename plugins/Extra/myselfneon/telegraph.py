@@ -18,9 +18,7 @@ from info import LOG_CHANNEL, ADMINS, DATABASE_NAME, DATABASE_URI
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-# -------------------
-# Constants
-# -------------------
+# --- Constants ---
 MAX_SIZE = 200 * 1024 * 1024  # Local max file size 200 MB
 CATBOX_API = "https://catbox.moe/user/api.php"
 ENVS_UPLOAD_URL = "https://envs.sh"
@@ -36,16 +34,12 @@ except Exception:
 # Track active uploads per user
 active_uploads = {}
 
-# -------------------
-# MongoDB Setup
-# -------------------
+# --- MongoDB Setup ---
 mongo_client = AsyncIOMotorClient(DATABASE_URI)
 db = mongo_client[DATABASE_NAME]
 telelist_col = db["telelist"]
 
-# -------------------
-# Helpers
-# -------------------
+# --- Helpers ---
 def format_date():
     return datetime.now().strftime("%d %B 2K%y")
 
@@ -101,9 +95,7 @@ def upload_text_to_graph(text_content):
         print(f"**__Error Uploading to Graph:\n{e}__**")
         return None
 
-# -------------------
-# /telegraph command
-# -------------------
+# --- /telegraph command ---
 @Client.on_message(filters.command("telegraph") & filters.private)
 async def telegraph_start(bot: Client, message: Message):
     user_id = message.from_user.id
@@ -125,9 +117,7 @@ async def telegraph_start(bot: Client, message: Message):
         reply_markup=keyboard
     )
 
-# -------------------
-# Callback handler for /telegraph buttons
-# -------------------
+# --- Callback handler for /telegraph buttons ---
 @Client.on_callback_query(filters.regex(r"^telegraph_"))
 async def telegraph_callback(bot: Client, query: CallbackQuery):
     user_id = query.from_user.id
@@ -165,9 +155,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
         except:
             pass
 
-# -------------------
-# Text Handler (For Graph.org)
-# -------------------
+# --- Text Handler (For Graph.org) ---
 @Client.on_message(filters.private & filters.text & ~filters.command(["telegraph", "tcancel", "telegraphhelp", "telelist"]))
 async def telegraph_text_handler(bot: Client, message: Message):
     user_id = message.from_user.id
@@ -218,9 +206,7 @@ async def telegraph_text_handler(bot: Client, message: Message):
     finally:
         active_uploads.pop(user_id, None)
 
-# -------------------
-# File handler (For Media)
-# -------------------
+# ---- File handler (For Media) ---
 @Client.on_message(filters.private & (filters.document | filters.photo | filters.video | filters.audio))
 async def telegraph_file_handler(bot: Client, message: Message):
     user_id = message.from_user.id
@@ -283,9 +269,7 @@ async def telegraph_file_handler(bot: Client, message: Message):
             os.remove(file_path)
         active_uploads.pop(user_id, None)
 
-# -------------------
-# Close button handler
-# -------------------
+# --- Close button handler ---
 @Client.on_callback_query(filters.regex(r"^close$"))
 async def close_callback(bot: Client, query: CallbackQuery):
     try:
@@ -294,9 +278,7 @@ async def close_callback(bot: Client, query: CallbackQuery):
     except Exception as e:
         await query.answer(f"Failed to Close: {e}", show_alert=True)
 
-# -------------------
-# /tcancel command
-# -------------------
+# --- /tcancel command ---
 @Client.on_message(filters.command("tcancel") & filters.private)
 async def telegraph_cancel(bot: Client, message: Message):
     user_id = message.from_user.id
@@ -306,9 +288,7 @@ async def telegraph_cancel(bot: Client, message: Message):
     else:
         await message.reply_text("**🤷 __No Active Uploads. Use /telegraph to Start__.**")
 
-# -------------------
-# /telegraphhelp
-# -------------------
+# --- /telegraphhelp ---
 @Client.on_message(filters.command("telegraphhelp") & filters.private)
 async def telegraph_help(bot: Client, message: Message):
     help_text = (
@@ -325,9 +305,7 @@ async def telegraph_help(bot: Client, message: Message):
     )
     await message.reply_text(help_text)
 
-# -------------------
 # /telelist command (Admin only with pagination)
-# -------------------
 @Client.on_message(filters.command("telelist") & filters.private)
 async def telegraph_list(bot: Client, message: Message):
     user_id = message.from_user.id

@@ -32,6 +32,7 @@ rarfile
 pyzipper
 opencv-python-headless
 filetype
+telegraph
 
 # --- Installs FFmpeg/FFprobe ---
 static-ffmpeg
@@ -61,4 +62,5 @@ google-generativeai>=0.8.3
 # --- Pyrogram Mods / Plugins ---
 pyromod
 git+https://github.com/Joelkb/cinemagoer
+
 

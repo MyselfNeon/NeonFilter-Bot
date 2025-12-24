@@ -1,22 +1,24 @@
 # ---------------------------------------------------
-# File Name: ShareText.py
-# Author: NeonAnurag
+# File Name: ShareText.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
 
+# --- Imports ---
 import urllib.parse
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from info import CHNL_LNK  # <--- Restored this!
+from info import CHNL_LNK
 
-# --- 🔗 HELPER FUNCTIONS ---
+# --- Helpers ---
 def generate_share_link(text: str):
     """Encodes text safely for Telegram Share URLs"""
     encoded = urllib.parse.quote(text)
     return f"https://t.me/share/url?url={encoded}"
 
-# --- 📨 MAIN COMMAND ---
+# --- Handlers ---
 @Client.on_message(filters.command(["sharetext"]))
 async def share_text(client: Client, message: Message):
     input_text = None
@@ -32,7 +34,7 @@ async def share_text(client: Client, message: Message):
         elif message.reply_to_message.caption:
             input_text = message.reply_to_message.caption
 
-    # 3️⃣ Case: Interactive (Ask user) - Restored your specific logic here
+    # 3️⃣ Case: Interactive (Ask user)
     else:
         try:
             ask_msg = await client.ask(
@@ -43,7 +45,7 @@ async def share_text(client: Client, message: Message):
             if ask_msg.text or ask_msg.caption:
                 input_text = ask_msg.text or ask_msg.caption
             else:
-                # ❌ RESTORED: If user sends media or nothing, show Channel Button
+                # Notice: If user sends media or nothing
                 return await ask_msg.reply_text(
                     text=(
                         "**__Notice:__**\n\n"
@@ -58,7 +60,7 @@ async def share_text(client: Client, message: Message):
         except Exception as e:
             return await message.reply_text(f"**Error:** {e}")
 
-    # ✅ OUTPUT (Upgraded UI)
+    # Output
     if input_text:
         share_url = generate_share_link(input_text)
         
@@ -74,7 +76,6 @@ async def share_text(client: Client, message: Message):
             disable_web_page_preview=True
         )
 
-# --- 🖱️ CALLBACKS (QR Code) ---
 @Client.on_callback_query(filters.regex("^gen_qr"))
 async def qr_handler(client: Client, query: CallbackQuery):
     """Generates a QR code when the button is clicked"""
@@ -82,7 +83,7 @@ async def qr_handler(client: Client, query: CallbackQuery):
         # Extract the share URL from the button data
         share_url = query.data.split("|")[1]
         
-        # Use simple API to generate QR (No heavy libraries needed)
+        # Use simple API to generate QR
         qr_api = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={share_url}"
         
         await query.message.reply_photo(
@@ -92,4 +93,8 @@ async def qr_handler(client: Client, query: CallbackQuery):
         )
         await query.answer()
     except Exception as e:
-        await query.answer("Failed to generate QR", show_alert=True)
+        await query.answer("Failed to generate QR or text too long", show_alert=True)
+
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

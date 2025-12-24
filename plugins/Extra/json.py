@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: Json.py
-# Author: NeonAnurag
+# File Name: JSON.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -104,3 +105,6 @@ async def send_as_file(message, content, filename, caption=""):
 async def close_callback(_, query):
     await query.message.delete()
     
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

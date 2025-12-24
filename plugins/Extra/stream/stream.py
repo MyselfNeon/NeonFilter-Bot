@@ -1,7 +1,9 @@
 # ---------------------------------------------------
-# File Name: StreamPro.py
-# Author: NeonAnurag (Refactored)
-# Description: Advanced File to Stream Link Generator
+# File Name: StreamPro.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
 
 import asyncio
@@ -260,3 +262,6 @@ async def execute_revoke_handler(client: Client, query: CallbackQuery):
         logger.error(f"Revoke Failed: {e}")
         await query.answer("Failed to revoke link. Check logs.", show_alert=True)
         
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

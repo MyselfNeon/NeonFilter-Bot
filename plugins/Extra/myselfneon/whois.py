@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: WhoIs??-V0.3.py
+# File Name: WhoIs!?.2.py
 # Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -161,3 +162,6 @@ async def whois_user(client: Client, message: Message):
 async def close_whois_callback(client, callback_query):
     await callback_query.message.delete()
     
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

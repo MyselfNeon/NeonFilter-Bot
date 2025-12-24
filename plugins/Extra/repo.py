@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: Github.py
-# Author: NeonAnurag
+# File Name: Repo.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -194,3 +195,7 @@ async def repo_noop(bot, query: CallbackQuery):
     await query.answer()
 
 # Note: Ensure 'close_data' handler exists in your bot's other plugins
+
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

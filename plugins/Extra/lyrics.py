@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: Lyrics.py
-# Author: NeonAnurag
+# File Name: Lyrics.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -201,3 +202,6 @@ async def lyrics_callback(client: Client, query: CallbackQuery):
         reply_markup=InlineKeyboardMarkup(final_kb)
             )
     
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

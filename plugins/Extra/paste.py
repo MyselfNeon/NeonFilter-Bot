@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: Paste_Pro.py
-# Author: NeonAnurag
+# File Name: Paste.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -175,3 +176,6 @@ async def paste_handler(client: Client, message: Message):
 
     await status_msg.edit(text, reply_markup=buttons, disable_web_page_preview=True)
     
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: Fun_Games.py
-# Author: NeonAnurag
+# File Name: Fun.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -177,3 +178,6 @@ async def game_help(client: Client, message: Message):
     )
     await message.reply_text(txt)
     
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

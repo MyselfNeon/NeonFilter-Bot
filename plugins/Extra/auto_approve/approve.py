@@ -1,5 +1,5 @@
 # ---------------------------------------------------
-# File Name: Approve.2.py
+# File Name: Approve.py
 # Author: MyselfNeon
 # Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
@@ -75,6 +75,9 @@ async def start_handler(client: Client, message: Message):
     elif TRY_AGAIN_BTN is False:
         # Fallback to DB if enabled
         data = await db.get_msg_command(message.from_user.id)
+        # FIX: Ensure data is a string if DB returns None
+        if data is None:
+            data = "None"
     else:
         data = "None"
 

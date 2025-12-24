@@ -1,9 +1,17 @@
-import os
+# ---------------------------------------------------
+# File Name: Fonts.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
+# --- Imports ---
 from plugins.Extra.fotnt_string import Fonts
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-
+# --- Handlers ---
 @Client.on_message(filters.private & filters.command(["font"]))
 async def style_buttons(c, m, cb=False):
     buttons = [[
@@ -37,16 +45,22 @@ async def style_buttons(c, m, cb=False):
         ],[
         InlineKeyboardButton('Nᴇxᴛ ➡️', callback_data="nxt")
     ]]
+    
     if not cb:
         if ' ' in m.text:
             title = m.text.split(" ", 1)[1]
-            await m.reply_text(title, reply_markup=InlineKeyboardMarkup(buttons), reply_to_message_id=m.id)                     
+            await m.reply_text(
+                title, 
+                reply_markup=InlineKeyboardMarkup(buttons), 
+                reply_to_message_id=m.id
+            )                     
         else:
-            await m.reply_text(text="**__Enter Any Text in this Format and get your Desired Fonts__ -\n\n💡 __Eg:-__** `/font Hello World`")    
+            await m.reply_text(
+                text="**__Enter Any Text in this Format and get your Desired Fonts__ -\n\n💡 __Eg:-__** `/font Hello World`"
+            )    
     else:
         await m.answer()
         await m.message.edit_reply_markup(InlineKeyboardMarkup(buttons))
-
 
 @Client.on_callback_query(filters.regex('^nxt'))
 async def nxt(c, m):
@@ -60,7 +74,7 @@ async def nxt(c, m):
             InlineKeyboardButton('爪卂几ᘜ卂', callback_data='style+manga'),
             InlineKeyboardButton('S̾t̾i̾n̾k̾y̾', callback_data='style+stinky'),
             ],[
-            InlineKeyboardButton('B̥ͦu̥ͦb̥ͦb̥ͦl̥ͦe̥ͦs̥ͦ', callback_data='style+bubbles'),
+            InlineKeyboardButton('B̥ͦu̥ͦb̥ͦb̥ͦb̥ͦe̥ͦs̥ͦ', callback_data='style+bubbles'),
             InlineKeyboardButton('U͟n͟d͟e͟r͟l͟i͟n͟e͟', callback_data='style+underline'),
             InlineKeyboardButton('꒒ꍏꀷꌩꌃꀎꁅ', callback_data='style+ladybug'),
             ],[
@@ -83,97 +97,67 @@ async def nxt(c, m):
     else:
         await style_buttons(c, m, cb=True)
 
-
 @Client.on_callback_query(filters.regex('^style'))
 async def style(c, m):
     await m.answer()
-    cmd, style = m.data.split('+')
+    cmd, style_name = m.data.split('+')
 
-    if style == 'typewriter':
-        cls = Fonts.typewriter
-    if style == 'outline':
-        cls = Fonts.outline
-    if style == 'serif':
-        cls = Fonts.serief
-    if style == 'bold_cool':
-        cls = Fonts.bold_cool
-    if style == 'cool':
-        cls = Fonts.cool
-    if style == 'small_cap':
-        cls = Fonts.smallcap
-    if style == 'script':
-        cls = Fonts.script
-    if style == 'script_bolt':
-        cls = Fonts.bold_script
-    if style == 'tiny':
-        cls = Fonts.tiny
-    if style == 'comic':
-        cls = Fonts.comic
-    if style == 'sans':
-        cls = Fonts.san
-    if style == 'slant_sans':
-        cls = Fonts.slant_san
-    if style == 'slant':
-        cls = Fonts.slant
-    if style == 'sim':
-        cls = Fonts.sim
-    if style == 'circles':
-        cls = Fonts.circles
-    if style == 'circle_dark':
-        cls = Fonts.dark_circle
-    if style == 'gothic':
-        cls = Fonts.gothic
-    if style == 'gothic_bolt':
-        cls = Fonts.bold_gothic
-    if style == 'cloud':
-        cls = Fonts.cloud
-    if style == 'happy':
-        cls = Fonts.happy
-    if style == 'sad':
-        cls = Fonts.sad
-    if style == 'special':
-        cls = Fonts.special
-    if style == 'squares':
-        cls = Fonts.square
-    if style == 'squares_bold':
-        cls = Fonts.dark_square
-    if style == 'andalucia':
-        cls = Fonts.andalucia
-    if style == 'manga':
-        cls = Fonts.manga
-    if style == 'stinky':
-        cls = Fonts.stinky
-    if style == 'bubbles':
-        cls = Fonts.bubbles
-    if style == 'underline':
-        cls = Fonts.underline
-    if style == 'ladybug':
-        cls = Fonts.ladybug
-    if style == 'rays':
-        cls = Fonts.rays
-    if style == 'birds':
-        cls = Fonts.birds
-    if style == 'slash':
-        cls = Fonts.slash
-    if style == 'stop':
-        cls = Fonts.stop
-    if style == 'skyline':
-        cls = Fonts.skyline
-    if style == 'arrows':
-        cls = Fonts.arrows
-    if style == 'qvnes':
-        cls = Fonts.rvnes
-    if style == 'strike':
-        cls = Fonts.strike
-    if style == 'frozen':
-        cls = Fonts.frozen
+    # Style Mapping
+    style_map = {
+        'typewriter': Fonts.typewriter,
+        'outline': Fonts.outline,
+        'serif': Fonts.serief,
+        'bold_cool': Fonts.bold_cool,
+        'cool': Fonts.cool,
+        'small_cap': Fonts.smallcap,
+        'script': Fonts.script,
+        'script_bolt': Fonts.bold_script,
+        'tiny': Fonts.tiny,
+        'comic': Fonts.comic,
+        'sans': Fonts.san,
+        'slant_sans': Fonts.slant_san,
+        'slant': Fonts.slant,
+        'sim': Fonts.sim,
+        'circles': Fonts.circles,
+        'circle_dark': Fonts.dark_circle,
+        'gothic': Fonts.gothic,
+        'gothic_bolt': Fonts.bold_gothic,
+        'cloud': Fonts.cloud,
+        'happy': Fonts.happy,
+        'sad': Fonts.sad,
+        'special': Fonts.special,
+        'squares': Fonts.square,
+        'squares_bold': Fonts.dark_square,
+        'andalucia': Fonts.andalucia,
+        'manga': Fonts.manga,
+        'stinky': Fonts.stinky,
+        'bubbles': Fonts.bubbles,
+        'underline': Fonts.underline,
+        'ladybug': Fonts.ladybug,
+        'rays': Fonts.rays,
+        'birds': Fonts.birds,
+        'slash': Fonts.slash,
+        'stop': Fonts.stop,
+        'skyline': Fonts.skyline,
+        'arrows': Fonts.arrows,
+        'qvnes': Fonts.rvnes,
+        'strike': Fonts.strike,
+        'frozen': Fonts.frozen
+    }
 
-    r, oldtxt = m.message.reply_to_message.text.split(None, 1) 
-    new_text = cls(oldtxt)            
-    try:
-        await m.message.edit_text(f"`{new_text}`\n\n**👆 __Click To Copy__**", reply_markup=m.message.reply_markup)
-    except Exception as e:
-        print(e)
+    cls = style_map.get(style_name)
 
+    if cls:
+        try:
+            r, oldtxt = m.message.reply_to_message.text.split(None, 1) 
+            new_text = cls(oldtxt)            
+            await m.message.edit_text(
+                f"`{new_text}`\n\n**👆 __Click To Copy__**", 
+                reply_markup=m.message.reply_markup
+            )
+        except Exception as e:
+            print(f"Font Error: {e}")
 
-
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

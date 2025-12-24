@@ -1,3 +1,11 @@
+# ---------------------------------------------------
+# File Name: Fonts-String.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 class Fonts:
     def typewriter(text):
         style = {
@@ -2360,3 +2368,7 @@ class Fonts:
         for i, j in style.items():
             text = text.replace(i, j)
         return text
+
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

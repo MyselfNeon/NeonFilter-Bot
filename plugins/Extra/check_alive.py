@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: Alive.py
-# Author: NeonAnurag
+# File Name: CheckAlive.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -10,13 +11,20 @@ import random
 from datetime import datetime
 from pyrogram import Client, filters
 
-# Command prefixes
+# --- Configuration ---
 CMD_PREFIXES = ["/", "."]
-
-# --- START TIME (for uptime) ---
 START_TIME = datetime.now()
 
-# --- ALIVE COMMAND ---
+PONG_REPLIES = [
+    "⚡ Faster Than Your Wifi !",
+    "🔥 Still Alive And Kicking !",
+    "🍕 Powered By Vibes & Pizza !",
+    "🚀 Zooming Through Cyberspace !!",
+    "💡 Running Smooth As Butter !",
+    "🎯 Sharp & On Point !"
+]
+
+# --- Alive Command ---
 @Client.on_message(filters.command("alive", CMD_PREFIXES))
 async def check_alive(_, message):
     alive_text = (
@@ -28,17 +36,7 @@ async def check_alive(_, message):
     )
     await message.reply_text(alive_text)
 
-# --- PING COMMAND ---
-# Some witty pong responses
-PONG_REPLIES = [
-    "⚡ Faster Than Your Wifi !",
-    "🔥 Still Alive And Kicking !",
-    "🍕 Powered By Vibes & Pizza !",
-    "🚀 Zooming Through Cyberspace !!",
-    "💡 Running Smooth As Butter !",
-    "🎯 Sharp & On Point !"
-]
-
+# --- Ping Command ---
 @Client.on_message(filters.command("ping", CMD_PREFIXES))
 async def ping(_, message):
     # Measure response speed
@@ -66,3 +64,6 @@ async def ping(_, message):
 
     await temp_msg.edit(ping_text)
 
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

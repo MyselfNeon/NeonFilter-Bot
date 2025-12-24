@@ -1,14 +1,56 @@
 # ---------------------------------------------------
-# File Name: StickersTool.py
-# Author: NeonAnurag
+# File Name: Stickers.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
 
+# --- Imports ---
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
+# --- Helpers ---
+async def send_sticker_details(sticker_message: Message, reply_target: Message):
+    """Helper to format and send sticker info."""
+    st = sticker_message.sticker
+    
+    # 1. Determine Type
+    type_str = "🖼 Static (WEBP)"
+    if st.is_animated: type_str = "🎞 Animated (TGS)"
+    elif st.is_video: type_str = "📹 Video (WEBM)"
+    
+    # 2. Pack Info & Buttons
+    pack_info = "None"
+    reply_markup = None
+    
+    if st.set_name:
+        pack_info = f"[{st.set_name}](https://t.me/addstickers/{st.set_name})"
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📂 View Sticker Pack", url=f"https://t.me/addstickers/{st.set_name}")]
+        ])
+
+    # 3. Construct Message
+    text = (
+        f"**🔍 STICKER DETAILS**\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"📛 **Pack:** {pack_info}\n"
+        f"😀 **Emoji:** {st.emoji}\n"
+        f"⚙️ **Type:** {type_str}\n"
+        f"📏 **Size:** `{st.width}x{st.height}`\n\n"
+        f"🆔 **File ID:**\n`{st.file_id}`\n\n"
+        f"🧩 **Unique ID:**\n`{st.file_unique_id}`"
+    )
+    
+    await reply_target.reply_text(
+        text, 
+        reply_markup=reply_markup, 
+        disable_web_page_preview=True,
+        quote=True
+    )
+
+# --- Handlers ---
 @Client.on_message(filters.command(["sticker"]))
 async def sticker_tool(bot: Client, message: Message):
     """
@@ -59,41 +101,6 @@ async def sticker_tool(bot: Client, message: Message):
     except Exception as e:
         await message.reply_text(f"❌ **Error:** {e}")
 
-
-async def send_sticker_details(sticker_message: Message, reply_target: Message):
-    """Helper to format and send sticker info."""
-    st = sticker_message.sticker
-    
-    # 1. Determine Type
-    type_str = "🖼 Static (WEBP)"
-    if st.is_animated: type_str = "🎞 Animated (TGS)"
-    elif st.is_video: type_str = "📹 Video (WEBM)"
-    
-    # 2. Pack Info & Buttons
-    pack_info = "None"
-    reply_markup = None
-    
-    if st.set_name:
-        pack_info = f"[{st.set_name}](https://t.me/addstickers/{st.set_name})"
-        reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton("📂 View Sticker Pack", url=f"https://t.me/addstickers/{st.set_name}")]
-        ])
-
-    # 3. Construct Message
-    text = (
-        f"**🔍 STICKER DETAILS**\n"
-        f"━━━━━━━━━━━━━━━━━━\n"
-        f"📛 **Pack:** {pack_info}\n"
-        f"😀 **Emoji:** {st.emoji}\n"
-        f"⚙️ **Type:** {type_str}\n"
-        f"📏 **Size:** `{st.width}x{st.height}`\n\n"
-        f"🆔 **File ID:**\n`{st.file_id}`\n\n"
-        f"🧩 **Unique ID:**\n`{st.file_unique_id}`"
-    )
-    
-    await reply_target.reply_text(
-        text, 
-        reply_markup=reply_markup, 
-        disable_web_page_preview=True,
-        quote=True
-            )
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

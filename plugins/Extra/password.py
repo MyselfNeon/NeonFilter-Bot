@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: Passwords.py
-# Author: NeonAnurag
+# File Name: Password.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -194,3 +195,6 @@ async def password_callback(bot, query: CallbackQuery):
     except Exception:
         pass
         
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

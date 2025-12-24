@@ -1,3 +1,11 @@
+# ---------------------------------------------------
+# File Name: Gemini.2.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery
 from plugins.Extra.engine import ask_ai, reset_chat_history, send_model_selection, set_user_model
@@ -28,3 +36,7 @@ async def gemini_callback_handler(client, callback_query: CallbackQuery):
         await set_user_model(callback_query)
     except Exception as e:
         await callback_query.answer(f"Error: {e}", show_alert=True)
+
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

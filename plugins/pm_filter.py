@@ -1,3 +1,11 @@
+# ---------------------------------------------------
+# File Name: PM-filter.py
+# Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
+# GitHub: https://github.com/MyselfNeon/
+# Telegram: https://t.me/MyelfNeon
+# ---------------------------------------------------
+
 import os, logging, string, asyncio, time, re, ast, random, math, pytz, pyrogram
 from datetime import datetime, timedelta, date, time
 from Script import script
@@ -1093,7 +1101,11 @@ async def filter_qualities_cb_handler(client: Client, query: CallbackQuery):
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
-        await query.message.delete()
+        try:
+            await query.message.delete()
+        except:
+            pass
+            
     elif query.data == "get_trail":
         user_id = query.from_user.id
         free_trial_status = await db.get_free_trial_status(user_id)
@@ -1103,26 +1115,30 @@ async def cb_handler(client: Client, query: CallbackQuery):
             await query.message.edit_text(text=new_text)
             return
         else:
-            new_text= "**🤣 __You already used Free trial no more free trail. Please buy Subscription here are our 👉 /plans**"
+            new_text= "**🤣 __You already used Free trial no more free trail. Please buy Subscription here are our 👉 /plan__**"
             await query.message.edit_text(text=new_text)
             return
             
     elif query.data == "buy_premium":
         btn = [[            
-            InlineKeyboardButton("📝 Sᴇɴᴅ Yᴏᴜʀ Pᴀʏᴍᴇɴᴛ Rᴇᴄᴇɪᴘᴛ 📝", url = OWNER_LINK)
-        ]
-            for admin in ADMINS
-        ]
+            InlineKeyboardButton("📝 Sᴇɴᴅ Yᴏᴜʀ Pᴀʏᴍᴇɴᴛ Rᴇᴄᴇɪᴘᴛ 📝", url=OWNER_LNK)
+        ]]
         btn.append(
             [InlineKeyboardButton("❌ Cʟᴏsᴇ / Dᴇʟᴇᴛᴇ ❌", callback_data="close_data")]
         )
         reply_markup = InlineKeyboardMarkup(btn)
+        
+        try:
+            await query.message.delete()
+        except:
+            pass
+            
         await query.message.reply_photo(
             photo=PAYMENT_QR,
             caption=PAYMENT_TEXT,
             reply_markup=reply_markup
         )
-        return 
+        return
     elif query.data == "gfiltersdeleteallconfirm":
         await del_allg(query.message, 'gfilters')
         await query.answer("Done !")
@@ -3283,13 +3299,6 @@ async def global_filters(client, message, text=False):
     else:
         return False
 
-
-
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-
-
-
-
-

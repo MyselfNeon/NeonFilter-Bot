@@ -12,7 +12,7 @@ from datetime import datetime
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UserNotParticipant
-from info import ADMINS  # <--- Changed from OWNER_ID to ADMINS
+from info import ADMINS
 
 # --- Helpers ---
 def get_user_status(status):
@@ -242,7 +242,7 @@ request - 𝘚𝘦𝘯𝘥 𝘢 𝘔𝘰𝘷𝘪𝘦/𝘚𝘦𝘳𝘪𝘦𝘴 �
 restart - 𝘙𝘦𝘴𝘵𝘢𝘳𝘵 𝘉𝘰𝘵 𝘚𝘦𝘳𝘷𝘦𝘳
 """
 
-@Client.on_message(filters.command("setcmd") & filters.user(ADMINS))  # <--- Changed filters.user(OWNER_ID) to filters.user(ADMINS)
+@Client.on_message(filters.command("setcmd") & filters.user(ADMINS))
 async def set_commands(client, message):
     commands = []
     

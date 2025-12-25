@@ -12,7 +12,7 @@ from datetime import datetime
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UserNotParticipant
-from config import OWNER_ID 
+from info import OWNER_ID 
 
 # --- Helpers ---
 def get_user_status(status):

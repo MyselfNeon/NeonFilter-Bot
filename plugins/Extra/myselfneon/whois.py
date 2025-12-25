@@ -165,7 +165,7 @@ async def close_whois_callback(client, callback_query):
 
 # --- EDIT COMMANDS HERE ----
 COMMANDS_TEXT = """
-Start - 🚀 MyselfNeon Bot Start
+start - 🚀 MyselfNeon Bot Start
 help - 📘 Show Help Menu
 index - 🗂️ Index File From Channel
 setskip - ⏭️ Skip Files When Indexing

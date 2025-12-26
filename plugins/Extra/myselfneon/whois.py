@@ -123,9 +123,16 @@ async def whois_user(client: Client, message: Message):
             text += f"\n<b><i>💬 Bio:</i></b>\n<blockquote><b><i>{safe_bio}</i></b></blockquote>"
 
         # 5. Buttons
+        # Logic: If username exists, use t.me link
+        # If no username, use tg:// link
+        if user.username:
+            profile_url = f"https://t.me/{user.username}"
+        else:
+            profile_url = f"tg://user?id={user.id}"
+
         buttons = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("👤 Profile Link", url=f"tg://user?id={user.id}"),
+                InlineKeyboardButton("👤 Profile Link", url=profile_url),
                 InlineKeyboardButton("❌ Close", callback_data="close_whois")
             ]
         ])

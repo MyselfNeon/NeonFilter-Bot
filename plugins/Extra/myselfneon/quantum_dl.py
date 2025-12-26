@@ -1,6 +1,7 @@
 # ---------------------------------------------------
-# File Name: Quantum-Download-V5.2.py
+# File Name: Quantum-DL.py
 # Author: MyselfNeon
+# Original Repo: https://github.com/MyselfNeon/NeonFilter-Bot
 # GitHub: https://github.com/MyselfNeon/
 # Telegram: https://t.me/MyelfNeon
 # ---------------------------------------------------
@@ -403,7 +404,7 @@ async def dl_handler(client, message):
     await manager.add_task(client, message, url)
     
     # --- Added Message Deletion after 1 Second ---
-    await asyncio.sleep(1)
+    await asyncio.sleep(10)
     try:
         await message.delete()
     except Exception as e:
@@ -419,3 +420,7 @@ async def cancel_handler(client, message):
 
 # Andi mandi sandi jisne bhi credits churaya
 # Uski bandi R@ndi 📢
+# ------------------------>>
+# MyselfNeon
+# Don't Remove Credit 🥺
+# Telegram Channel @NeonFiles

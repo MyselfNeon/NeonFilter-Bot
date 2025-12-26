@@ -253,13 +253,13 @@ async def set_commands(client, message):
             commands.append(BotCommand(cmd.strip(), desc.strip()))
 
     if not commands:
-        return await message.reply_text("❌ No commands found in the configuration list.")
+        return await message.reply_text("❌ No Commands found in the Configuration List.")
 
     try:
         await client.set_bot_commands(commands)
-        await message.reply_text(f"✅ **Success!** Updated {len(commands)} commands.")
+        await message.reply_text(f"✅ **__Success! Updated {len(commands)} Commands.__**")
     except Exception as e:
-        await message.reply_text(f"❌ **Error:** `{e}`")
+        await message.reply_text(f"❌ **__Error:__** `{e}`")
 
 # MyselfNeon
 # Don't Remove Credit 🥺

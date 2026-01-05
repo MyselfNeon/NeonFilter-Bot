@@ -74,7 +74,7 @@ async def telegraph_start(bot: Client, message: Message):
     if user_id in active_tasks:
         return await message.reply_text(
             "**⚠️ __You already have a task running!__**\n"
-            "**Use /tcancel to stop the current task first.**"
+            "__Use **/tcancel** to stop the current task first.__"
         )
 
     buttons = []
@@ -107,9 +107,9 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     try:
         await query.message.edit_text(
             f"**__Selected: {site.capitalize()}__**\n\n"
-            "**👇 Send me your file now (Photo/Video/Doc)**\n"
-            f"**⏱️ You have {TIMEOUT_SECONDS} seconds.**\n\n"
-            "**/tcancel to Cancel**"
+            "**__👇 Send me your file now.__**\n"
+            f"**__⏱️ You have {TIMEOUT_SECONDS} seconds.__**\n\n"
+            "__**/tcancel** to Cancel__"
         )
     except Exception:
         pass 
@@ -125,8 +125,8 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
         # EDIT the original message to say Time's Up
         try:
             await query.message.edit_text(
-                "**⏰ Time's Up! No file received.**\n"
-                "**Use /telegraph to start again.**"
+                "**__⏰ Time's Up! No file received.__**\n"
+                "__Use /telegraph to start again.__"
             )
         except Exception as e:
             print(f"Timeout Edit Error: {e}")
@@ -159,7 +159,7 @@ async def process_media(bot, message, site):
         link = await upload_to_imgbb(file_path) if site == "imgbb" else await upload_to_catbox(file_path)
 
         if not link:
-            await status_msg.edit_text("**❌ Upload Failed or API Error.**")
+            await status_msg.edit_text("**__❌ Upload Failed or API Error.__**")
             return
 
         # 3. Success
@@ -169,17 +169,17 @@ async def process_media(bot, message, site):
         # Log
         try:
             log_text = (
-                f"**🛜 Nᴇᴡ Uᴘʟᴏᴀᴅ**\n"
-                f"**👤 Usᴇʀ:** {message.from_user.mention} (`{user_id}`)\n"
-                f"**🌐 Sɪᴛᴇ:** {site_name}\n"
-                f"**🔗 Lɪɴᴋ:** {link}"
+                f"**__🛜 New Upload Detected__**\n"
+                f"**__👤 User:** {message.from_user.mention} (`{user_id}`)__\n"
+                f"**__🌐 Site:** {site_name}__\n"
+                f"**__🖇️ Link:** {link}__"
             )
             await bot.send_message(LOG_CHANNEL, log_text, disable_web_page_preview=True)
         except:
             pass
 
         await status_msg.edit_text(
-            text=f"**✅ __Upload Completed!__**\n\n**🔗 Link:**\n`{link}`",
+            text=f"**✅ __Upload Completed !!__**\n\n**🖇️ __Link :**\n`{link}`",
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Oᴘᴇɴ 👀", url=link), InlineKeyboardButton("Cʟᴏsᴇ ❌", callback_data="close")]
@@ -187,9 +187,9 @@ async def process_media(bot, message, site):
         )
 
     except asyncio.CancelledError:
-        await status_msg.edit_text("**❌ Process Cancelled.**")
+        await status_msg.edit_text("**__❌ Process Cancelled.__**")
     except Exception as e:
-        await status_msg.edit_text(f"**❌ Error:** `{e}`")
+        await status_msg.edit_text(f"**__❌ Error:** `{e}`__")
     finally:
         # Cleanup
         if file_path and os.path.exists(file_path):
@@ -227,14 +227,14 @@ async def telegraph_cancel_command(bot: Client, message: Message):
     task_info = active_tasks.get(user_id)
 
     if not task_info:
-        return await message.reply_text("**🤷 __No active upload session found.__**")
+        return await message.reply_text("🤷 __No active upload session found.__")
 
     # If waiting for file
     if task_info["status"] == "waiting":
         # Edit the prompt message to say Cancelled
         try:
             if "message" in task_info:
-                await task_info["message"].edit_text("**❌ Session Cancelled.**")
+                await task_info["message"].edit_text("**__❌ Session Cancelled.__**")
         except:
             pass
         del active_tasks[user_id]

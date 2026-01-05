@@ -201,6 +201,10 @@ RENAME_MODE = bool(environ.get('RENAME_MODE', True)) # Set True or False
 # Get this key for FREE from: https://aistudio.google.com/
 GEMINI_API_KEY = environ.get('GEMINI_API_KEY', "")
 
+# --- IMGBB API ---
+# Get your free API key from: https://api.imgbb.com/
+IMGBB_API_KEY = environ.get('IMGBB_API_KEY', "")
+
 # --- AUTO APPROVE ---
 AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))  # Set True or False
 # Auto Approve Info : If True Then Bot Approve New Upcoming Join Request Else Not
@@ -216,6 +220,7 @@ REACTIONS = [
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
 
 
 

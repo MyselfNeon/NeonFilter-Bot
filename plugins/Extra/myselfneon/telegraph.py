@@ -179,7 +179,7 @@ async def process_media(bot, message, site):
             pass
 
         await status_msg.edit_text(
-            text=f"**✅ __Upload Completed !!__**\n\n**🖇️ __Link :**\n`{link}`",
+            text=f"**✅ __Upload Completed !!__**\n\n**🖇️ __Link : [Click Here]({link})__**\n`{link}`",
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Oᴘᴇɴ 👀", url=link), InlineKeyboardButton("Cʟᴏsᴇ ❌", callback_data="close")]

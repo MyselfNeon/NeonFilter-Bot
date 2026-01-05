@@ -21,10 +21,10 @@ MAX_SIZE = 200 * 1024 * 1024  # 200 MB
 CATBOX_API = "https://catbox.moe/user/api.php"
 IMGBB_API_URL = "https://api.imgbb.com/1/upload"
 LINKS_PER_PAGE = 10
-TIMEOUT_SECONDS = 60  # Auto timecut for waiting for file
+TIMEOUT_SECONDS = 60  # Auto timecut
 
 # --- Global State ---
-# Stores: user_id -> {'site': str, 'task': asyncio.Task, 'message': Message}
+# Stores: user_id -> {'site': str, 'status': str, 'task': asyncio.Task, 'message': Message}
 active_tasks = {}
 
 # --- MongoDB Setup ---
@@ -74,7 +74,7 @@ async def telegraph_start(bot: Client, message: Message):
     if user_id in active_tasks:
         return await message.reply_text(
             "**⚠️ __You already have a task running!__**\n"
-            "**__Use the cancel option if you wish to stop it.__**"
+            "**Use /tcancel to stop the current task first.**"
         )
 
     buttons = []
@@ -95,30 +95,41 @@ async def telegraph_start(bot: Client, message: Message):
 async def telegraph_callback(bot: Client, query: CallbackQuery):
     user_id = query.from_user.id
     if user_id in active_tasks:
-        return await query.answer("Finish current task first!", show_alert=True)
+        return await query.answer("Use /tcancel to stop current task!", show_alert=True)
 
     site = query.data.split("_")[1]
     
-    # Store 'waiting' state
-    active_tasks[user_id] = {"site": site, "status": "waiting"}
+    # Store 'waiting' state with reference to the prompt message
+    active_tasks[user_id] = {"site": site, "status": "waiting", "message": query.message}
     
     await query.answer()
-    await query.message.edit_text(
-        f"**__Selected: {site.capitalize()}__**\n\n"
-        "**__👇 Send me your file now (Photo/Video/Doc)__**\n"
-        f"**__⏱️ You have {TIMEOUT_SECONDS} seconds.__**"
-    )
+    
+    try:
+        await query.message.edit_text(
+            f"**__Selected: {site.capitalize()}__**\n\n"
+            "**👇 Send me your file now (Photo/Video/Doc)**\n"
+            f"**⏱️ You have {TIMEOUT_SECONDS} seconds.**\n\n"
+            "**/tcancel to Cancel**"
+        )
+    except Exception:
+        pass 
 
     # 60s Timeout for sending file
     await asyncio.sleep(TIMEOUT_SECONDS)
     
     # Check if user is still in 'waiting' state (didn't send file)
     if user_id in active_tasks and active_tasks[user_id].get("status") == "waiting":
+        # Remove user from active tasks
         del active_tasks[user_id]
+        
+        # EDIT the original message to say Time's Up
         try:
-            await query.message.edit_text("**__⏰ Time's Up! No file received.__**\n__/telegraph to start again__.")
-        except:
-            pass
+            await query.message.edit_text(
+                "**⏰ Time's Up! No file received.**\n"
+                "**Use /telegraph to start again.**"
+            )
+        except Exception as e:
+            print(f"Timeout Edit Error: {e}")
 
 # --- Core Process: Download & Upload ---
 async def process_media(bot, message, site):
@@ -131,7 +142,7 @@ async def process_media(bot, message, site):
 
     file_path = None
     try:
-        # 1. Download (No progress bar)
+        # 1. Download
         file_path = await message.download()
 
         if not file_path:
@@ -139,7 +150,7 @@ async def process_media(bot, message, site):
 
         # Check Size for Catbox
         if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
-            await status_msg.edit_text("**__❌ File Too Large (>200MB).__**")
+            await status_msg.edit_text("**❌ File Too Large (>200MB).**")
             return
 
         # 2. Upload
@@ -148,7 +159,7 @@ async def process_media(bot, message, site):
         link = await upload_to_imgbb(file_path) if site == "imgbb" else await upload_to_catbox(file_path)
 
         if not link:
-            await status_msg.edit_text("**__❌ Upload Failed or API Error.__**")
+            await status_msg.edit_text("**❌ Upload Failed or API Error.**")
             return
 
         # 3. Success
@@ -158,17 +169,17 @@ async def process_media(bot, message, site):
         # Log
         try:
             log_text = (
-                f"**__🛜 New Upload__**\n"
-                f"**__👤 User:** {message.from_user.mention} (`{user_id}`)__\n"
-                f"**__🌐 Site:** {site_name}__\n"
-                f"**__🔗 Link:** {link}__"
+                f"**🛜 Nᴇᴡ Uᴘʟᴏᴀᴅ**\n"
+                f"**👤 Usᴇʀ:** {message.from_user.mention} (`{user_id}`)\n"
+                f"**🌐 Sɪᴛᴇ:** {site_name}\n"
+                f"**🔗 Lɪɴᴋ:** {link}"
             )
             await bot.send_message(LOG_CHANNEL, log_text, disable_web_page_preview=True)
         except:
             pass
 
         await status_msg.edit_text(
-            text=f"**✅ __Upload Completed!__**\n\n**__🔗 Link:__**\n`{link}`",
+            text=f"**✅ __Upload Completed!__**\n\n**🔗 Link:**\n`{link}`",
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Oᴘᴇɴ 👀", url=link), InlineKeyboardButton("Cʟᴏsᴇ ❌", callback_data="close")]
@@ -176,9 +187,9 @@ async def process_media(bot, message, site):
         )
 
     except asyncio.CancelledError:
-        await status_msg.edit_text("**__❌ Process Cancelled.__**")
+        await status_msg.edit_text("**❌ Process Cancelled.**")
     except Exception as e:
-        await status_msg.edit_text(f"**__❌ Error:__** `{e}`")
+        await status_msg.edit_text(f"**❌ Error:** `{e}`")
     finally:
         # Cleanup
         if file_path and os.path.exists(file_path):
@@ -209,22 +220,32 @@ async def telegraph_file_handler(bot: Client, message: Message):
     except asyncio.CancelledError:
         pass # Handled in process_media
 
-# --- Cancel Callback (Trigger this with "cancel_telegraph") ---
-@Client.on_callback_query(filters.regex(r"^cancel_telegraph$"))
-async def cancel_telegraph_callback(bot: Client, query: CallbackQuery):
-    """
-    Independent callback to cancel the current user's telegraph task.
-    Use InlineKeyboardButton("Cancel", callback_data="cancel_telegraph") anywhere to trigger this.
-    """
-    user_id = query.from_user.id
+# --- /tcancel command ---
+@Client.on_message(filters.command("tcancel") & filters.private)
+async def telegraph_cancel_command(bot: Client, message: Message):
+    user_id = message.from_user.id
     task_info = active_tasks.get(user_id)
-    
-    if task_info and "task" in task_info:
-        task_info["task"].cancel()
-        await query.answer("Cancelling Task... 🛑", show_alert=False)
-        # Optional: You can add logic here to delete the message or update it
-    else:
-        await query.answer("No active task to cancel.", show_alert=True)
+
+    if not task_info:
+        return await message.reply_text("**🤷 __No active upload session found.__**")
+
+    # If waiting for file
+    if task_info["status"] == "waiting":
+        # Edit the prompt message to say Cancelled
+        try:
+            if "message" in task_info:
+                await task_info["message"].edit_text("**❌ Session Cancelled.**")
+        except:
+            pass
+        del active_tasks[user_id]
+        await message.reply_text("**❌ __Session Cancelled Successfully.__**")
+
+    # If uploading/downloading
+    elif task_info["status"] == "running":
+        if "task" in task_info:
+            task_info["task"].cancel()
+        # The finally block in process_media will handle cleanup
+        await message.reply_text("**❌ __Upload Process Cancelled.__**")
 
 # --- Close Button Handler ---
 @Client.on_callback_query(filters.regex(r"^close$"))
@@ -234,7 +255,7 @@ async def close_callback(bot: Client, query: CallbackQuery):
     except:
         pass
 
-# --- /telelist command (Admin) ---
+# --- /telelist command ---
 @Client.on_message(filters.command("telelist") & filters.private)
 async def telegraph_list(bot: Client, message: Message):
     if message.from_user.id not in ADMINS:
@@ -265,7 +286,7 @@ async def send_telelist_page(bot, chat_id, page, new_msg=False, query=None):
     buttons.append(InlineKeyboardButton(f"{page+1}/{total_pages}", callback_data="telelist_ignore"))
     if start + LINKS_PER_PAGE < len(docs): buttons.append(InlineKeyboardButton("➡️", callback_data=f"telelist_next_{page+1}"))
     
-    text = f"**__📝 Upload History__**\n\n{formatted_list}"
+    text = f"**📝 Upload History**\n\n{formatted_list}"
     markup = InlineKeyboardMarkup([buttons])
     
     if new_msg: await bot.send_message(chat_id, text, reply_markup=markup, disable_web_page_preview=True)

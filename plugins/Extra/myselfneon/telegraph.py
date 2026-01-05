@@ -107,9 +107,9 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     try:
         await query.message.edit_text(
             f"**__Selected: {site.capitalize()}__**\n\n"
-            "**__👇 Send me your file now.__**\n"
+            "**__❄️ Send me your desired file now.__**\n"
             f"**__⏱️ You have {TIMEOUT_SECONDS} seconds.__**\n\n"
-            "__**/tcancel** to Cancel__"
+            "__Use **/tcancel** to Cancel__"
         )
     except Exception:
         pass 
@@ -277,7 +277,7 @@ async def send_telelist_page(bot, chat_id, page, new_msg=False, query=None):
     page_docs = docs[start : start + LINKS_PER_PAGE]
 
     formatted_list = "\n".join([
-        f"{start+i+1}. {d.get('date')} | {d.get('site')}\n{d['link']}\n" 
+        f"**__{start+i+1}. {d.get('date')} | {d.get('site')}\n{d['link']}__**\n" 
         for i, d in enumerate(page_docs)
     ])
     
@@ -286,7 +286,7 @@ async def send_telelist_page(bot, chat_id, page, new_msg=False, query=None):
     buttons.append(InlineKeyboardButton(f"{page+1}/{total_pages}", callback_data="telelist_ignore"))
     if start + LINKS_PER_PAGE < len(docs): buttons.append(InlineKeyboardButton("➡️", callback_data=f"telelist_next_{page+1}"))
     
-    text = f"**📝 Upload History**\n\n{formatted_list}"
+    text = f"**__📝 Upload History__**\n\n{formatted_list}"
     markup = InlineKeyboardMarkup([buttons])
     
     if new_msg: await bot.send_message(chat_id, text, reply_markup=markup, disable_web_page_preview=True)

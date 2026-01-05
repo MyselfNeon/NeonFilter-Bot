@@ -74,7 +74,7 @@ async def telegraph_start(bot: Client, message: Message):
     if user_id in active_tasks:
         return await message.reply_text(
             "**⚠️ __You already have a task running!__**\n"
-            "**Use the cancel option if you wish to stop it.**"
+            "**__Use the cancel option if you wish to stop it.__**"
         )
 
     buttons = []
@@ -105,8 +105,8 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     await query.answer()
     await query.message.edit_text(
         f"**__Selected: {site.capitalize()}__**\n\n"
-        "**👇 Send me your file now (Photo/Video/Doc)**\n"
-        f"**⏱️ You have {TIMEOUT_SECONDS} seconds.**"
+        "**__👇 Send me your file now (Photo/Video/Doc)__**\n"
+        f"**__⏱️ You have {TIMEOUT_SECONDS} seconds.__**"
     )
 
     # 60s Timeout for sending file
@@ -116,7 +116,7 @@ async def telegraph_callback(bot: Client, query: CallbackQuery):
     if user_id in active_tasks and active_tasks[user_id].get("status") == "waiting":
         del active_tasks[user_id]
         try:
-            await query.message.edit_text("**⏰ Time's Up! No file received.**\n/telegraph to start again.")
+            await query.message.edit_text("**__⏰ Time's Up! No file received.__**\n__/telegraph to start again__.")
         except:
             pass
 
@@ -139,7 +139,7 @@ async def process_media(bot, message, site):
 
         # Check Size for Catbox
         if site == "catbox" and os.path.getsize(file_path) > MAX_SIZE:
-            await status_msg.edit_text("**❌ File Too Large (>200MB).**")
+            await status_msg.edit_text("**__❌ File Too Large (>200MB).__**")
             return
 
         # 2. Upload
@@ -148,7 +148,7 @@ async def process_media(bot, message, site):
         link = await upload_to_imgbb(file_path) if site == "imgbb" else await upload_to_catbox(file_path)
 
         if not link:
-            await status_msg.edit_text("**❌ Upload Failed or API Error.**")
+            await status_msg.edit_text("**__❌ Upload Failed or API Error.__**")
             return
 
         # 3. Success
@@ -158,17 +158,17 @@ async def process_media(bot, message, site):
         # Log
         try:
             log_text = (
-                f"**🛜 Nᴇᴡ Uᴘʟᴏᴀᴅ**\n"
-                f"**👤 Usᴇʀ:** {message.from_user.mention} (`{user_id}`)\n"
-                f"**🌐 Sɪᴛᴇ:** {site_name}\n"
-                f"**🔗 Lɪɴᴋ:** {link}"
+                f"**__🛜 New Upload__**\n"
+                f"**__👤 User:** {message.from_user.mention} (`{user_id}`)__\n"
+                f"**__🌐 Site:** {site_name}__\n"
+                f"**__🔗 Link:** {link}__"
             )
             await bot.send_message(LOG_CHANNEL, log_text, disable_web_page_preview=True)
         except:
             pass
 
         await status_msg.edit_text(
-            text=f"**✅ __Upload Completed!__**\n\n**🔗 Link:**\n`{link}`",
+            text=f"**✅ __Upload Completed!__**\n\n**__🔗 Link:__**\n`{link}`",
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Oᴘᴇɴ 👀", url=link), InlineKeyboardButton("Cʟᴏsᴇ ❌", callback_data="close")]
@@ -176,9 +176,9 @@ async def process_media(bot, message, site):
         )
 
     except asyncio.CancelledError:
-        await status_msg.edit_text("**❌ Process Cancelled.**")
+        await status_msg.edit_text("**__❌ Process Cancelled.__**")
     except Exception as e:
-        await status_msg.edit_text(f"**❌ Error:** `{e}`")
+        await status_msg.edit_text(f"**__❌ Error:__** `{e}`")
     finally:
         # Cleanup
         if file_path and os.path.exists(file_path):
@@ -246,7 +246,7 @@ async def send_telelist_page(bot, chat_id, page, new_msg=False, query=None):
     docs = [doc async for doc in cursor]
     
     if not docs:
-        text = "**📂 No Uploads Found.**"
+        text = "**__📂 No Uploads Found.__**"
         if new_msg: await bot.send_message(chat_id, text)
         else: await query.message.edit_text(text)
         return
@@ -265,7 +265,7 @@ async def send_telelist_page(bot, chat_id, page, new_msg=False, query=None):
     buttons.append(InlineKeyboardButton(f"{page+1}/{total_pages}", callback_data="telelist_ignore"))
     if start + LINKS_PER_PAGE < len(docs): buttons.append(InlineKeyboardButton("➡️", callback_data=f"telelist_next_{page+1}"))
     
-    text = f"**📝 Upload History**\n\n{formatted_list}"
+    text = f"**__📝 Upload History__**\n\n{formatted_list}"
     markup = InlineKeyboardMarkup([buttons])
     
     if new_msg: await bot.send_message(chat_id, text, reply_markup=markup, disable_web_page_preview=True)

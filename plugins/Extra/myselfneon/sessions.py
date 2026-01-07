@@ -4,7 +4,16 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
 from telethon import TelegramClient
 from telethon.sessions import StringSession
-from MyselfNeon.db import db
+
+# --- ⚠️ IMPORTANT: CHANGE THIS IMPORT ---
+# Import your existing Pyrogram 'app' client here.
+# If you are using Smart Plugins, you might not need this if you adjust the decorators.
+try:
+    from MyselfNeon import app  # Old import (Removed)
+except ImportError:
+    # REPLACE 'YOUR_MAIN_FILE' WITH THE FILE WHERE YOU DEFINE app = Client(...)
+    # Example: from main import app
+    pass 
 
 # Error Imports
 from pyrogram.errors import (
@@ -15,9 +24,6 @@ from telethon.errors import (
     ApiIdInvalidError, PhoneNumberInvalidError, PhoneCodeInvalidError,
     PhoneCodeExpiredError, SessionPasswordNeededError, PasswordHashInvalidError
 )
-
-# Import existing app
-from MyselfNeon import app 
 
 # ==================================================================
 # 1. UI & CONSTANTS
@@ -31,13 +37,13 @@ BUTTONS = [
 ]
 
 # ==================================================================
-# 2. CUSTOM LISTENER (Strict 30s Timeout)
+# 2. CUSTOM LISTENER (Strict 30s Timeout & Auto-Delete)
 # ==================================================================
 RESPONSE_WAITERS = {}
 
 @app.on_message(filters.text & filters.private & ~filters.bot, group=-100)
 async def await_response_watcher(_, message: Message):
-    """Watches for user replies."""
+    """Watches for user replies to specific questions."""
     user_id = message.from_user.id
     if user_id in RESPONSE_WAITERS:
         future = RESPONSE_WAITERS[user_id]
@@ -45,8 +51,22 @@ async def await_response_watcher(_, message: Message):
             future.set_result(message)
             message.stop_propagation()
 
+async def delete_later(message, delay=5):
+    """
+    Safety feature: Deletes sensitive inputs (API ID, Hash, Number) 
+    after the specified delay to protect user privacy.
+    """
+    await asyncio.sleep(delay)
+    try: 
+        await message.delete()
+    except: 
+        pass
+
 async def ask_strict(bot, user_id, text, timeout=30):
-    """Asks a question with a strict 30s timeout and auto-deletes response."""
+    """
+    Asks a question with a strict 30s timeout.
+    Auto-deletes the USER'S response after 5 seconds.
+    """
     try:
         sent = await bot.send_message(user_id, text)
         future = asyncio.Future()
@@ -54,19 +74,13 @@ async def ask_strict(bot, user_id, text, timeout=30):
         
         message = await asyncio.wait_for(future, timeout=timeout)
         
-        # Auto-delete user response after 5s
+        # 🛡️ SECURITY: Auto-delete the user's sensitive input after 5s
         asyncio.create_task(delete_later(message, 5))
         return message
     except asyncio.TimeoutError:
         return None
     finally:
         RESPONSE_WAITERS.pop(user_id, None)
-
-async def delete_later(message, delay=5):
-    """Safety feature: Deletes sensitive inputs after 5s."""
-    await asyncio.sleep(delay)
-    try: await message.delete()
-    except: pass
 
 # ==================================================================
 # 3. HANDLERS (Command & Callback)
@@ -122,7 +136,7 @@ async def generate_session(bot: Client, user_id: int, telethon=False, is_bot: bo
         return await bot.send_message(user_id, "❌ **Cancelled.**")
     
     if "/skip" in api_id_msg.text:
-        # OFFICIAL TELEGRAM DESKTOP KEYS (Fixes OTP Issue)
+        # OFFICIAL TELEGRAM DESKTOP KEYS (Prevents common OTP issues)
         api_id = 2040
         api_hash = "b18441a1ff607e10a989891a5462e627"
     else:
@@ -143,13 +157,13 @@ async def generate_session(bot: Client, user_id: int, telethon=False, is_bot: bo
 
     await bot.send_message(user_id, "**__Connecting to Telegram...__**")
 
-    # --- 3. CONNECT CLIENT (SPOOFED) ---
+    # --- 3. CONNECT CLIENT ---
     if telethon:
         client = TelegramClient(StringSession(), api_id, api_hash)
     elif is_bot:
         client = Client(name="bot", api_id=api_id, api_hash=api_hash, bot_token=phone_number, in_memory=True)
     else:
-        # ⚠️ DEVICE SPOOFING: Pretend to be Samsung S21 Ultra
+        # DEVICE SPOOFING: Pretend to be Samsung S21 Ultra to avoid bans
         client = Client(
             name="user", 
             api_id=api_id, 

@@ -301,17 +301,29 @@ Commands and Usage : /tts</i></b>"""
  • ᴍʟ = ᴍᴀʟᴀyᴀʟᴀᴍ 
  • ʜɪ = ʜɪɴᴅɪ</b>""" 
   
-    TELE_TXT = """<b><i><blockquote>‣ Telegraph Module 🌁</blockquote>
-Two Upload site options are Available in this Module. Select the one that Best suits your needs -
+    TELE_TXT = """<b><i><blockquote>‣ Telegraph Module 🌁</b></blockquote>
+Generates direct public links for your media files using external hosting services. Two upload options are available:
+<b>01 - ImgBB.com
+02 - Catbox.moe</b>
+  
+<blockquote><b>‣ Usage 📄</b></blockquote>
+<blockquote expandable>
+Send /telegraph in the bot's private chat.
+Select your preferred hosting site (ImgBB or Catbox) using the buttons.
+Send the file (Photo, Video, Audio, or Document) within 60 secs.
+The bot will download, upload, and provide a sharable link.
+</blockquote>
 
-01 - Envs.sh
-02 - Catbox.moe
-  
-<blockquote>‣ Usage 📄</blockquote>Use /telegraph and send any image or video under 5MB (for envs.sh) and 200MB (for catbox.moe)⏳
-  
-<blockquote>‣ Note 👀</blockquote>
-• Available in Groups and PM
-• Can be used by everyone</i></b>""" 
+<blockquote><b>‣ Key Features ⚙️</b></blockquote>
+<blockquote>
+• Photos, Videos, Audio, and Docs.
+• Size Limit: Max 200MB per file.
+• Auto-cancels if exceeds 60 seconds.
+• Use /tcancel to stop manually.
+</blockquote>
+
+<blockquote><b>‣ Important Notes ⚠️</blockquote>
+<blockquote>Private Only: This command is currently set to work only in Private Messages (PM), not groups.</blockquote></b></i>"""
   
     CORONA_TXT = """<b>ʜᴇʟᴩ: ᴄᴏᴠɪᴅ 
   

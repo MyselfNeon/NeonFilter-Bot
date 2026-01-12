@@ -1,55 +1,51 @@
-# --- Critical Core (DO NOT TOUCH) ---
+# --- Core Bot Framework ---
 pyrofork==2.3.45
 tgcrypto
 pyromod
-async-timeout
 
 # --- Database ---
-motor==2.5.1
 pymongo[srv]==3.12.3
+motor==2.5.1
 dnspython
+python-dotenv
 
-# --- Networking & Web ---
-aiohttp
+# --- Networking & Requests ---
+aiohttp==3.9.5
+aiofiles==24.1.0
 requests
 bs4
 shortzy
-pyshorteners
-telegraph
-wget
+pytz
+async-timeout==4.0.3
 
-# --- Media Processing (Essential for Leech/Rename) ---
-Pillow
+# --- Media & File Handling ---
+Pillow==9.4.0
+ffmpeg-python>=0.2.0
 hachoir
-filetype
 pikepdf
-pyzipper
 rarfile
-ffmpeg-python
+pyzipper
+filetype
+
+# --- Installs FFmpeg/FFprobe ---
 static-ffmpeg
 
-# --- System & Utils (Essential for /stats & /users) ---
-psutil
-humanize
-apscheduler
-speedtest-cli
-colorama
-PyLeaves
-
-# --- YouTube & Search ---
+# --- YouTube / Downloader Tools ---
 yt-dlp
 youtube-search-python
 youtube_search
 ytthumb
+PyLeaves
 
-# --- AI & Features ---
-google-generativeai
+# --- Audio / Speech ---
 edge-tts
-jinja2
+speedtest-cli
 
-# --- Config ---
-python-dotenv
-python-decouple
+# --- Utilities / Extras ---
+jinja2
+humanize
+psutil
+google-generativeai>=0.8.3
 
 # --- External ---
-git+https://github.com/joelkb/cinemagoer
+git+https://github.com/Joelkb/cinemagoer

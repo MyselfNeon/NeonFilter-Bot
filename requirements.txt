@@ -1,70 +1,34 @@
-# --- Core Bot Framework ---
-pyrofork==2.3.45
+# -- Core --
+pyrofork
 tgcrypto
+pytz
+async-timeout
 
-# --- Database & ORM ---
-pymongo[srv]==3.12.3
-motor==2.5.1
-marshmallow==3.14.1
-umongo==3.0.1
-python-decouple
-python-dotenv
+# -- Database --
+motor
+pymongo[srv]
+dnspython
 
-# --- Networking & Requests ---
-aiohttp==3.9.5
-aiofiles==24.1.0
+# -- Network & Web --
+aiohttp
 requests
 bs4
 shortzy
-pytz
-ujson
-wget
-dnspython
-async-timeout==4.0.3
 
-# --- Media & File Handling ---
-Pillow==9.4.0
-ffmpeg-python>=0.2.0
-imageio-ffmpeg>=0.4.10
+# -- Media Processing --
+Pillow
 hachoir
-pikepdf
-rarfile
-pyzipper
-opencv-python-headless
 filetype
-telegraph
-
-# --- Installs FFmpeg/FFprobe ---
+pikepdf
+pyzipper
 static-ffmpeg
 
-# --- YouTube / Downloader Tools ---
+# -- AI & Features --
+google-generativeai
 yt-dlp
-youtube-search-python
-youtube_search
-ytthumb
-PyLeaves
-
-# --- Audio / Speech ---
 edge-tts
-speedtest-cli
-
-# --- Utilities / Extras ---
-jinja2
-apscheduler
-pyshorteners
-colorama
-NumPy
-wheel
 humanize
-psutil
-google-generativeai>=0.8.3
+jinja2
 
-# --- Pyrogram Mods / Plugins ---
-pyromod
-git+https://github.com/Joelkb/cinemagoer
-
-
-
-
-
-
+# -- External --
+git+https://github.com/joelkb/cinemagoer

@@ -1,4 +1,4 @@
-# --- Core Framework (Pinned) ---
+# --- Critical Core (DO NOT TOUCH) ---
 pyrofork==2.3.45
 tgcrypto
 pyromod
@@ -9,38 +9,38 @@ motor==2.5.1
 pymongo[srv]==3.12.3
 dnspython
 
-# --- Networking & Requests ---
+# --- Networking & Web ---
 aiohttp
 requests
 bs4
 shortzy
 pyshorteners
 telegraph
+wget
 
-# --- Media & Files ---
-aiofiles
+# --- Media Processing (Essential for Leech/Rename) ---
 Pillow
 hachoir
 filetype
 pikepdf
 pyzipper
-static-ffmpeg
-ffmpeg-python
 rarfile
+ffmpeg-python
+static-ffmpeg
 
-# --- YouTube & Downloaders ---
-yt-dlp
-youtube-search-python
-ytthumb
-PyLeaves
-
-# --- System & Utilities ---
+# --- System & Utils (Essential for /stats & /users) ---
 psutil
 humanize
 apscheduler
 speedtest-cli
 colorama
-wheel
+PyLeaves
+
+# --- YouTube & Search ---
+yt-dlp
+youtube-search-python
+youtube_search
+ytthumb
 
 # --- AI & Features ---
 google-generativeai
@@ -51,5 +51,5 @@ jinja2
 python-dotenv
 python-decouple
 
-# --- External Sources ---
+# --- External ---
 git+https://github.com/joelkb/cinemagoer

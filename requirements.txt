@@ -1,34 +1,55 @@
-# -- Core --
-pyrofork
+# --- Core Framework (Pinned) ---
+pyrofork==2.3.45
 tgcrypto
-pytz
+pyromod
 async-timeout
 
-# -- Database --
-motor
-pymongo[srv]
+# --- Database ---
+motor==2.5.1
+pymongo[srv]==3.12.3
 dnspython
 
-# -- Network & Web --
+# --- Networking & Requests ---
 aiohttp
 requests
 bs4
 shortzy
+pyshorteners
+telegraph
 
-# -- Media Processing --
+# --- Media & Files ---
+aiofiles
 Pillow
 hachoir
 filetype
 pikepdf
 pyzipper
 static-ffmpeg
+ffmpeg-python
+rarfile
 
-# -- AI & Features --
-google-generativeai
+# --- YouTube & Downloaders ---
 yt-dlp
-edge-tts
+youtube-search-python
+ytthumb
+PyLeaves
+
+# --- System & Utilities ---
+psutil
 humanize
+apscheduler
+speedtest-cli
+colorama
+wheel
+
+# --- AI & Features ---
+google-generativeai
+edge-tts
 jinja2
 
-# -- External --
+# --- Config ---
+python-dotenv
+python-decouple
+
+# --- External Sources ---
 git+https://github.com/joelkb/cinemagoer

@@ -52,7 +52,15 @@ async def addfilter(client, message):
 
 
     if len(args) < 2:
-        await message.reply_text("Command Incomplete :(", quote=True)
+        await message.reply_text(
+            "<b>Command Incomplete!</b>\n\n"
+            "<b>Usage:</b>\n"
+            "• <code>/add name reply</code>\n"
+            "• Or reply to a message with <code>/add name</code>\n\n"
+            "<i>Example: /add hello Hi there!</i>",
+            quote=True,
+            parse_mode=enums.ParseMode.HTML
+        )
         return
 
     extracted = split_quotes(args[1])
@@ -269,4 +277,3 @@ async def delallconfirm(client, message):
             ]),
             quote=True
         )
-

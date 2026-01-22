@@ -10,7 +10,7 @@ CHECK_INTERVAL = 300          # 5 Minutes
 # Dictionary to keep track of active tasks: { "url": asyncio.Task }
 active_tasks = {}
 
-@Client.on_message(filters.command("addt") & filters.user(12345678)) # Replace with your ID
+@Client.on_message(filters.command("addt") & filters.user(841851780)) # Replace with your ID
 async def add_keep_alive(client: Client, message: Message):
     """
     Usage: /addt https://link.com
@@ -33,7 +33,7 @@ async def add_keep_alive(client: Client, message: Message):
     await message.reply_text(f"✅ **Added:** `{url}`\nDownloading 1MB every {CHECK_INTERVAL}s.")
 
 
-@Client.on_message(filters.command("delt") & filters.user(12345678)) # Replace with your ID
+@Client.on_message(filters.command("delt") & filters.user(841851780)) # Replace with your ID
 async def delete_keep_alive(client: Client, message: Message):
     """
     Usage: /delt https://link.com
@@ -59,7 +59,7 @@ async def delete_keep_alive(client: Client, message: Message):
     await message.reply_text(f"🗑 **Deleted:** `{url}`\nTask stopped successfully.")
 
 
-@Client.on_message(filters.command("listt") & filters.user(12345678))
+@Client.on_message(filters.command("listt") & filters.user(841851780))
 async def list_tasks(client: Client, message: Message):
     """
     Lists all currently active URLs.

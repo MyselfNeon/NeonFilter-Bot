@@ -16,52 +16,55 @@ import logging
 logger = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
-# --- UPDATED METADATA FUNCTION START ---
+# --- METADATA FUNCTION ---
 async def add_metadata(input_path, output_path, user_id):
-    # 1. Check if user has turned Metadata ON
-    if not await db.get_metadata_mode(user_id):
-        # If OFF, just simple rename and return
-        os.rename(input_path, output_path)
-        return
+    try:
+        # 1. Check if user has turned Metadata ON
+        if not await db.get_metadata_mode(user_id):
+            os.rename(input_path, output_path)
+            return
 
-    ffmpeg = shutil.which('ffmpeg')
-    if not ffmpeg:
-        os.rename(input_path, output_path)
-        return
+        ffmpeg = shutil.which('ffmpeg')
+        if not ffmpeg:
+            os.rename(input_path, output_path)
+            return
 
-    # 2. Fetch the Tag
-    tag = await db.get_metadata_tag(user_id)
-    if not tag:
-        tag = "TG: @NeonFiles" # Default fallback
-    
-    # 3. Apply Metadata
-    cmd = [
-        ffmpeg,
-        '-i', input_path,
-        '-metadata', f'title={tag}',
-        '-metadata', f'artist={tag}',
-        '-metadata', f'author={tag}',
-        '-metadata:s:v', f'title={tag}',
-        '-metadata:s:a', f'title={tag}',
-        '-metadata:s:s', f'title={tag}',
-        '-map', '0',
-        '-c', 'copy',
-        '-loglevel', 'error',
-        output_path
-    ]
-    
-    process = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
-    _, stderr = await process.communicate()
-    
-    if process.returncode != 0:
-        if os.path.exists(output_path):
-            os.remove(output_path)
-        os.rename(input_path, output_path)
-# --- UPDATED METADATA FUNCTION END ---
+        # 2. Fetch the Tag
+        tag = await db.get_metadata_tag(user_id)
+        if not tag:
+            tag = "TG: @NeonFiles" 
+        
+        # 3. Apply Metadata
+        cmd = [
+            ffmpeg,
+            '-i', input_path,
+            '-metadata', f'title={tag}',
+            '-metadata', f'artist={tag}',
+            '-metadata', f'author={tag}',
+            '-metadata:s:v', f'title={tag}',
+            '-metadata:s:a', f'title={tag}',
+            '-metadata:s:s', f'title={tag}',
+            '-map', '0',
+            '-c', 'copy',
+            '-loglevel', 'error',
+            output_path
+        ]
+        
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        _, stderr = await process.communicate()
+        
+        if process.returncode != 0:
+            if os.path.exists(output_path):
+                os.remove(output_path)
+            os.rename(input_path, output_path)
+    except Exception as e:
+        logger.error(f"Metadata Error: {e}")
+        if os.path.exists(input_path) and not os.path.exists(output_path):
+            os.rename(input_path, output_path)
 
 @Client.on_callback_query(filters.regex('cancel'))
 async def cancel(bot, update):
@@ -72,16 +75,35 @@ async def cancel(bot, update):
 
 @Client.on_callback_query(filters.regex("upload"))
 async def doc(bot, update):
+    # IMMEDIATE ANSWER TO STOP BUTTON LOADING
+    # await update.answer("Processing...") 
+    
     try:
         type = update.data.split("_")[1]
-        new_name = update.message.text
-        if ":-" in new_name:
-             new_filename = new_name.split(":-")[1].strip()
+        
+        # --- SAFE FILENAME EXTRACTION ---
+        # The text is: "... New Name :- \n```filename.mkv```"
+        original_text = update.message.text
+        
+        if ":-" in original_text:
+            # Split by the separator and take the last part
+            new_filename = original_text.split(":-")[-1]
         else:
-             new_filename = new_name.strip()
+            # Fallback if the separator isn't found
+            new_filename = original_text
+            
+        # Clean up the filename: remove newlines, spaces, and backticks
+        new_filename = new_filename.strip().replace("`", "")
+        # --------------------------------
 
         file = update.message.reply_to_message
-        download_path = f"downloads/{file.file_id}"
+        
+        if not file:
+            await update.message.edit("❌ **Error: Original file not found.**")
+            return
+
+        # Use safe temporary filename
+        download_path = f"downloads/{str(time.time())}_{new_filename}" 
         final_path = f"downloads/{new_filename}"
         
         ms = await update.message.edit("__**Please Wait...__ 😇😍**\n\n__**Downloading File to my Servers__  📥**")
@@ -94,17 +116,22 @@ async def doc(bot, update):
                     progress=progress_for_pyrogram,
                     progress_args=("**__Please Wait... 😇😍 \n\nServers are Renaming the Files you've provided | by @NeonFiles__ 🔥✨**", ms, c_time))
         except Exception as e:
-            await ms.edit(e)
+            await ms.edit(f"❌ **Download Failed:** {e}")
             return 
 
-        # Apply Metadata (Logic inside checks for ON/OFF)
+        # Apply Metadata 
         await ms.edit("__**Please Wait...__ 😇😍**\n\n__**Adding Metadata...__  ⚙️**")
         await add_metadata(path, final_path, update.message.chat.id)
         
+        # Cleanup temp file
         if path != final_path and os.path.exists(path):
             os.remove(path)
 
         file_path = final_path
+
+        if not os.path.exists(file_path):
+             await ms.edit("❌ **Error: File processing failed (File not found after rename).**")
+             return
 
         duration = 0
         try:
@@ -171,7 +198,7 @@ async def doc(bot, update):
                 progress=progress_for_pyrogram,
                 progress_args=( "__**Please Wait...__ 😇😍**\n\n__**Processing File Upload...__  📤**",  ms, c_time)) 
         except Exception as e: 
-            await ms.edit(f" Error {e}") 
+            await ms.edit(f"❌ **Upload Error:** {e}") 
             if os.path.exists(file_path):
                 os.remove(file_path)
             if ph_path:
@@ -185,3 +212,8 @@ async def doc(bot, update):
            os.remove(ph_path) 
     except Exception as e:
         logger.error(f"error : {e}")
+        # Send the actual error to the user so we know why it crashes
+        try:
+            await update.message.edit(f"❌ **Error Occurred:** `{e}`")
+        except:
+            pass

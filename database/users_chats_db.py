@@ -293,7 +293,27 @@ class Database:
 
     async def get_save(self, id):
         user = await self.col.find_one({'id': int(id)})
-        return user.get('save', False) 
+        return user.get('save', False)
+
+    # --- METADATA SETTINGS ---
+
+    async def set_metadata_mode(self, id, mode_bool):
+        # Saves True (ON) or False (OFF)
+        await self.col.update_one({'id': int(id)}, {'$set': {'metadata_mode': mode_bool}})
+
+    async def get_metadata_mode(self, id):
+        # Returns True if ON, False if OFF or not set
+        user = await self.col.find_one({'id': int(id)})
+        return user.get('metadata_mode', False)
+
+    async def set_metadata_tag(self, id, tag):
+        # Saves the text tag (e.g., "Neon")
+        await self.col.update_one({'id': int(id)}, {'$set': {'metadata_tag': tag}})
+
+    async def get_metadata_tag(self, id):
+        # Returns the text tag
+        user = await self.col.find_one({'id': int(id)})
+        return user.get('metadata_tag', None)
     
 db = Database(USER_DB_URI, DATABASE_NAME)
 

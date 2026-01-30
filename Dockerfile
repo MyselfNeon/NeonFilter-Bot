@@ -1,4 +1,4 @@
-FROM python:3.10.8-slim-bullseye
+FROM python:3.10.8-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
@@ -19,3 +19,4 @@ COPY . .
 
 # Run the bot
 CMD ["python", "bot.py"]
+

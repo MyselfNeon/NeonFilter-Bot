@@ -12,7 +12,7 @@ API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
 # --- KEEP-ALIVE URL ---
-KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "https://personalfilter.onrender.com/")  # <-- Add this line
+KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "")  # <-- Add this line
 
 # --- START PICTURES --- 
 # (Add Multiple By Giving One Space Between Each)
@@ -39,20 +39,18 @@ AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 
 # --- CHANNELS AND GROUPS ---
 LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001889915480'))
-DUMP_CHANNEL = int(environ.get('DUMP_CHANNEL', LOG_CHANNEL))
 # This Channel Is For When User Start Your Bot Then Bot Send That User Name And Id In This Log Channel, Same For Group Also.
 
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch
             for ch in environ.get('CHANNELS', '-1002487845241').split()]
 # This Is File Channel Where You Upload Your File Then Bot Automatically Save It In Database
 
-REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', True))  # True → request to join FSUB
-TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', True))                # Retry button for FSUB
+REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', False))  # True → request to join FSUB
+TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', False))                # Retry button for FSUB
 
 # --- FORCE SUBSCRIBE CHANNEL ---
-auth_channel = environ.get('AUTH_CHANNEL', '-1002384933640 -1002231967338')
-# Split the string by spaces and convert valid IDs to integers
-AUTH_CHANNEL = [int(ch) if id_pattern.search(ch) else ch for ch in auth_channel.split()] if auth_channel else []
+auth_channel = environ.get('AUTH_CHANNEL', '-1002384933640')
+AUTH_CHANNEL = int(auth_channel) if auth_channel and id_pattern.search(auth_channel) else None
 
 # --- FILE REQUEST CHANNEL ---
 reqst_channel = environ.get('REQST_CHANNEL', '-1002158258466')
@@ -193,7 +191,7 @@ SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '60'))
 PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))  # 20 min
 
 ON_HEROKU = 'DYNO' in environ
-URL = environ.get("URL", "https://personalfilter.onrender.com/")
+URL = environ.get("URL", "")
 
 # --- RENAME ---
 RENAME_MODE = bool(environ.get('RENAME_MODE', True)) # Set True or False
@@ -218,6 +216,14 @@ REACTIONS = [
     "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"]
 # Don't add unsupported emojis because Telegram reactions have limits
 
+
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
+
+
+
+
+
+
+

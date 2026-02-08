@@ -9,7 +9,7 @@ from database.ia_filterdb import col, sec_col, get_file_details, unpack_new_file
 from database.users_chats_db import db, delete_all_referal_users, get_referal_users_count, get_referal_all_users, referal_add_user
 from database.join_reqs import JoinReqs
 from info import *
-from utils import get_settings, pub_is_subscribed, get_size, is_subscribed, save_group_settings, temp, verify_user, check_token, check_verification, get_token, get_shortlink, get_tutorial, get_seconds
+from utils import get_settings, pub_is_subscribed, get_size, is_subscribed, get_missing_channels, save_group_settings, temp, verify_user, check_token, check_verification, get_token, get_shortlink, get_tutorial, get_seconds
 from database.connections_mdb import active_connection
 from urllib.parse import quote_plus
 from Neon.util.file_properties import get_name, get_hash, get_media_file_size
@@ -121,50 +121,42 @@ async def start(client, message):
         )
         return
     
-    if AUTH_CHANNEL and not await is_subscribed(client, message):
+# --- FORCE SUBSCRIBE LOGIC (Page 1) ---
+    if AUTH_CHANNEL:
         try:
-            if REQUEST_TO_JOIN_MODE == True:
-                invite_link = await client.create_chat_invite_link(chat_id=(int(AUTH_CHANNEL)), creates_join_request=True)
-            else:
-                invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
-        except Exception as e:
-            print(e)
-            await message.reply_text("Make sure Bot is admin in Forcesub channel")
-            return
-        try:
-            btn = [[InlineKeyboardButton("ʙᴀᴄᴋᴜᴘ ᴄʜᴀɴɴᴇʟ", url=invite_link.invite_link)]]
-            if message.command[1] != "subscribe":
-                if REQUEST_TO_JOIN_MODE == True:
-                    if TRY_AGAIN_BTN == True:
-                        try:
-                            kk, file_id = message.command[1].split("_", 1)
-                            btn.append([InlineKeyboardButton("↻ ᴛʀʏ ᴀɢᴀɪɴ", callback_data=f"checksub#{kk}#{file_id}")])
-                        except (IndexError, ValueError):
-                            btn.append([InlineKeyboardButton("↻ ᴛʀʏ ᴀɢᴀɪɴ", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")])
+            # Check which channels are actually missing
+            missing_channels = await get_missing_channels(client, message.from_user.id)
+            
+            if missing_channels:
+                # Capture the start argument (e.g. "files_123") to pass it to the callback
+                if len(message.command) > 1:
+                    start_args = message.command[1]
                 else:
-                    try:
-                        kk, file_id = message.command[1].split("_", 1)
-                        btn.append([InlineKeyboardButton("↻ ᴛʀʏ ᴀɢᴀɪɴ", callback_data=f"checksub#{kk}#{file_id}")])
-                    except (IndexError, ValueError):
-                        btn.append([InlineKeyboardButton("↻ ᴛʀʏ ᴀɢᴀɪɴ", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")])
-            if REQUEST_TO_JOIN_MODE == True:
-                if TRY_AGAIN_BTN == True:
-                    text = "**🕵️ ʏᴏᴜ ᴅᴏ ɴᴏᴛ ᴊᴏɪɴ ᴍʏ ʙᴀᴄᴋᴜᴘ ᴄʜᴀɴɴᴇʟ ғɪʀsᴛ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ᴛʜᴇɴ ᴛʀʏ ᴀɢᴀɪɴ**"
-                else:
-                    await db.set_msg_command(message.from_user.id, com=message.command[1])
-                    text = "**🕵️ __Yᴏᴜ Dᴏ Nᴏᴛ Jᴏɪɴ Mʏ Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ Fɪʀsᴛ Jᴏɪɴ Cʜᴀɴɴᴇʟ__**"
-            else:
-                text = "**🕵️ __Yᴏᴜ Dᴏ Nᴏᴛ Jᴏɪɴ Mʏ Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ Fɪʀsᴛ Jᴏɪɴ Cʜᴀɴɴᴇʟ Tʜᴇɴ Tʀʏ Aɢᴀɪɴ__**"
-            await client.send_message(
-                chat_id=message.from_user.id,
-                text=text,
-                reply_markup=InlineKeyboardMarkup(btn),
-                parse_mode=enums.ParseMode.MARKDOWN
-            )
-            return
+                    start_args = "nil"
+
+                # Create the single "Page 1" button
+                btn = [[
+                    InlineKeyboardButton(
+                        "🆘 Force Subscribe Channels", 
+                        callback_data=f"show_fsub#{start_args}"
+                    )
+                ]]
+                
+                text = (
+                    "<b><i>🚫 Access Denied 🚫</i></b>\n\n"
+                    "<b><i>You Must Join Our Updates Channels To Use This Bot."
+                    "Click The Button Below To View The Channels ⬇️</i></b>"
+                )
+                
+                await message.reply_text(
+                    text=text,
+                    reply_markup=InlineKeyboardMarkup(btn),
+                    quote=True,
+                    parse_mode=enums.ParseMode.HTML
+                )
+                return
         except Exception as e:
-            print(e)
-            return await message.reply_text("something wrong with force subscribe.")
+            logger.exception(f"Error in Force Sub Logic: {e}")
             
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
         if PREMIUM_AND_REFERAL_MODE == True:
@@ -1439,7 +1431,114 @@ async def purge_requests(client, message):
             disable_web_page_preview=True
         )
 
+# --- FORCE SUB CALLBACKS (Smart Hybrid Mode) ---
+@Client.on_callback_query(filters.regex(r"^show_fsub"))
+async def show_fsub_callback(client, query):
+    _, start_args = query.data.split("#")
+    
+    missing_channels = await get_missing_channels(client, query.from_user.id)
 
+    if not missing_channels:
+        await query.answer("✅ You have already Joined !", show_alert=True)
+        return await check_sub_callback(client, query)
+
+    btn = []
+    for channel_id in missing_channels:
+        try:
+            chat = await client.get_chat(channel_id)
+            
+            # --- SMART LOGIC START ---
+            if chat.username:
+                link = f"https://t.me/{chat.username}"
+            else:
+                if REQUEST_TO_JOIN_MODE:
+                    invite_link = await client.create_chat_invite_link(chat_id=channel_id, creates_join_request=True)
+                    link = invite_link.invite_link
+                else:
+                    invite_link = chat.invite_link or await client.create_chat_invite_link(channel_id)
+                    link = invite_link.invite_link
+            # --- SMART LOGIC END ---
+            
+            btn.append([InlineKeyboardButton(f"🔗 Join {chat.title}", url=link)])
+        except Exception as e:
+            print(f"Error generating link for {channel_id}: {e}")
+            continue
+
+    btn.append([InlineKeyboardButton("🔄 Try Again", callback_data=f"checksub#{start_args}")])
+
+    # Converted to pure HTML tags and closed them properly
+    text = (
+        "<b><i>👋 Hello Dear</i></b>\n\n"
+        "<b><i>Due To High Load, You Must Join The Following Channels To Get Access.</i></b>\n"
+        "<i>Please Join Them And Click Try Again.</i>"
+    )
+
+    await query.message.edit(
+        text=text,
+        reply_markup=InlineKeyboardMarkup(btn),
+        parse_mode=enums.ParseMode.HTML
+    )
+
+@Client.on_callback_query(filters.regex(r"^checksub"))
+async def check_sub_callback(client, query):
+    _, start_args = query.data.split("#")
+    
+    missing_channels = await get_missing_channels(client, query.from_user.id)
+
+    if missing_channels:
+        await query.answer("❌ You Haven't Joined all Channels !", show_alert=True)
+        
+        btn = []
+        for channel_id in missing_channels:
+            try:
+                chat = await client.get_chat(channel_id)
+                
+                # --- SMART LOGIC REPEATED ---
+                if chat.username:
+                    link = f"https://t.me/{chat.username}"
+                else:
+                    if REQUEST_TO_JOIN_MODE:
+                        invite_link = await client.create_chat_invite_link(chat_id=channel_id, creates_join_request=True)
+                        link = invite_link.invite_link
+                    else:
+                        invite_link = chat.invite_link or await client.create_chat_invite_link(channel_id)
+                        link = invite_link.invite_link
+
+                btn.append([InlineKeyboardButton(f"🔗 Join {chat.title}", url=link)])
+            except Exception:
+                continue
+        
+        btn.append([InlineKeyboardButton("🔄 Try Again", callback_data=f"checksub#{start_args}")])
+        
+        try:
+            await query.message.edit(
+                text="<b><i>❌ You Still Have Few Channels to Join. Please Join Them Below:</i></b>",
+                reply_markup=InlineKeyboardMarkup(btn),
+                parse_mode=enums.ParseMode.HTML
+            )
+        except:
+            pass
+            
+    else:
+        # --- SUCCESS: AUTO REDIRECT LOGIC ---
+        await query.answer("✅ Verified !", show_alert=False)
+        await query.message.delete()
+        
+        # We create a "Fake" message that looks like the user sent /start
+        # This triggers the bot to process the deep link immediately.
+        msg = query.message
+        msg.from_user = query.from_user  # Critical: Pretend the user sent this, not the bot
+        
+        if start_args == "nil":
+            msg.command = ["start"]
+            msg.text = "/start"
+        else:
+            msg.command = ["start", start_args]
+            msg.text = f"/start {start_args}"
+
+        # Call the start function manually
+        await start(client, msg)
+             
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles

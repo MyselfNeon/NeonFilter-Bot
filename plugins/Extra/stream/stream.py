@@ -17,6 +17,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 from pyrogram.errors import FloodWait, MessageNotModified
 
 # Custom Imports
+# 1. Added DUMP_CHANNEL to imports
 from info import STREAM_MODE, URL, LOG_CHANNEL, DUMP_CHANNEL, DATABASE_URI, DATABASE_NAME, ADMINS
 from Neon.util.file_properties import get_name, get_hash, get_media_file_size
 from Neon.util.human_readable import humanbytes
@@ -130,9 +131,10 @@ async def stream_start_handler(client: Client, message: Message):
             download_link = existing_file['download_link']
             await status_msg.edit("♻️ **__File found in database! Retrieving links...__**")
         else:
-            # -- SLOW PATH: New File, Upload to Dump Channel --
+            # -- SLOW PATH: New File, Upload to DUMP CHANNEL --
+            # 2. Changed LOG_CHANNEL to DUMP_CHANNEL here
             log_msg = await client.send_cached_media(
-                chat_id=DUMP_CHANNEL,
+                chat_id=DUMP_CHANNEL, 
                 file_id=file_id,
                 caption=f"**__User:** {user.mention}__ (`{user.id}`)\n**__File:__** `{filename}`\n**__Size:** {filesize}__"
             )
@@ -272,7 +274,7 @@ async def force_revoke_handler(client, message):
         log_id = int(message.command[1])
         # 1. Delete from DB
         await db.delete_file(log_id)
-        # 2. Delete from Channel
+        # 2. Delete from Channel (Updated to DUMP_CHANNEL)
         try:
             await client.delete_messages(chat_id=DUMP_CHANNEL, message_ids=log_id)
             await message.reply(f"**__✅ Link {log_id} Revoked & File Deleted.__**")
@@ -348,7 +350,7 @@ async def execute_revoke_handler(client: Client, query: CallbackQuery):
         # 1. Delete from MongoDB
         await db.delete_file(log_id)
         
-        # 2. Delete from Telegram Log Channel
+        # 2. Delete from Telegram Dump Channel (Updated to DUMP_CHANNEL)
         try:
             await client.delete_messages(chat_id=DUMP_CHANNEL, message_ids=log_id)
         except Exception as e:

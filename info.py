@@ -12,10 +12,9 @@ API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
 # --- KEEP-ALIVE URL ---
-KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "")  # <-- Add this line
+KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "https://personalfilter.onrender.com/")
 
 # --- START PICTURES --- 
-# (Add Multiple By Giving One Space Between Each)
 PICS = (
     environ.get(
         'PICS',
@@ -30,27 +29,28 @@ PICS = (
 
 # --- ADMINS & USERS ---
 ADMINS = [int(admin) if id_pattern.search(admin) else admin
-          for admin in environ.get('ADMINS', '841851780').split()]  # Multiple IDs separated by space
+          for admin in environ.get('ADMINS', '841851780').split()]
 
 auth_users = [int(user) if id_pattern.search(user) else user
-              for user in environ.get('AUTH_USERS', '').split()]  # Multiple IDs separated by space
+              for user in environ.get('AUTH_USERS', '').split()]
 
 AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 
 # --- CHANNELS AND GROUPS ---
 LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001889915480'))
-# This Channel Is For When User Start Your Bot Then Bot Send That User Name And Id In This Log Channel, Same For Group Also.
+
+# --- DUMP CHANNEL ---
+DUMP_CHANNEL = int(environ.get('DUMP_CHANNEL', LOG_CHANNEL))
 
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch
             for ch in environ.get('CHANNELS', '-1002487845241').split()]
-# This Is File Channel Where You Upload Your File Then Bot Automatically Save It In Database
 
-REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', False))  # True → request to join FSUB
-TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', False))                # Retry button for FSUB
+REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', True))
+TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', True))
 
 # --- FORCE SUBSCRIBE CHANNEL ---
-auth_channel = environ.get('AUTH_CHANNEL', '-1002384933640')
-AUTH_CHANNEL = int(auth_channel) if auth_channel and id_pattern.search(auth_channel) else None
+auth_channel = environ.get('AUTH_CHANNEL', '-1002384933640 -1002231967338')
+AUTH_CHANNEL = [int(ch) if id_pattern.search(ch) else ch for ch in auth_channel.split()] if auth_channel else []
 
 # --- FILE REQUEST CHANNEL ---
 reqst_channel = environ.get('REQST_CHANNEL', '-1002158258466')
@@ -77,10 +77,10 @@ COLLECTION_NAME = environ.get('COLLECTION_NAME', 'neoncollection')
 
 MULTIPLE_DATABASE = bool(environ.get('MULTIPLE_DATABASE', False))
 
-# --- Separate DBs if MULTIPLE_DATABASE = True ---
-O_DB_URI = environ.get('O_DB_URI', "")  # This Db Is For Other Data Store
-F_DB_URI = environ.get('F_DB_URI', "")  # This Db Is For File Data Store
-S_DB_URI = environ.get('S_DB_URI', "")  # This Db is for File Data Store When First Db Is Going To Be Full
+# --- Separate DBs ---
+O_DB_URI = environ.get('O_DB_URI', "")
+F_DB_URI = environ.get('F_DB_URI', "")
+S_DB_URI = environ.get('S_DB_URI', "")
 
 if not MULTIPLE_DATABASE:
     USER_DB_URI = OTHER_DB_URI = FILE_DB_URI = SEC_FILE_DB_URI = DATABASE_URI
@@ -91,9 +91,6 @@ else:
     SEC_FILE_DB_URI = S_DB_URI
  
 # --- PREMIUM AND REFERAL ---
-PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True)) # Set Ture Or False
-
-# --- If PREMIUM_AND_REFERAL_MODE is True Then Fill Below Variable, If False Then No Need To Fill ---
 PREMIUM_AND_REFERAL_MODE = bool(environ.get('PREMIUM_AND_REFERAL_MODE', True))
 
 REFERAL_COUNT = int(environ.get('REFERAL_COUNT', '5'))
@@ -113,18 +110,17 @@ PAYMENT_TEXT = environ.get(
 )
 
 # --- CLONE SETTINGS ---
-# Clone Information : If Clone Mode Is True Then Bot Clone Other Bots.
-CLONE_MODE = bool(environ.get('CLONE_MODE', False)) # Set True or False
-CLONE_DATABASE_URI = environ.get('CLONE_DATABASE_URI', "") # Necessary If clone mode is true
-PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', 'NeonCodes') # Public Channel Username Without @ or without https://t.me/ and Bot Is Admin With Full Right.
+CLONE_MODE = bool(environ.get('CLONE_MODE', False))
+CLONE_DATABASE_URI = environ.get('CLONE_DATABASE_URI', "")
+PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', 'NeonCodes')
 
 # --- LINKS --- 
 GRP_LNK = environ.get('GRP_LNK', 'https://t.me/+o1s-8MppL2syYTI9')
 CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/neonfiles')
-SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'Talk2neonBot') # Support Chat Link Without https:// or @
+SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'Talk2neonBot')
 OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/MyselfNeon')
 
-# --- FEATURES (True/False Switches) ---
+# --- FEATURES ---
 AI_SPELL_CHECK = bool(environ.get('AI_SPELL_CHECK', True))
 PM_SEARCH = bool(environ.get('PM_SEARCH', True))
 BUTTON_MODE = bool(environ.get('BUTTON_MODE', True))
@@ -147,9 +143,7 @@ VERIFY_SHORTLINK_URL = environ.get('VERIFY_SHORTLINK_URL', '')
 VERIFY_SHORTLINK_API = environ.get('VERIFY_SHORTLINK_API', '')
 VERIFY_TUTORIAL = environ.get('VERIFY_TUTORIAL', '')
 
-# --- If You Fill Second Shortner Then Bot Attach Both First And Second Shortner And Use It For Verify ---
 VERIFY_SECOND_SHORTNER = bool(environ.get('VERIFY_SECOND_SHORTNER', False))
-# --- if verify second shortner is True then fill below url and api ---
 VERIFY_SND_SHORTLINK_URL = environ.get('VERIFY_SND_SHORTLINK_URL', '')
 VERIFY_SND_SHORTLINK_API = environ.get('VERIFY_SND_SHORTLINK_API', '')
 
@@ -185,45 +179,33 @@ YEARS = [str(year) for year in range(1900, 2026)]
 # --- STREAMING & DOWNLOAD ---
 STREAM_MODE = bool(environ.get('STREAM_MODE', True))
 
-# --- If Stream Mode Is True Then Fill All Required Variable, If False Then Don't Fill ---
 MULTI_CLIENT = False
 SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '60'))
-PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))  # 20 min
+PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))
 
 ON_HEROKU = 'DYNO' in environ
-URL = environ.get("URL", "")
+URL = environ.get("URL", "https://personalfilter.onrender.com/")
 
 # --- RENAME ---
-RENAME_MODE = bool(environ.get('RENAME_MODE', True)) # Set True or False
-# Rename Info : If True Then Bot Rename File Else Not
+RENAME_MODE = bool(environ.get('RENAME_MODE', True))
 
 # --- GEMINI API SETTINGS ---
-# Get this key for FREE from: https://aistudio.google.com/
 GEMINI_API_KEY = environ.get('GEMINI_API_KEY', "")
 
 # --- IMGBB API ---
-# Get your free API key from: https://api.imgbb.com/
 IMGBB_API_KEY = environ.get('IMGBB_API_KEY', "")
 
 # --- AUTO APPROVE ---
-AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))  # Set True or False
-# Auto Approve Info : If True Then Bot Approve New Upcoming Join Request Else Not
+AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))
 
 # --- START COMMAND REACTIONS ---
 REACTIONS = [
     "🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩",
     "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡",
     "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"]
+    
 # Don't add unsupported emojis because Telegram reactions have limits
-
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
 # Update channel - @NeonFiles
-
-
-
-
-
-
-

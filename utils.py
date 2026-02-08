@@ -58,36 +58,66 @@ async def pub_is_subscribed(bot, query, channel):
             pass
     return btn
 
-async def is_subscribed(bot, query):
-    if REQUEST_TO_JOIN_MODE == True and join_db().isActive():
+async def get_missing_channels(bot, user_id):
+    """
+    Returns a list of channel IDs that the user has NOT joined.
+    Fixes the issue where Private Channel requests allowed bypassing Public Channels.
+    """
+    if not AUTH_CHANNEL:
+        return []
+
+    # Ensure AUTH_CHANNEL is always a list
+    channels = AUTH_CHANNEL if isinstance(AUTH_CHANNEL, list) else [AUTH_CHANNEL]
+    missing_channels = []
+    
+    # Check if user has a pending request in the DB (Global Check)
+    has_db_request = False
+    if REQUEST_TO_JOIN_MODE and join_db().isActive():
         try:
-            user = await join_db().get_user(query.from_user.id)
-            if user and user["user_id"] == query.from_user.id:
-                return True
-            else:
-                try:
-                    user_data = await bot.get_chat_member(AUTH_CHANNEL, query.from_user.id)
-                except UserNotParticipant:
-                    pass
-                except Exception as e:
-                    logger.exception(e)
-                else:
-                    if user_data.status != enums.ChatMemberStatus.BANNED:
-                        return True
-        except Exception as e:
-            logger.exception(e)
-            return False
-    else:
-        try:
-            user = await bot.get_chat_member(AUTH_CHANNEL, query.from_user.id)
-        except UserNotParticipant:
+            user = await join_db().get_user(user_id)
+            if user and user.get("user_id") == user_id:
+                has_db_request = True
+        except Exception:
             pass
+
+    for channel_id in channels:
+        try:
+            # Check membership status
+            member = await bot.get_chat_member(channel_id, user_id)
+            if member.status == enums.ChatMemberStatus.BANNED:
+                missing_channels.append(channel_id)
+        
+        except UserNotParticipant:
+            # User is NOT in the channel.
+            
+            # --- CRITICAL FIX START ---
+            try:
+                chat = await bot.get_chat(channel_id)
+                is_public = bool(chat.username)
+            except:
+                is_public = False
+
+            if is_public:
+                # If Public: You MUST join. Database requests are ignored.
+                missing_channels.append(channel_id)
+            else:
+                # If Private: We accept the "Request" database entry.
+                if REQUEST_TO_JOIN_MODE and has_db_request:
+                    continue
+                else:
+                    missing_channels.append(channel_id)
+            # --- CRITICAL FIX END ---
+
         except Exception as e:
-            logger.exception(e)
-        else:
-            if user.status != enums.ChatMemberStatus.BANNED:
-                return True
-        return False
+            # If bot fails to check (e.g. not admin), assume not joined
+            missing_channels.append(channel_id)
+
+    return missing_channels
+
+async def is_subscribed(bot, query):
+    # This wrapper function is needed because other plugins still call it!
+    missing = await get_missing_channels(bot, query.from_user.id)
+    return len(missing) == 0
 
 async def get_poster(query, bulk=False, id=False, file=None):
     if not id:

@@ -16,8 +16,9 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from pyrogram.errors import FloodWait, MessageNotModified
 
-# Custom Imports (Ensure these exist in your util/info files)
-from info import STREAM_MODE, URL, LOG_CHANNEL, DATABASE_URI, DATABASE_NAME
+# Custom Imports
+# 1. Added DUMP_CHANNEL to imports
+from info import STREAM_MODE, URL, LOG_CHANNEL, DUMP_CHANNEL, DATABASE_URI, DATABASE_NAME, ADMINS
 from Neon.util.file_properties import get_name, get_hash, get_media_file_size
 from Neon.util.human_readable import humanbytes
 
@@ -49,6 +50,19 @@ class StreamDatabase:
         """Deletes file information based on Log Message ID"""
         await self.col.delete_one({"log_id": int(log_id)})
 
+    # --- Admin Helper Methods ---
+    async def total_files(self):
+        """Counts total generated links."""
+        return await self.col.count_documents({})
+
+    async def get_recent_files(self, limit=10):
+        """Gets the most recent files."""
+        return self.col.find().sort("_id", -1).limit(limit)
+
+    async def delete_all_files(self):
+        """Wipes the collection."""
+        await self.col.drop()
+
 # Initialize Database
 db = StreamDatabase(DATABASE_URI, DATABASE_NAME)
 
@@ -69,10 +83,10 @@ def get_file_details(message: Message):
     return file, media_type
 
 # --- MAIN HANDLER ---
-@Client.on_message(filters.private & filters.command(["stream", "link"]))
+@Client.on_message(filters.private & filters.command(["stream", "genlink"]))
 async def stream_start_handler(client: Client, message: Message):
     if not STREAM_MODE:
-        return await message.reply("🚫 **System is currently in maintenance.**")
+        return await message.reply("🚫 **__System is currently in maintenance.__**")
 
     # 1️⃣ Acquire Media
     target_msg = message.reply_to_message if (message.reply_to_message and message.reply_to_message.media) else None
@@ -81,23 +95,23 @@ async def stream_start_handler(client: Client, message: Message):
         try:
             ask = await client.ask(
                 message.chat.id, 
-                "**📤 Send me the file (Video/Document/Audio).**\n"
-                "__I will generate a high-speed direct link.__",
+                "**__📤 Send me the file (Video/Document/Audio).__**\n"
+                "__I will generate a Direct Link.__",
                 timeout=60,
                 filters=filters.media
             )
             target_msg = ask
         except asyncio.TimeoutError:
-            return await message.reply("⚠️ **Session Timed Out.** Type /stream to try again.")
+            return await message.reply("⚠️ **__Session Timed Out.__** __Type **/stream** to try again.__")
         except Exception as e:
             return await message.reply(f"❌ **Error:** {e}")
 
     file_obj, media_type = get_file_details(target_msg)
     if not file_obj:
-        return await message.reply("❌ **Unsupported Media Type.** Please send Video, Audio, or Document.")
+        return await message.reply("❌ **__Unsupported Media Type.** Please send Video, Audio, or Document.__")
 
     # 2️⃣ Processing
-    status_msg = await message.reply_text("⏳ **Processing File...**")
+    status_msg = await message.reply_text("⏳ **__Processing File...__**")
 
     try:
         # Extract Meta Data
@@ -115,13 +129,13 @@ async def stream_start_handler(client: Client, message: Message):
             log_id = existing_file['log_id']
             stream_link = existing_file['stream_link']
             download_link = existing_file['download_link']
-            await status_msg.edit("♻️ **File found in database! Retrieving links...**")
+            await status_msg.edit("♻️ **__File found in database! Retrieving links...__**")
         else:
-            # -- SLOW PATH: New File, Upload to Log Channel --
+            # -- SLOW PATH: New File, Upload to Dump Channel --
             log_msg = await client.send_cached_media(
-                chat_id=LOG_CHANNEL,
+                chat_id=DUMP_CHANNEL,
                 file_id=file_id,
-                caption=f"**User:** {user.mention} (`{user.id}`)\n**File:** `{filename}`\n**Size:** {filesize}"
+                caption=f"**__User:** {user.mention}__ (`{user.id}`)\n**__File:__** `{filename}`\n**__Size:** {filesize}__"
             )
             
             log_id = log_msg.id
@@ -141,7 +155,8 @@ async def stream_start_handler(client: Client, message: Message):
                 "file_id": file_id,
                 "media_type": media_type,
                 "stream_link": stream_link,
-                "download_link": download_link
+                "download_link": download_link,
+                "date": message.date
             }
             await db.add_file(file_data)
 
@@ -173,24 +188,112 @@ async def stream_start_handler(client: Client, message: Message):
 
     except FloodWait as e:
         await asyncio.sleep(e.value)
-        await message.reply(f"⚠️ **FloodWait:** Please wait {e.value} seconds.")
+        await message.reply(f"⚠️ **__FloodWait:** Please wait {e.value} seconds.__")
     except Exception as e:
         logger.error(f"Stream Error: {e}", exc_info=True)
-        await status_msg.edit(f"**❌ An error occurred:** `{e}`")
+        await status_msg.edit(f"**__❌ An error occurred:__** `{e}`")
+
+
+# --- ADMIN COMMANDS (RESTORED) ---
+
+@Client.on_message(filters.command(["streamstats"]) & filters.user(ADMINS))
+async def stream_stats_handler(client, message):
+    """Admin: Check how many links exist."""
+    stats = await message.reply("<b>__🔄 Fetching Stats...__</b>")
+    
+    total = await db.total_files()
+    recent = await db.get_recent_files(10)
+    
+    text = f"<b>__📊 Stream Link Statistics__</b>\n\n<b>__🔗 Total Links Generated:__</b> <code>{total}</code>\n\n<b>__🕒 Last 10 Links:__</b>\n"
+    
+    async for file in recent:
+        name = file.get('file_name', 'Unknown')
+        lid = file.get('log_id', 'N/A')
+        text += f"• `{lid}` : {name[:30]}...\n"
+        
+    await stats.edit(text)
+
+# --- ADMIN COMMANDS (UPDATED) ---
+
+@Client.on_message(filters.command("purgestreams") & filters.user(ADMINS))
+async def purge_streams_handler(client, message):
+    """Admin: Delete ALL database entries with Button Confirmation."""
+    
+    # 1. Create the confirmation buttons
+    buttons = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Yes", callback_data="purge_confirm"),
+            InlineKeyboardButton("❌ Cancel", callback_data="purge_cancel")
+        ]
+    ])
+    
+    # 2. Send the confirmation message
+    await message.reply(
+        text=(
+            "**__⚠️ Are You Sure ?__**\n\n"
+            "__This will Delete **ALL** Stream data history Permanently__.\n"
+            "__Existing Links will Stop working (cannot be revoked), though the files will remain in the Channel.__"
+        ),
+        reply_markup=buttons
+    )
+
+# --- NEW CALLBACKS: PURGE FLOW ---
+@Client.on_callback_query(filters.regex("^purge_confirm$"))
+async def purge_confirm_handler(client: Client, query: CallbackQuery):
+    """Executes the purge after button click."""
+    
+    # Security: Double check if the clicker is an Admin
+    if query.from_user.id not in ADMINS:
+        return await query.answer("❌ You are not an Admin!", show_alert=True)
+
+    # Perform the Wipe
+    await db.delete_all_files()
+    
+    await query.message.edit_text(
+        "**__✅ Database Wiped Successfully.__**\n\n"
+        "__All stream tracking records deleted.__"
+    )
+
+@Client.on_callback_query(filters.regex("^purge_cancel$"))
+async def purge_cancel_handler(client: Client, query: CallbackQuery):
+    """Cancels the purge operation."""
+    
+    if query.from_user.id not in ADMINS:
+        return await query.answer("❌ You are not an admin!", show_alert=True)
+
+    await query.message.edit_text("****❌ Purge Cancelled.__**")
+
+@Client.on_message(filters.command("revokelink") & filters.user(ADMINS))
+async def force_revoke_handler(client, message):
+    """Admin: Force revoke by ID."""
+    if len(message.command) < 2:
+        return await message.reply("**__Usage:** /revokelink [Log_ID] \nGet ID from **/streamstats__**")
+        
+    try:
+        log_id = int(message.command[1])
+        # 1. Delete from DB
+        await db.delete_file(log_id)
+        # 2. Delete from Channel
+        try:
+            await client.delete_messages(chat_id=DUMP_CHANNEL, message_ids=log_id)
+            await message.reply(f"**__✅ Link {log_id} Revoked & File Deleted.__**")
+        except:
+            await message.reply(f"**__⚠️ Link {log_id} removed from DB, but Message not found in Channel.__**")
+            
+    except ValueError:
+        await message.reply("**__❌ Invalid ID.__**")
 
 
 # --- CALLBACKS: REVOKE FLOW ---
+
 @Client.on_callback_query(filters.regex(r"^ask_revoke_"))
 async def confirm_revoke_handler(client: Client, query: CallbackQuery):
     """Step 1: Ask for confirmation"""
     log_id = query.data.split("_")[-1]
     
-    # Check permission (Optional: Only allow the user who created it)
-    # For now, allowing anyone who has the message handle (standard behavior)
-    
     btns = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("✅ Yes, Delete", callback_data=f"do_revoke_{log_id}"),
+            InlineKeyboardButton("✅ Yes", callback_data=f"do_revoke_{log_id}"),
             InlineKeyboardButton("❌ Cancel", callback_data="cancel_revoke")
         ]
     ])
@@ -205,7 +308,6 @@ async def cancel_revoke_handler(client: Client, query: CallbackQuery):
         urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', query.message.text)
         
         # Logic: Usually Stream Link contains 'watch', Download does not (or based on your logic)
-        # Adjust logic if your URL structure changes
         st_link = next((u for u in urls if "watch" in u), None)
         dl_link = next((u for u in urls if "watch" not in u and u != st_link), None)
 
@@ -247,9 +349,9 @@ async def execute_revoke_handler(client: Client, query: CallbackQuery):
         # 1. Delete from MongoDB
         await db.delete_file(log_id)
         
-        # 2. Delete from Telegram Log Channel
+        # 2. Delete from Telegram Dump Channel
         try:
-            await client.delete_messages(chat_id=LOG_CHANNEL, message_ids=log_id)
+            await client.delete_messages(chat_id=DUMP_CHANNEL, message_ids=log_id)
         except Exception as e:
             logger.warning(f"Message {log_id} already deleted from channel or not found: {e}")
 

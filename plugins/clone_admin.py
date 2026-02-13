@@ -62,6 +62,8 @@ async def list_clones(client, message):
         return await msg.edit("<b><i>⚠️ No clone bots found.</i></b>")
     
     output_list = []
+    file_list = []  # Separate list for text file (cleaner format)
+
     for i, bot in enumerate(bots, 1):
         owner_id = bot.get('user_id', 'Unknown')
         token = bot.get('bot_token', 'Unknown')
@@ -69,16 +71,22 @@ async def list_clones(client, message):
         # Masking token (showing first 15 chars)
         masked_token = f"{token[:15]}..." if len(token) > 15 else token
         
-        output_list.append(f"{i}. Owner: {owner_id} | Token: {masked_token}")
+        # Format for Telegram Message
+        msg_item = f"**┟ {i}.** __Owner: `{owner_id}`\n| Token:__ `{masked_token}`"
+        output_list.append(msg_item)
+
+        # Format for Text File (Clean)
+        file_item = f"{i}. Owner: {owner_id} | Token: {masked_token}"
+        file_list.append(file_item)
     
     # If list is short (10 or less), send as text
     if len(output_list) <= 10:
-        text = "**⌬ 📃 #CloneList**\n┟ " + "\n**┟ **".join(output_list) + "\n**┖ End of List**"
+        text = "**⌬ 📃 #CloneList**\n" + "\n".join(output_list) + "\n**┖ End of List**"
         await msg.edit(text)
     else:
         # If list is long, save to file
         with open("clones_list.txt", "w") as f:
-            f.write("\n".join(output_list))
+            f.write("\n".join(file_list))
         
         await msg.delete()
         await message.reply_document(
@@ -144,7 +152,7 @@ async def force_delete_clone(client, message):
         return await message.reply("<b>⚠️ Invalid User ID.</b>")
         
     if not await db.is_clone_exist(target_user_id):
-        return await message.reply(f"⌬ ❌ #NotFound\n┖ No clone found for User ID: <code>{target_user_id}</code>")
+        return await message.reply(f"**⌬ ❌ #NotFound**\n**┖ No clone found for User ID:** <code>{target_user_id}</code>")
         
     await db.delete_clone(target_user_id)
     

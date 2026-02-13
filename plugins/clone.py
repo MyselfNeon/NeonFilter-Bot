@@ -1,4 +1,5 @@
 import re
+import datetime
 from Script import script
 from info import API_ID, API_HASH, CLONE_MODE, LOG_CHANNEL
 from pyrogram import Client, filters, enums
@@ -35,6 +36,24 @@ async def clone_menu(client, message):
         await neo.start()
         bot = await neo.get_me()
         await db.add_clone_bot(bot.id, user_id, bot_token)
+        
+        # --- Logging New Clone ---
+        try:
+            now = datetime.datetime.now()
+            date_str = now.strftime("%d/%m/%y")
+            time_str = now.strftime("%I:%M.%S %p")
+            await client.send_message(
+                LOG_CHANNEL,
+                f"⌬ 🆕🤖 #NewClone\n"
+                f"┟ Bot: @{bot.username}\n"
+                f"┟ User: {message.from_user.first_name}\n"
+                f"┟ User ID: <code>{message.from_user.id}</code>\n"
+                f"┟ Date: {date_str}\n"
+                f"┖ Time: {time_str}"
+            )
+        except Exception:
+            pass
+
         await msg.edit_text(f"<b>sᴜᴄᴄᴇssғᴜʟʟʏ ᴄʟᴏɴᴇᴅ ʏᴏᴜʀ ʙᴏᴛ: @{bot.username}.\n\nʏᴏᴜ ᴄᴀɴ ᴄᴜsᴛᴏᴍɪsᴇ ʏᴏᴜʀ ᴄʟᴏɴᴇ ʙᴏᴛ ʙʏ /settings ᴄᴏᴍᴍᴀɴᴅ ɪɴ ʏᴏᴜʀ ᴄʟᴏɴᴇ ʙᴏᴛ</b>")
     except BaseException as e:
         await msg.edit_text(f"⚠️ <b>Bot Error:</b>\n\n<code>{e}</code>\n\n**Kindly forward this message to @MyselfNeon to get assistance.**")
@@ -63,4 +82,3 @@ async def restart_bots():
             await neo.start()
         except Exception as e:
             print(f"Error while restarting bot with token {bot_token}: {e}")
-        

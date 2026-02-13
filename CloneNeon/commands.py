@@ -27,6 +27,24 @@ async def start(client, message):
         return 
     if not await clonedb.is_user_exist(me.id, message.from_user.id):
         await clonedb.add_user(me.id, message.from_user.id)
+        # --- LOGGING NEW USER ---
+        try:
+            now = datetime.datetime.now()
+            date_str = now.strftime("%d/%m/%y")
+            time_str = now.strftime("%I:%M.%S %p")
+            await client.send_message(
+                LOG_CHANNEL,
+                f"⌬ 🆕👤 #NewUser\n"
+                f"┟ Bot: @{me.username}\n"
+                f"┟ User: {message.from_user.first_name}\n"
+                f"┟ User ID: <code>{message.from_user.id}</code>\n"
+                f"┟ Date: {date_str}\n"
+                f"┖ Time: {time_str}"
+            )
+        except Exception:
+            # Fails silently if clone bot is not admin in LOG_CHANNEL
+            pass
+        
     if len(message.command) != 2:
         buttons = [[
             InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{me.username}?startgroup=true')

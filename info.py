@@ -6,13 +6,13 @@ from Script import script
 id_pattern = re.compile(r'^.\d+$')
 
 # --- BOT INFORMATION ---
-SESSION = environ.get('SESSION', 'MyselfNeon')
+SESSION = environ.get('SESSION', '')
 API_ID = int(environ.get('API_ID', ''))
 API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
 # --- KEEP-ALIVE URL ---
-KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "https://personalfilter.onrender.com/")
+KEEP_ALIVE_URL = environ.get("KEEP_ALIVE_URL", "")
 
 # --- START PICTURES --- 
 PICS = (
@@ -29,7 +29,7 @@ PICS = (
 
 # --- ADMINS & USERS ---
 ADMINS = [int(admin) if id_pattern.search(admin) else admin
-          for admin in environ.get('ADMINS', '841851780').split()]
+          for admin in environ.get('ADMINS', '').split()]
 
 auth_users = [int(user) if id_pattern.search(user) else user
               for user in environ.get('AUTH_USERS', '').split()]
@@ -37,23 +37,23 @@ auth_users = [int(user) if id_pattern.search(user) else user
 AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 
 # --- CHANNELS AND GROUPS ---
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001889915480'))
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', ''))
 
 # --- DUMP CHANNEL ---
 DUMP_CHANNEL = int(environ.get('DUMP_CHANNEL', LOG_CHANNEL))
 
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch
-            for ch in environ.get('CHANNELS', '-1002487845241').split()]
+            for ch in environ.get('CHANNELS', '').split()]
 
 REQUEST_TO_JOIN_MODE = bool(environ.get('REQUEST_TO_JOIN_MODE', True))
 TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', True))
 
 # --- FORCE SUBSCRIBE CHANNEL ---
-auth_channel = environ.get('AUTH_CHANNEL', '-1002384933640 -1002231967338')
+auth_channel = environ.get('AUTH_CHANNEL', '')
 AUTH_CHANNEL = [int(ch) if id_pattern.search(ch) else ch for ch in auth_channel.split()] if auth_channel else []
 
 # --- FILE REQUEST CHANNEL ---
-reqst_channel = environ.get('REQST_CHANNEL', '-1002158258466')
+reqst_channel = environ.get('REQST_CHANNEL', '')
 REQST_CHANNEL = int(reqst_channel) if reqst_channel and id_pattern.search(reqst_channel) else None
 
 # --- INDEX REQUEST CHANNEL ---
@@ -64,11 +64,11 @@ support_chat_id = environ.get('SUPPORT_CHAT_ID', '')
 SUPPORT_CHAT_ID = int(support_chat_id) if support_chat_id and id_pattern.search(support_chat_id) else None
 
 # --- FILE STORE CHANNEL ---
-FILE_STORE_CHANNEL = [int(ch) for ch in (environ.get('FILE_STORE_CHANNEL', '-1002487845241')).split()]
+FILE_STORE_CHANNEL = [int(ch) for ch in (environ.get('FILE_STORE_CHANNEL', '')).split()]
 
 # --- DELETE CHANNEL(s) ---
 DELETE_CHANNELS = [int(dch) if id_pattern.search(dch) else dch
-                   for dch in environ.get('DELETE_CHANNELS', '-1002231967338').split()]
+                   for dch in environ.get('DELETE_CHANNELS', '').split()]
  
 # --- DATABASE --- 
 DATABASE_URI = environ.get('DATABASE_URI', "")
@@ -115,7 +115,7 @@ CLONE_DATABASE_URI = environ.get('CLONE_DATABASE_URI', "")
 PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', 'NeonCodes')
 
 # --- LINKS --- 
-GRP_LNK = environ.get('GRP_LNK', 'https://t.me/+o1s-8MppL2syYTI9')
+GRP_LNK = environ.get('GRP_LNK', '')
 CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/neonfiles')
 SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'Talk2neonBot')
 OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/MyselfNeon')
@@ -184,7 +184,7 @@ SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '60'))
 PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))
 
 ON_HEROKU = 'DYNO' in environ
-URL = environ.get("URL", "https://personalfilter.onrender.com/")
+URL = environ.get("URL", "")
 
 # --- RENAME ---
 RENAME_MODE = bool(environ.get('RENAME_MODE', True))
@@ -208,4 +208,5 @@ REACTIONS = [
 
 # Dont remove Credits
 # Developer Telegram @MyselfNeon
+
 # Update channel - @NeonFiles
